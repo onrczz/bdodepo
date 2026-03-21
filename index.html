@@ -48,6 +48,10 @@
   
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-thumb { background: var(--gold-dark); }
+
+  @media (max-width: 768px) {
+    .preview-section.visible { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -55,13 +59,13 @@
 <div class="container">
   <header>
     <h1>BDO STORAGE ANALYZER</h1>
-    <p class="subtitle">Depo analiz sistemi</p>
+    <p class="subtitle">Deponuzu analiz edin ve en kârlı üretimleri bulun</p>
   </header>
 
   <div class="upload-zone" id="upload-zone">
-    <span style="font-size: 3rem;">📜</span>
-    <h2>Envanter Görseli Yükle</h2>
-    <p>Tıkla veya sürükle bırak</p>
+    <span style="font-size: 3rem;">📦</span>
+    <h2>Depo Ekran Görüntüsü Yükle</h2>
+    <p>Tıkla veya sürükle bırak · PNG, JPG desteklenir</p>
     <input type="file" id="file-input" accept="image/*">
   </div>
 
@@ -70,8 +74,8 @@
         <div class="preview-card" style="border: 1px solid var(--border-gold); padding: 5px; background: var(--bg-panel);">
             <img id="preview-img" src="" style="width:100%; border: 1px solid var(--border);">
         </div>
-        <button class="btn btn-primary" id="analyze-btn">⚔ ANALİZİ BAŞLAT</button>
-        <button class="btn" style="background:#222; color:#888; font-size:0.7rem;" onclick="location.reload()">↩ YENİ RESİM</button>
+        <button class="btn btn-primary" id="analyze-btn">⚔ ANALİZ ET</button>
+        <button class="btn" style="background:#222; color:#888; font-size:0.7rem;" onclick="location.reload()">↩ GÖRSELİ DEĞIŞTIR</button>
     </div>
 
     <div class="ai-panel">
@@ -79,28 +83,32 @@
           <h3 style="font-family:'Cinzel'; color:var(--gold); margin:0;">TESPİT EDİLEN MATERYALLER</h3>
           <span id="item-count-badge" style="font-size:0.8rem; background:var(--gold-dark); color:white; padding:2px 8px; border-radius:10px;">0 Eşya</span>
       </div>
-      <div class="items-grid" id="items-grid"></div>
+      <div class="items-grid" id="items-grid">
+        </div>
     </div>
   </div>
 </div>
 
 <div id="loading-overlay">
-  <p id="loading-status" style="letter-spacing:2px;">KARA RUH ANALİZ EDİYOR...</p>
+  <div style="border: 3px solid var(--gold-dark); border-top: 3px solid var(--gold); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
+  <p style="letter-spacing:2px;">KARA RUH ANALİZ EDİYOR...</p>
 </div>
+
+<style> @keyframes spin { to { transform: rotate(360deg); } } </style>
 
 <script>
 // --- AYARLAR ---
 const WORKER_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/'; 
 let ITEM_DATABASE = null;
 
-// Sayfa açılırken veritabanını yükle
+// Başlangıçta veritabanını yükle
 async function init() {
     try {
         const r = await fetch('bdo_items.json');
         ITEM_DATABASE = await r.json();
-        console.log("Veritabanı yüklendi.");
+        console.log("Eşya veritabanı yüklendi.");
     } catch (e) {
-        console.error("JSON dosyası bulunamadı! bdo_items.json dosyasının aynı klasörde olduğundan emin olun.");
+        console.error("Veritabanı (bdo_items.json) yüklenemedi!");
     }
 }
 init();
@@ -124,6 +132,7 @@ fileInput.onchange = (e) => {
     reader.readAsDataURL(file);
 };
 
+// --- ANALİZ BUTONU FONKSİYONU ---
 analyzeBtn.onclick = async () => {
     const imgElement = document.getElementById('preview-img');
     if (!imgElement.src) return;
@@ -142,21 +151,20 @@ analyzeBtn.onclick = async () => {
 
         const result = await response.json();
         
-        // Hata Kontrolü: result.content dizisi var mı?
-        if (!result.content || !result.content[0]) {
-            throw new Error("API'den geçersiz yanıt geldi. Worker kodunuzu kontrol edin.");
+        // Worker artık direkt "text" alanı döndürüyor
+        if (!result.text) {
+            throw new Error("Worker'dan geçerli metin gelmedi. Detay: " + (result.error || "Bilinmiyor"));
         }
 
-        const text = result.content[0].text;
-        const jsonMatch = text.match(/\[.*\]/s);
-        
-        if (!jsonMatch) throw new Error("Yapay zeka liste oluşturamadı.");
+        // Metin içindeki JSON listesini bul
+        const jsonMatch = result.text.match(/\[.*\]/s);
+        if (!jsonMatch) throw new Error("Yapay zeka eşya listesi oluşturamadı.");
         
         const aiItems = JSON.parse(jsonMatch[0]);
         document.getElementById('item-count-badge').textContent = aiItems.length + " Eşya";
 
         aiItems.forEach(item => {
-            // Veritabanında eşleştirme
+            // bdo_items.json içinde isim eşleştirme (Case-insensitive)
             const entry = (ITEM_DATABASE && ITEM_DATABASE.id_to_info) ? 
                 Object.entries(ITEM_DATABASE.id_to_info).find(([id, info]) => 
                     info.name_en.toLowerCase() === item.name.toLowerCase()
@@ -165,6 +173,7 @@ analyzeBtn.onclick = async () => {
             const card = document.createElement('div');
             card.className = "item-card";
 
+            // İkon belirleme
             const iconPath = entry ? `https://bdocodex.com${entry[1].icon}` : 'https://bdocodex.com/items/new_icon/03_etc/00007001.png';
             const displayName = entry ? (entry[1].name_tr || entry[1].name_en) : item.name;
 
@@ -180,7 +189,7 @@ analyzeBtn.onclick = async () => {
 
     } catch (err) {
         console.error("Hata Detayı:", err);
-        alert("Hata: " + err.message);
+        alert("Sistem Hatası: " + err.message);
     } finally {
         document.getElementById('loading-overlay').style.display = 'none';
         analyzeBtn.disabled = false;
