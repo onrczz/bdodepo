@@ -435,49 +435,196 @@ async function readInventory() {
   return JSON.parse(match[0]);
 }
 
+// ── ITEM ID LOOKUP TABLE ──────────────────────────────────────────────────
+// item_id → [tr_name, en_name]
+const ITEM_NAMES = {
+  // Tahıllar / Grains
+  9001: ['Buğday','Wheat'], 9002: ['Mısır','Corn'], 9003: ['Pirinç','Rice'],
+  9004: ['Arpa','Barley'], 9005: ['Patates','Potato'], 9006: ['Şeker Pancarı','Sugar Beet'],
+  9007: ['Tatlı Patates','Sweet Potato'], 9008: ['Çavdar','Rye'],
+  9009: ['Domates','Tomato'], 9010: ['Soğan','Onion'], 9011: ['Sarımsak','Garlic'],
+  9012: ['Salatalık','Cucumber'], 9013: ['Biber','Pepper'], 9014: ['Kabak','Pumpkin'],
+  9015: ['Marul','Lettuce'], 9016: ['Nane','Mint'], 9017: ['Şeker','Sugar'],
+  9018: ['Tuz','Salt'], 9019: ['Sirke','Vinegar'], 9020: ['Zeytinyağı','Olive Oil'],
+  9021: ['Kırmızı Et','Red Meat'], 9022: ['Tavuk Eti','Chicken'],
+  9023: ['Güvercin Eti','Pigeon Meat'], 9024: ['Kuru İt Üzümü','Dried Mudskipper'],
+  // Balık / Fish
+  9057: ['Balık','Fish'], 9058: ['Balık Eti','Fish Meat'],
+  9059: ['Domates','Tomato'], 9061: ['Paprika','Paprika'],
+  9062: ['Köri Tozu','Curry Powder'], 9063: ['Elma','Apple'],
+  9064: ['Portakal','Orange'], 9065: ['Süt','Milk'],
+  9066: ['Yumurta','Egg'], 9067: ['Tereyağı','Butter'],
+  9068: ['Peynir','Cheese'], 9069: ['Krema','Cream'],
+  9070: ['Un','Flour'], 9071: ['Limon','Lemon'],
+  9072: ['Kabak','Pumpkin'], 9073: ['Çilek','Strawberry'],
+  9074: ['Blueberry','Blueberry'], 9075: ['Hindistancevizi','Coconut'],
+  9076: ['Mango','Mango'], 9077: ['Avokado','Avocado'],
+  9078: ['Yulaf','Oat'], 9079: ['Darı','Millet'],
+  9080: ['Çay Yaprağı','Tea Leaves'], 9082: ['Esrar','Hops'],
+  9083: ['Tarçın','Cinnamon'], 9201: ['Kara Inci Suyu','Black Essence: Agility'],
+  // Hayvan malzemeleri / Animal materials
+  9213: ['Kırmızı Et','Red Meat'], 9214: ['Tavuk Eti','Chicken Meat'],
+  9215: ['Domuz Eti','Pork'], 9216: ['Yılan Eti','Snake Meat'],
+  9217: ['Eşek Eti','Donkey Meat'], 9218: ['Fil Eti','Elephant Meat'],
+  9219: ['Çita Eti','Cheetah Meat'], 9220: ['Leopar Eti','Leopard Meat'],
+  9260: ['İnce Deri','Thin Hide'], 9261: ['Sert Deri','Thick Hide'],
+  9262: ['Parlak Deri','Sturdy Hide'], 9263: ['Sert Kabuk','Tough Hide'],
+  9265: ['Asil Deri','Refined Hide'], 9266: ['Kaba Kan','Clotted Blood'],
+  9267: ['Kırmızı Kan','Red Thick Blood'], 9268: ['Koyun Kanı','Sheep\'s Blood'],
+  9270: ['Kemik','Bone'], 9276: ['Deri','Hide'],
+  9277: ['Kan','Blood'], 9279: ['Yağ','Fat'],
+  // Maden / Ore
+  5001: ['Demir Parçası','Iron Ore'], 5002: ['Bakır Parçası','Copper Ore'],
+  5003: ['Gümüş Parçası','Silver Ore'], 5004: ['Titanyum Parçası','Titanium Ore'],
+  5005: ['Mithril Parçası','Mithril Ore'], 5006: ['Adamantium Parçası','Adamantium Ore'],
+  5007: ['Krom Parçası','Chromite Ore'], 5008: ['Platin Parçası','Platinum Ore'],
+  5009: ['Tungsten Parçası','Tungsten Ore'], 5010: ['Karbonlu Parça','Vanadium Ore'],
+  // İşlenmiş / Processed
+  4001: ['Demir Külçesi','Iron Ingot'], 4002: ['Bakır Külçesi','Copper Ingot'],
+  4003: ['Gümüş Külçesi','Silver Ingot'], 4004: ['Titanyum Külçesi','Titanium Ingot'],
+  4005: ['Mithril Külçesi','Mithril Ingot'], 4006: ['Kaliteli Odun','High-Quality Timber'],
+  // Odun / Timber
+  7001: ['Kütük','Log'], 7002: ['Kerestelik Odun','Timber'],
+  7003: ['Sert Odun','Hardwood'], 7004: ['Olgunlaşmış Odun','Ash Timber'],
+  7005: ['Çam Odunu','Pine Timber'], 7006: ['Meşe Odunu','Cedar Timber'],
+  7007: ['Gürgen Odunu','Birch Timber'], 7008: ['Karaağaç Odunu','Maple Timber'],
+  7009: ['Kestane Odunu','Fir Timber'], 7010: ['Kara Bambu','Black Bamboo'],
+  7016: ['İşlenmiş Odun','Processed Timber'], 7017: ['Kereste','Plywood'],
+  7018: ['Sert Kereste','Hardwood Plywood'], 7019: ['Olgunlaşmış Kereste','Ash Plywood'],
+  7020: ['Çam Kerestesi','Pine Plywood'], 7021: ['Meşe Kerestesi','Cedar Plywood'],
+  7022: ['Gürgen Kerestesi','Birch Plywood'], 7101: ['Çam Tohumu','Pine Seed'],
+  7201: ['Meşe Tohumu','Cedar Seed'], 7301: ['Kıl','Wool'],
+  7302: ['Kalın Kıl','Thick Wool'], 7303: ['İpek','Silk'],
+  7304: ['Pamuk','Cotton'], 7305: ['Keten','Flax'],
+  7311: ['İşlenmiş Pamuk','Processed Cotton'], 7312: ['İşlenmiş Keten','Processed Flax'],
+  7313: ['Su','Water'], 7314: ['Tatlı Su','Fresh Water'],
+  7315: ['Pınar Suyu','Spring Water'], 7316: ['Birikmiş Su','Filtered Water'],
+  7317: ['Arıtılmış Su','Purified Water'], 7318: ['Ateş Taşı Tozu','Powder of Flame'],
+  7319: ['Ateş Taşı','Flame Stone'], 7320: ['Toprak Tozu','Powder of Earth'],
+  7321: ['Rüzgar Tozu','Powder of Wind'], 7322: ['Işık Tozu','Powder of Crevice'],
+  7329: ['Süzülmüş Toprak','Trace of Earth'], 7341: ['Süzülmüş Vahşet','Trace of Savagery'],
+  7438: ['Çiçek','Flower'], 7701: ['Tahıl','Grain'],
+  7702: ['Tahıl İşlenmiş','Processed Grain'], 7703: ['Un','Flour'],
+  7704: ['Meyve','Fruit'], 7800: ['Yulaf','Oat'],
+  7900: ['Kırmızı Et','Red Meat'], 7901: ['Et','Meat'],
+  7902: ['Piliç Eti','Chicken Meat'], 7903: ['Domuz Eti','Pork Meat'],
+  7904: ['Domuz Pastırması','Bacon'], 7905: ['Biftek','Steak'],
+  7906: ['Balık','Fish'], 7907: ['Balık Fileto','Fish Fillet'],
+  7910: ['Karides','Shrimp'], 7911: ['Midye','Oyster'],
+  7912: ['Kalamar','Squid'], 7913: ['Yengeç','Crab'],
+  7916: ['Hardal','Mustard'],  7918: ['Zencefil','Ginger'],
+  7920: ['Badem','Almond'], 7921: ['Fındık','Hazelnut'],
+  7922: ['Kaju','Cashew'], 7923: ['Antep Fıstığı','Pistachio'],
+  7924: ['Rezene','Fennel'], 7925: ['Lahana','Cabbage'],
+  7954: ['Acı Biber','Hot Pepper'], 7955: ['Tatlı Biber','Sweet Pepper'],
+  7956: ['Mor Mantar','Purple Mushroom'], 7957: ['Kırmızı Mantar','Red Mushroom'],
+  7958: ['Mantar','Mushroom'], 8201: ['Odun Kömürü','Charcoal'],
+  8501: ['Demir Parçası','Iron Shard'],
+  // Kimya malzemeleri / Alchemy
+  6201: ['Esrar','Hops'], 6226: ['Hindistancevizi','Coconut'],
+  6511: ['Çiçek Tozu','Flower Pollen'], 6515: ['Bitki Özü','Plant Concentrate'],
+  6516: ['Kaya Tuzu','Rock Salt'], 6520: ['Kristal Parçası','Crystal Shard'],
+  6656: ['Gemi Malzemesi','Ship Part'],
+};
+
 // ── STEP 2: Fetch real Codex recipes ─────────────────────────────────────
 async function fetchCodexRecipes(type) {
   const l    = lang === 'tr' ? 'tr' : 'us';
-  const resp = await fetch(`${CODEX_PROXY}?type=${type}&l=${l}&o=0&s=200`);
+  const resp = await fetch(`${CODEX_PROXY}?type=${type}&l=${l}&o=0&s=500`);
   if (!resp.ok) throw new Error('BDO Codex ' + resp.status);
   const data = await resp.json();
   return data.aaData || data.data || [];
 }
 
-// ── STEP 3: Match ─────────────────────────────────────────────────────────
+// ── STEP 3: Parse Codex row ───────────────────────────────────────────────
+function parseCodexRow(row) {
+  // row format: [id, icon_html, name_html, type, skill, exp, ingredients_html, weight, output_html, ingredient_ids_json, ...]
+  if (!Array.isArray(row) || row.length < 10) return null;
+
+  const id = row[0];
+
+  // Extract recipe name from HTML - name is in row[2]
+  const nameHtml = typeof row[2] === 'string' ? row[2] : (typeof row[1] === 'string' ? row[1] : '');
+  const name = (nameHtml.match(/<b>(.*?)<\/b>/) || [])[1] || `Recipe ${id}`;
+
+  // Extract ingredient IDs from JSON string e.g. "[9018,9065,7313,9017]"
+  const idStr = row[9] || '[]';
+
+  // Extract ingredient quantities from HTML
+  const ingHtml  = row[5] || '';
+
+  // Extract icon from output HTML
+  const outHtml  = row[7] || '';
+
+  const skillObj   = row[3] || {};
+  const skillLevel = typeof skillObj === 'object' ? (skillObj.display || '') : String(skillObj);
+
+  let ingredientIds = [];
+  try { ingredientIds = JSON.parse(idStr); } catch(e) {}
+  const quantities = [...ingHtml.matchAll(/quantity_small nowrap[^>]*>(\d+)/g)].map(m => parseInt(m[1]));
+  const iconMatch  = outHtml.match(/src="\/items\/([^"]+)"/);
+  const icon       = iconMatch ? iconMatch[1] : '';
+
+  return { id, name, icon, skillLevel, ingredientIds, quantities };
+}
+
+// ── STEP 4: Match recipes to inventory ───────────────────────────────────
 function matchRecipes(recipes, inv) {
-  const map = {};
-  inv.forEach(i => { map[i.name.toLowerCase().trim()] = i.qty; });
+  // Build TWO lookups: by name (tr & en, lowercase) AND by item id if possible
+  const nameMap = {};
+  inv.forEach(i => {
+    nameMap[i.name.toLowerCase().trim()] = i.qty;
+  });
 
   const out = [];
-  for (const r of recipes) {
-    const ings = r.m_aaIngredients || r.ingredients || [];
-    if (!ings.length) continue;
-    let canCraft = Infinity, hasAny = false;
+
+  for (const row of recipes) {
+    const r = parseCodexRow(row);
+    if (!r || !r.ingredientIds.length) continue;
+
+    let canCraft = Infinity;
+    let hasAny   = false;
     const parsed = [];
-    for (const ing of ings) {
-      if (!ing) continue;
-      const rawName = Array.isArray(ing) ? ing[0] : (ing.name || '');
-      const reqQty  = parseInt(Array.isArray(ing) ? ing[1] : ing.qty) || 1;
-      const name    = rawName.replace(/<[^>]+>/g,'').trim();
-      const have    = map[name.toLowerCase()] || 0;
+
+    r.ingredientIds.forEach((itemId, idx) => {
+      const reqQty = r.quantities[idx] || 1;
+
+      // Get item name from lookup table (both tr and en)
+      const names  = ITEM_NAMES[itemId];
+      const trName = names ? names[0] : null;
+      const enName = names ? names[1] : null;
+
+      // Try to find in inventory by tr name, en name, or ID
+      let have = 0;
+      if (trName) have = nameMap[trName.toLowerCase()] || 0;
+      if (!have && enName) have = nameMap[enName.toLowerCase()] || 0;
+      // Fuzzy: check if any inv item contains the name
+      if (!have && trName) {
+        const key = Object.keys(nameMap).find(k => k.includes(trName.toLowerCase()) || trName.toLowerCase().includes(k));
+        if (key) have = nameMap[key];
+      }
+
+      const displayName = lang === 'tr' ? (trName || `Item ${itemId}`) : (enName || `Item ${itemId}`);
       if (have > 0) hasAny = true;
       const possible = have >= reqQty ? Math.floor(have / reqQty) : 0;
       if (possible < canCraft) canCraft = possible;
-      parsed.push({ name, required: reqQty, have });
-    }
+      parsed.push({ name: displayName, required: reqQty, have });
+    });
+
     if (!hasAny || !parsed.length) continue;
+
     out.push({
-      id:         r.item_id || r.id || '',
-      name:       r.m_outputitemname || r.name || '?',
-      icon:       r.icon || r.m_icon || '',
-      skillLevel: r.skill_level_display || r.skill_level || '',
+      id:          r.id,
+      name:        r.name,
+      icon:        r.icon,
+      skillLevel:  r.skillLevel,
       ingredients: parsed,
-      craftable:  canCraft === Infinity ? 0 : canCraft,
-      hasAll:     canCraft > 0
+      craftable:   canCraft === Infinity ? 0 : canCraft,
+      hasAll:      canCraft > 0
     });
   }
-  return out.sort((a,b) => {
+
+  return out.sort((a, b) => {
     if (a.hasAll !== b.hasAll) return a.hasAll ? -1 : 1;
     return b.craftable - a.craftable;
   });
