@@ -503,129 +503,40 @@ function handleFile(file) {
   reader.readAsDataURL(file);
 }
 
-// ── READ INVENTORY: Split icon top / qty bottom per cell ─────────────────
+// ── READ INVENTORY ────────────────────────────────────────────────────────
 async function readInventory() {
-  const previewImg = document.getElementById('preview-img');
-  const W = previewImg.naturalWidth || previewImg.width;
-  const H = previewImg.naturalHeight || previewImg.height;
+  const resp = await fetch(PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: mediaType, data: currentBase64 } },
+        { type: 'text', text: `This is a Black Desert Online storage screenshot.
+The grid has 8 columns. Each cell has an item icon on top and a quantity number below it.
 
-  // Draw full image to canvas
-  const fullCanvas = document.createElement('canvas');
-  fullCanvas.width = W; fullCanvas.height = H;
-  const fullCtx = fullCanvas.getContext('2d');
-  fullCtx.drawImage(previewImg, 0, 0);
+Your job:
+1. Read each cell LEFT TO RIGHT, TOP TO BOTTOM (row 0 col 0, row 0 col 1, ... row 0 col 7, then row 1...)
+2. Identify the item icon name in English (BDO/Codex name)
+3. Read the quantity number below the icon (B=thousands: 415B=415000, M=millions)
+4. Include ALL non-empty cells — do not skip any
 
-  const COLS = 8;
-  const cellW = Math.floor(W / COLS);
-  const cellH = cellW;
-  const rows  = Math.floor(H / cellH);
-
-  // Build two composite images:
-  // 1) TOP halves (icons only) — for item identification
-  // 2) BOTTOM halves (numbers only) — for quantity reading
-  const iconCanvas = document.createElement('canvas');
-  const qtyCanvas  = document.createElement('canvas');
-  const iconH = Math.floor(cellH * 0.62); // top 62% = icon
-  const qtyH  = cellH - iconH;            // bottom 38% = number
-
-  iconCanvas.width = W; iconCanvas.height = iconH * rows;
-  qtyCanvas.width  = W; qtyCanvas.height  = qtyH  * rows;
-
-  const iconCtx = iconCanvas.getContext('2d');
-  const qtyCtx  = qtyCanvas.getContext('2d');
-
-  for (let r = 0; r < rows; r++) {
-    // Top part of each row → icon strip
-    iconCtx.drawImage(fullCanvas,
-      0, r * cellH,       W, iconH,
-      0, r * iconH,       W, iconH);
-    // Bottom part of each row → qty strip
-    qtyCtx.drawImage(fullCanvas,
-      0, r * cellH + iconH, W, qtyH,
-      0, r * qtyH,          W, qtyH);
-  }
-
-  const iconB64 = iconCanvas.toDataURL('image/jpeg', 0.90).split(',')[1];
-  const qtyB64  = qtyCanvas.toDataURL('image/jpeg', 0.90).split(',')[1];
-
-  // Step 1: Identify icons (no numbers visible)
-  const iconPrompt = `This image shows ONLY the icon portions of a BDO storage grid (numbers cropped out).
-Grid: ${COLS} columns, ${rows} rows. Identify each item by its icon using ENGLISH BDO/Codex names.
-
-Common items: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber,
-Ash Plywood, Maple Plywood, Iron Ore, Copper Ore, Silver Ore, Titanium Ore, Coal, Rough Stone,
-Iron Ingot, Copper Ingot, Melted Iron Shard, Wheat, Barley, Potato, Corn, Sweet Potato, Rye,
-Salt, Sugar, Milk, Egg, Butter, Flour, Vinegar, Olive Oil, Garlic, Onion, Tomato, Pumpkin,
-Red Meat, Chicken Meat, Fish, Bone, Hide, Blood, Deer Blood, Pig Blood, Wolf Blood, Bear Blood,
-Cotton, Flax, Wool, Hops, Sunrise Herb, Fire Flake Flower, Silver Azalea, Monk's Branch,
-Clear Liquid Reagent, Pure Powder Reagent, Processed Grain, Log,
-Strawberry, Coconut, Orange, Apple, Bean Sprouts, Flower, Fruit, Cooking Honey, Leavening Agent.
-
-Return ONLY JSON — skip empty cells:
-{"cells":[{"row":0,"col":0,"name":"Copper Ore"},{"row":0,"col":1,"name":"Potato"}]}`;
-
-  // Step 2: Read quantities (no icons visible, just numbers)
-  const qtyPrompt = `This image shows ONLY the quantity numbers from a BDO storage grid (icons cropped out).
-Grid: ${COLS} columns, ${rows} rows. Read each number.
-QUANTITY: B=thousands (415B=415000), M=millions. Write full integer. Skip empty cells.
+IMPORTANT: The number below the icon is the quantity, NOT the item name. Read the icon separately from the number.
 
 Return ONLY JSON:
-{"cells":[{"row":0,"col":0,"qty":415000},{"row":0,"col":1,"qty":298000}]}`;
-
-  const [iconResp, qtyResp] = await Promise.all([
-    fetch(PROXY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: iconB64 } },
-          { type: 'text', text: iconPrompt }
-        ]}]
-      })
-    }),
-    fetch(PROXY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: qtyB64 } },
-          { type: 'text', text: qtyPrompt }
-        ]}]
-      })
+{"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000},{"row":0,"col":2,"name":"Corn","qty":297000}]}` }
+      ]}]
     })
-  ]);
-
-  const [iconData, qtyData] = await Promise.all([iconResp.json(), qtyResp.json()]);
-  if (iconData.error) throw new Error(iconData.error.message);
-  if (qtyData.error)  throw new Error(qtyData.error.message);
-
-  const iconText = iconData.content.map(b => b.text || '').join('');
-  const qtyText  = qtyData.content.map(b => b.text || '').join('');
-
-  const iconMatch = iconText.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
-  const qtyMatch  = qtyText.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
-
-  if (!iconMatch || !qtyMatch) throw new Error('AI returned no response');
-
-  const iconResult = JSON.parse(iconMatch[0]);
-  const qtyResult  = JSON.parse(qtyMatch[0]);
-
-  // Merge: match by row+col
-  const qtyMap = {};
-  (qtyResult.cells || []).forEach(c => { qtyMap[`${c.row}_${c.col}`] = c.qty; });
-
-  const cells = (iconResult.cells || []).map(c => ({
-    row: c.row, col: c.col,
-    name: c.name,
-    qty: qtyMap[`${c.row}_${c.col}`] || 1
-  })).filter(c => c.name && c.qty > 0);
-
-  return { cells };
+  });
+  const data = await resp.json();
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+  const text = data.content.map(b => b.text || '').join('');
+  const match = text.replace(/```json|```/g, '').trim().match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('AI returned no response');
+  return JSON.parse(match[0]);
 }
+
 
 
 // ── CODEX RECIPES ─────────────────────────────────────────────────────────
