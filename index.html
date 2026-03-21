@@ -2,265 +2,106 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BDO Storage Analyzer - Final</title>
+<title>BDO Storage Analyzer</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro:wght@400;600&display=swap');
-  
-  :root { 
-    --gold: #c9a84c; 
-    --bg: #0a0806; 
-    --panel: #12100c; 
-    --text: #d4c9a8; 
-    --border: #3d3020; 
-  }
-
-  body { 
-    background: var(--bg); 
-    color: var(--text); 
-    font-family: 'Crimson Pro', serif; 
-    margin: 0; 
-    padding: 20px; 
-    min-height: 100vh;
-  }
-
+  :root { --gold: #c9a84c; --bg: #0a0806; --panel: #12100c; --text: #d4c9a8; --border: #3d3020; }
+  body { background: var(--bg); color: var(--text); font-family: 'Crimson Pro', serif; margin: 0; padding: 20px; }
   .container { max-width: 1100px; margin: 0 auto; }
-
-  header { 
-    text-align: center; 
-    border-bottom: 1px solid var(--border); 
-    padding-bottom: 20px; 
-    margin-bottom: 30px; 
-  }
-
-  h1 { font-family: 'Cinzel', serif; color: var(--gold); margin: 0; font-size: 2.5rem; letter-spacing: 2px; }
-
-  .upload-box { 
-    border: 2px dashed var(--border); 
-    padding: 50px; 
-    text-align: center; 
-    background: var(--panel); 
-    cursor: pointer; 
-    transition: 0.3s; 
-    border-radius: 4px;
-  }
-
-  .upload-box:hover { border-color: var(--gold); background: #1a1610; }
-
-  .main-layout { 
-    display: none; 
-    grid-template-columns: 350px 1fr; 
-    gap: 30px; 
-    margin-top: 20px; 
-  }
-
+  header { text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 30px; }
+  h1 { font-family: 'Cinzel', serif; color: var(--gold); margin: 0; font-size: 2.5rem; }
+  .upload-box { border: 2px dashed var(--border); padding: 50px; text-align: center; background: var(--panel); cursor: pointer; }
+  .main-layout { display: none; grid-template-columns: 350px 1fr; gap: 30px; margin-top: 20px; }
   .visible { display: grid; }
-
-  .item-card { 
-    background: #1a1610; 
-    border: 1px solid #2e2618; 
-    padding: 12px; 
-    display: flex; 
-    align-items: center; 
-    gap: 15px; 
-    margin-bottom: 10px; 
-    border-left: 4px solid var(--gold); 
-    border-radius: 2px;
-  }
-
-  .item-icon { 
-    width: 48px; 
-    height: 48px; 
-    border: 1px solid var(--border); 
-    background: #000; 
-    flex-shrink: 0;
-  }
-
-  .btn { 
-    background: linear-gradient(to bottom, var(--gold), #8a6a1e); 
-    color: #000; 
-    border: none; 
-    padding: 14px; 
-    cursor: pointer; 
-    font-family: 'Cinzel', serif; 
-    font-weight: bold; 
-    width: 100%; 
-    text-transform: uppercase; 
-    border-radius: 2px;
-    transition: 0.2s;
-  }
-
-  .btn:hover { filter: brightness(1.2); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  #overlay { 
-    display: none; 
-    position: fixed; 
-    inset: 0; 
-    background: rgba(0,0,0,0.95); 
-    z-index: 999; 
-    align-items: center; 
-    justify-content: center; 
-    color: var(--gold); 
-    font-family: 'Cinzel', serif; 
-    flex-direction: column; 
-  }
-
-  .items-scroll { 
-    max-height: 700px; 
-    overflow-y: auto; 
-    padding-right: 15px; 
-  }
-
-  /* Scrollbar Styling */
-  .items-scroll::-webkit-scrollbar { width: 6px; }
-  .items-scroll::-webkit-scrollbar-track { background: #000; }
-  .items-scroll::-webkit-scrollbar-thumb { background: var(--gold); }
-
-  @media (max-width: 768px) {
-    .main-layout { grid-template-columns: 1fr; }
-  }
+  .item-card { background: #1a1610; border: 1px solid #2e2618; padding: 12px; display: flex; align-items: center; gap: 15px; margin-bottom: 10px; border-left: 4px solid var(--gold); }
+  .item-icon { width: 48px; height: 48px; border: 1px solid var(--border); background: #000; }
+  .btn { background: linear-gradient(to bottom, var(--gold), #8a6a1e); color: #000; border: none; padding: 14px; cursor: pointer; font-family: 'Cinzel'; font-weight: bold; width: 100%; text-transform: uppercase; margin-top: 10px; }
+  #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999; align-items: center; justify-content: center; color: var(--gold); font-family: 'Cinzel'; flex-direction: column; }
+  .items-scroll { max-height: 700px; overflow-y: auto; padding-right: 15px; }
 </style>
 </head>
 <body>
 
 <div class="container">
   <header><h1>BDO STORAGE ANALYZER</h1></header>
-
-  <div class="upload-box" id="drop-zone">
-    <div style="font-size: 50px; margin-bottom: 10px;">📦</div>
-    <h3>Depo Ekran Görüntüsü Yükle</h3>
-    <p>Görseli buraya bırakın veya tıklayın (PNG/JPG)</p>
-    <input type="file" id="file-input" hidden accept="image/*">
-  </div>
+  <div class="upload-box" id="drop-zone"><h3>📦 Görsel Yükle</h3></div>
 
   <div class="main-layout" id="app-wrap">
     <div>
-      <div style="border: 1px solid var(--gold); padding: 5px; background: #000; margin-bottom: 15px;">
-        <img id="img-preview" style="width:100%; display: block;">
-      </div>
+      <img id="img-preview" style="width:100%; border:1px solid var(--gold);">
       <button class="btn" id="analyze-btn">⚔ ANALİZİ BAŞLAT</button>
-      <button class="btn" style="margin-top:10px; background: #222; color: #888;" onclick="location.reload()">↩ GÖRSELİ DEĞİŞTİR</button>
+      <button class="btn" style="background:#222; color:#888;" onclick="location.reload()">↩ YENİ RESİM</button>
     </div>
-    
     <div>
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px;">
-        <h3 style="font-family:'Cinzel', serif; color:var(--gold); margin:0;">TESPİT EDİLEN MATERYALLER</h3>
-        <span id="stat-badge" style="font-size:0.8rem; background: #3d3020; padding: 2px 8px; border-radius: 10px; color: var(--gold);">0 Eşya</span>
-      </div>
-      <div class="items-scroll" id="results">
-        <p style="text-align:center; color:#555; margin-top:50px;">Henüz analiz yapılmadı.</p>
-      </div>
+      <h3 style="font-family:'Cinzel'; color:var(--gold);">BULUNAN MATERYALLER</h3>
+      <div class="items-scroll" id="results"></div>
     </div>
   </div>
 </div>
 
 <div id="overlay">
-  <div style="width: 60px; height: 60px; border: 5px solid #1a1610; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-  <p style="margin-top: 25px; letter-spacing: 4px; font-weight: bold;">KARA RUH ANALİZ EDİYOR...</p>
+  <p>KARA RUH ANALİZ EDİYOR...</p>
 </div>
 
-<style> @keyframes spin { to { transform: rotate(360deg); } } </style>
-
 <script>
-// --- AYARLAR ---
 const WORKER_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/'; 
 let ITEM_DB = null;
 
-// Sayfa yüklendiğinde bdo_items.json dosyasını oku
-async function loadDatabase() {
-  try {
-    const r = await fetch('bdo_items.json');
-    ITEM_DB = await r.json();
-    console.log("Eşya veritabanı başarıyla yüklendi.");
-  } catch (e) {
-    console.error("Veritabanı yükleme hatası: bdo_items.json dosyasının doğru konumda olduğundan emin olun.");
-  }
-}
-loadDatabase();
+fetch('bdo_items.json').then(r => r.json()).then(data => ITEM_DB = data);
 
-const fInput = document.getElementById('file-input');
-const dZone = document.getElementById('drop-zone');
-const analyzeBtn = document.getElementById('analyze-btn');
+const fInput = document.createElement('input'); fInput.type = 'file';
+document.getElementById('drop-zone').onclick = () => fInput.click();
 
-// Resim yükleme işlemleri
-dZone.onclick = () => fInput.click();
 fInput.onchange = (e) => {
-  const file = e.target.files[0];
-  if(!file) return;
   const reader = new FileReader();
   reader.onload = (ev) => {
     document.getElementById('img-preview').src = ev.target.result;
     document.getElementById('app-wrap').classList.add('visible');
-    dZone.style.display = 'none';
+    document.getElementById('drop-zone').style.display = 'none';
   };
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(e.target.files[0]);
 };
 
-// Analiz Butonu
-analyzeBtn.onclick = async () => {
-  const imgElement = document.getElementById('img-preview');
-  if(!imgElement.src) return;
-
-  const imgData = imgElement.src.split(',')[1];
+document.getElementById('analyze-btn').onclick = async () => {
+  const imgData = document.getElementById('img-preview').src.split(',')[1];
   document.getElementById('overlay').style.display = 'flex';
-  analyzeBtn.disabled = true;
-  
   const resDiv = document.getElementById('results');
   resDiv.innerHTML = "";
 
   try {
     const response = await fetch(WORKER_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: imgData })
     });
-
     const result = await response.json();
 
-    // Worker'dan gelen hataları yakala
     if (result.error) throw new Error(result.error);
-    if (!result.text) throw new Error("Yapay zeka yanıtı boş döndü. (Worker/API bağlantısını kontrol edin)");
 
-    // Claude metni içinde JSON'u bul ve temizle
     const cleanText = result.text.replace(/```json/g, "").replace(/```/g, "").trim();
-    const jsonMatch = cleanText.match(/\[[\s\S]*\]/s);
-    
-    if (!jsonMatch) throw new Error("Yapay zeka liste formatı oluşturamadı. Gelen yanıt: " + cleanText.substring(0, 60) + "...");
-    
-    const items = JSON.parse(jsonMatch[0]);
-    document.getElementById('stat-badge').innerText = `${items.length} Eşya`;
+    const items = JSON.parse(cleanText.match(/\[.*\]/s)[0]);
 
     items.forEach(item => {
-      // bdo_items.json içinde name_en üzerinden eşleşme ara
       const entry = ITEM_DB ? Object.entries(ITEM_DB.id_to_info).find(([id, info]) => 
         info.name_en.toLowerCase() === item.name.toLowerCase()
       ) : null;
 
       const card = document.createElement('div');
       card.className = 'item-card';
+      const icon = entry ? `https://bdocodex.com${entry[1].icon}` : 'https://bdocodex.com/items/new_icon/03_etc/00007001.png';
       
-      // İkonu belirle (Veritabanında yoksa varsayılan soru işareti ikonu)
-      const iconUrl = entry ? `https://bdocodex.com${entry[1].icon}` : 'https://bdocodex.com/items/new_icon/03_etc/00007001.png';
-      const displayName = entry ? (entry[1].name_tr || entry[1].name_en) : item.name;
-
       card.innerHTML = `
-        <img src="${iconUrl}" class="item-icon" onerror="this.src='https://via.placeholder.com/48?text=?'">
+        <img src="${icon}" class="item-icon">
         <div>
-          <div style="font-weight:600; color:#fff; font-size:1.1rem; line-height:1.2;">${displayName}</div>
-          <div style="color:var(--gold); font-family:'Cinzel', serif; font-size:0.9rem; margin-top:4px;">${item.count.toLocaleString()} ADET</div>
+          <div style="font-weight:bold; color:#fff;">${entry ? (entry[1].name_tr || entry[1].name_en) : item.name}</div>
+          <div style="color:var(--gold);">${item.count.toLocaleString()} ADET</div>
         </div>
       `;
       resDiv.appendChild(card);
     });
-
   } catch (err) {
     alert("HATA: " + err.message);
-    resDiv.innerHTML = `<p style="color:#ff4444; text-align:center; padding:20px; border:1px dashed #ff4444;">Analiz sırasında bir hata oluştu: ${err.message}</p>`;
-    console.error("Detaylı Hata Günlüğü:", err);
   } finally {
     document.getElementById('overlay').style.display = 'none';
-    analyzeBtn.disabled = false;
   }
 };
 </script>
