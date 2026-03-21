@@ -124,7 +124,14 @@
   .ing-name { color: var(--text); }
   .ing-qty { font-size: 0.8rem; white-space: nowrap; }
   .ing-have { color: var(--green); }
-  .ing-need { color: var(--red); }
+  .ing-low  { color: #e8943a; }
+  .ing-missing { color: var(--red); font-weight: 600; }
+  .ing-missing-label { color: var(--red); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.06em; }
+  .ing-req  { color: var(--text-dim); font-size: 0.78rem; }
+  .ing-name-missing { color: var(--red); }
+  .craft-partial { background: rgba(232,148,58,0.15); color: #e8943a; border: 1px solid rgba(232,148,58,0.35); }
+  .card-craftable { border-color: rgba(76,175,118,0.35) !important; }
+  .card-craftable::after { content: ''; position: absolute; inset: 0; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(76,175,118,0.2); pointer-events: none; }
 
   .card-footer-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1rem; border-top: 1px solid var(--border); background: var(--bg-card); }
   .craftable-count { color: var(--gold); font-weight: 600; font-size: 0.85rem; }
@@ -252,16 +259,29 @@ const S = {
     emptyAlchemy:  'Bu malzemelerle eşleşen kimya tarifi bulunamadı.',
     craftable:     n => `${n}× üretilebilir`,
     noMats:        'Eksik malzeme var',
+    badgeMats:     'malzeme mevcut',
+    missingLabel:  'Eksik',
     codexLink:     '→ Codex\'te Gör',
     need:          'gerekli',
     themeLight:    'Aydınlık',
     themeDark:     'Karanlık',
-    imagePrompt: `Bu Black Desert Online depo ekran görüntüsündeki craft malzemelerini listele.
-DAHİL ET: hammaddeler (tahıl, et, balık, sebze, maden, odun, bitki, kan, deri), işlenmiş malzemeler, kimya/aşçılık bileşenleri, tohumlar.
-HARİÇ TUT: silah, zırh, aksesuar, iksir, hazır yemek, kara taş, binek, ekipman.
-MİKTAR KURALI: B veya b = bin (297B = 297000, 103B = 103000). M = milyon. Sadece tam sayı yaz.
-Sadece JSON döndür, başka hiçbir şey yazma:
-{"items":[{"name":"Pirinç","qty":297000},{"name":"Buğday","qty":385}]}`
+    imagePrompt: `Bu Black Desert Online depo ekran görüntüsündeki malzemeleri listele.
+Her ikonun altındaki sayı o malzemenin miktarıdır.
+
+Malzeme isimlerini ve BDO Codex item ID'lerini belirle. Yaygın item ID'leri:
+Tuz=9018, Su=7313, Süt=9065, Şeker=9017, Un=7703, Yumurta=9066,
+Buğday=9001, Mısır=9002, Pirinç=9003, Arpa=9004, Patates=9005,
+Çavdar=9008, Domates=9009, Soğan=9010, Sarımsak=9011, Kabak=9014,
+Yulaf=9078, Esrar=9082, Hindistancevizi=9075, Çilek=9073,
+Kırmızı Et=9021, Balık=7906, Kemik=9270, Deri=9276, Kan=9277,
+Pamuk=7304, Keten=7305, Kıl=7301, Odun=7001, Kereste=7017,
+Demir Parçası=8501, Gümüş Ore=5003, Çiçek=7438, Meyve=7704,
+Tahıl İşlenmiş=7702, Altın İşlenmiş=4003, Gümüş İşlenmiş=4002,
+Kimya Malzemesi=6201, Bitki Tohumu=7101.
+
+MİKTAR: B=bin (297B=297000), M=milyon. Tam sayı yaz.
+Sadece JSON döndür:
+{"items":[{"name":"Pirinç","item_id":9003,"qty":297000},{"name":"Buğday","item_id":9001,"qty":385}]}`
   },
   en: {
     title:         'BDO Storage Analyzer',
@@ -288,16 +308,29 @@ Sadece JSON döndür, başka hiçbir şey yazma:
     emptyAlchemy:  'No matching alchemy recipes found for your materials.',
     craftable:     n => `${n}× craftable`,
     noMats:        'Missing materials',
+    badgeMats:     'mats owned',
+    missingLabel:  'Missing',
     codexLink:     '→ View on Codex',
     need:          'needed',
     themeLight:    'Light Mode',
     themeDark:     'Dark Mode',
-    imagePrompt: `List the craft materials from this Black Desert Online storage screenshot.
-INCLUDE: raw materials (grain, meat, fish, vegetables, ore, timber, plants, blood, hide), processed materials, cooking/alchemy ingredients, seeds.
-EXCLUDE: weapons, armor, accessories, potions, ready food, black stones, mounts, equipment.
-QUANTITY RULE: B or b = thousands (297B = 297000, 103B = 103000). M = millions. Write full integer only.
-Return ONLY JSON, nothing else:
-{"items":[{"name":"Wheat","qty":297000},{"name":"Corn","qty":385}]}`
+    imagePrompt: `List the materials from this Black Desert Online storage screenshot.
+The number under each icon is the quantity of that material.
+
+Identify material names and BDO Codex item IDs. Common item IDs:
+Salt=9018, Water=7313, Milk=9065, Sugar=9017, Flour=7703, Egg=9066,
+Wheat=9001, Corn=9002, Rice=9003, Barley=9004, Potato=9005,
+Rye=9008, Tomato=9009, Onion=9010, Garlic=9011, Pumpkin=9014,
+Oat=9078, Hops=9082, Coconut=9075, Strawberry=9073,
+Red Meat=9021, Fish=7906, Bone=9270, Hide=9276, Blood=9277,
+Cotton=7304, Flax=7305, Wool=7301, Log=7001, Plywood=7017,
+Iron Shard=8501, Silver Ore=5003, Flower=7438, Fruit=7704,
+Processed Grain=7702, Processed Gold=4003, Processed Silver=4002,
+Hops=6201, Plant Seed=7101.
+
+QUANTITY: B=thousands (297B=297000), M=millions. Write full integer.
+Return ONLY JSON:
+{"items":[{"name":"Rice","item_id":9003,"qty":297000},{"name":"Wheat","item_id":9001,"qty":385}]}`
   }
 };
 
@@ -570,10 +603,12 @@ function parseCodexRow(row) {
 
 // ── STEP 4: Match recipes to inventory ───────────────────────────────────
 function matchRecipes(recipes, inv) {
-  // Build TWO lookups: by name (tr & en, lowercase) AND by item id if possible
+  // Build TWO lookups: by item_id (from AI) AND by name (lowercase)
+  const idMap   = {};
   const nameMap = {};
   inv.forEach(i => {
     nameMap[i.name.toLowerCase().trim()] = i.qty;
+    if (i.item_id) idMap[i.item_id] = i.qty;
   });
 
   const out = [];
@@ -588,23 +623,22 @@ function matchRecipes(recipes, inv) {
 
     r.ingredientIds.forEach((itemId, idx) => {
       const reqQty = r.quantities[idx] || 1;
-
-      // Get item name from lookup table (both tr and en)
       const names  = ITEM_NAMES[itemId];
       const trName = names ? names[0] : null;
       const enName = names ? names[1] : null;
+      const displayName = lang === 'tr' ? (trName || `Item ${itemId}`) : (enName || `Item ${itemId}`);
 
-      // Try to find in inventory by tr name, en name, or ID
-      let have = 0;
-      if (trName) have = nameMap[trName.toLowerCase()] || 0;
+      // Priority: 1) item_id match, 2) tr name match, 3) en name match, 4) fuzzy
+      let have = idMap[itemId] || 0;
+      if (!have && trName) have = nameMap[trName.toLowerCase()] || 0;
       if (!have && enName) have = nameMap[enName.toLowerCase()] || 0;
-      // Fuzzy: check if any inv item contains the name
       if (!have && trName) {
-        const key = Object.keys(nameMap).find(k => k.includes(trName.toLowerCase()) || trName.toLowerCase().includes(k));
+        const key = Object.keys(nameMap).find(k =>
+          k.includes(trName.toLowerCase()) || trName.toLowerCase().includes(k)
+        );
         if (key) have = nameMap[key];
       }
 
-      const displayName = lang === 'tr' ? (trName || `Item ${itemId}`) : (enName || `Item ${itemId}`);
       if (have > 0) hasAny = true;
       const possible = have >= reqQty ? Math.floor(have / reqQty) : 0;
       if (possible < canCraft) canCraft = possible;
@@ -613,6 +647,10 @@ function matchRecipes(recipes, inv) {
 
     if (!hasAny || !parsed.length) continue;
 
+    // Count how many unique ingredients user has
+    const haveCount = parsed.filter(i => i.have > 0).length;
+    const totalCount = parsed.length;
+
     out.push({
       id:          r.id,
       name:        r.name,
@@ -620,12 +658,18 @@ function matchRecipes(recipes, inv) {
       skillLevel:  r.skillLevel,
       ingredients: parsed,
       craftable:   canCraft === Infinity ? 0 : canCraft,
-      hasAll:      canCraft > 0
+      hasAll:      canCraft > 0,
+      haveCount,
+      totalCount
     });
   }
 
+  // Sort: fully craftable first, then by % of ingredients owned desc
   return out.sort((a, b) => {
     if (a.hasAll !== b.hasAll) return a.hasAll ? -1 : 1;
+    const aPct = a.haveCount / a.totalCount;
+    const bPct = b.haveCount / b.totalCount;
+    if (bPct !== aPct) return bPct - aPct;
     return b.craftable - a.craftable;
   });
 }
@@ -646,26 +690,45 @@ function renderCard(r) {
   const cl   = lang === 'tr' ? 'tr' : 'us';
   const href = r.id ? `https://bdocodex.com/${cl}/recipe/${r.id}/` : '#';
   const iconHtml = r.icon ? `<img class="recipe-icon" src="${ICON_BASE}${r.icon}" alt="" onerror="this.style.display='none'">` : '';
-  const badge = r.hasAll
-    ? `<span class="craft-badge craft-yes">${s.craftable(r.craftable)}</span>`
-    : `<span class="craft-badge craft-no">${s.noMats}</span>`;
+
+  // Badge
+  let badge;
+  if (r.hasAll) {
+    badge = `<span class="craft-badge craft-yes">${s.craftable(r.craftable)}</span>`;
+  } else {
+    const missing = r.totalCount - r.haveCount;
+    badge = `<span class="craft-badge craft-partial">${r.haveCount}/${r.totalCount} ${s.badgeMats}</span>`;
+  }
 
   const rows = r.ingredients.map(i => {
-    const cls = i.have === 0 ? 'ing-need' : i.have >= i.required ? 'ing-have' : 'ing-need';
+    let cls, qtyText;
+    if (i.have === 0) {
+      // Completely missing — red + "eksik"
+      cls     = 'ing-missing';
+      qtyText = `<span class="ing-missing-label">${s.missingLabel}</span> <span class="ing-req">(${i.required} ${s.need})</span>`;
+    } else if (i.have >= i.required) {
+      // Enough — green
+      cls     = 'ing-have';
+      qtyText = `${i.have.toLocaleString()} / ${i.required} ${s.need}`;
+    } else {
+      // Partial — orange
+      cls     = 'ing-low';
+      qtyText = `${i.have.toLocaleString()} / ${i.required} ${s.need}`;
+    }
     return `<div class="ingredient-row">
-      <span class="ing-name">${i.name}</span>
-      <span class="ing-qty ${cls}">${i.have.toLocaleString()} / ${i.required} ${s.need}</span>
+      <span class="ing-name ${i.have === 0 ? 'ing-name-missing' : ''}">${i.name}</span>
+      <span class="ing-qty ${cls}">${qtyText}</span>
     </div>`;
   }).join('');
 
-  return `<div class="recipe-card">
+  return `<div class="recipe-card ${r.hasAll ? 'card-craftable' : ''}">
     <div class="recipe-card-header">${iconHtml}<div class="recipe-name">${r.name}</div>${badge}</div>
     <div class="recipe-card-body">
       ${r.skillLevel ? `<div class="skill-level">${r.skillLevel}</div>` : ''}
       <div>${rows}</div>
     </div>
     <div class="card-footer-row">
-      <span class="craftable-count">${r.hasAll ? s.craftable(r.craftable) : s.noMats}</span>
+      <span class="craftable-count">${r.hasAll ? s.craftable(r.craftable) : `${r.haveCount}/${r.totalCount} ${s.badgeMats}`}</span>
       <a class="codex-link" href="${href}" target="_blank">${s.codexLink}</a>
     </div>
   </div>`;
