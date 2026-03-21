@@ -137,6 +137,12 @@
   .craft-partial { background: rgba(232,148,58,0.15); color: #e8943a; border: 1px solid rgba(232,148,58,0.35); }
   .card-craftable { border-color: rgba(76,175,118,0.35) !important; }
   .card-craftable::after { content: ''; position: absolute; inset: 0; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(76,175,118,0.2); pointer-events: none; }
+  .recipe-station { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.6rem; opacity: 0.8; }
+  .ingredients-list { display: flex; flex-direction: column; }
+  .craftable-big { display: flex; align-items: baseline; gap: 0.4rem; }
+  .craftable-num { font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--green); font-weight: 700; }
+  .craftable-num-red { font-family: 'Cinzel', serif; font-size: 1rem; color: #e8943a; font-weight: 700; }
+  .craftable-label { font-size: 0.8rem; color: var(--text-dim); }
 
   .card-footer-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1rem; border-top: 1px solid var(--border); background: var(--bg-card); }
   .craftable-count { color: var(--gold); font-weight: 600; font-size: 0.85rem; }
@@ -269,6 +275,7 @@ const S = {
     emptyCulinary: 'Bu malzemelerle eşleşen aşçılık tarifi bulunamadı.',
     emptyAlchemy:  'Bu malzemelerle eşleşen kimya tarifi bulunamadı.',
     craftable:     n => `${n}× üretilebilir`,
+    craftableLabel:'üretilebilir',
     noMats:        'Eksik malzeme var',
     badgeMats:     'malzeme mevcut',
     missingLabel:  'Eksik',
@@ -320,6 +327,7 @@ Sadece JSON döndür:
     emptyCulinary: 'No matching cooking recipes found for your materials.',
     emptyAlchemy:  'No matching alchemy recipes found for your materials.',
     craftable:     n => `${n}× craftable`,
+    craftableLabel:'craftable',
     noMats:        'Missing materials',
     badgeMats:     'mats owned',
     missingLabel:  'Missing',
@@ -618,15 +626,53 @@ function parseCodexRow(row) {
   return { id, name, icon, skillLevel, ingredientIds, quantities };
 }
 
+// ── ITEM NAME CACHE + FETCH ───────────────────────────────────────────────
+const itemNameCache = {}; // id → {tr, en}
+
+async function resolveItemName(itemId) {
+  if (itemNameCache[itemId]) return itemNameCache[itemId];
+  if (ITEM_NAMES[itemId]) {
+    itemNameCache[itemId] = { tr: ITEM_NAMES[itemId][0], en: ITEM_NAMES[itemId][1] };
+    return itemNameCache[itemId];
+  }
+  try {
+    const l    = lang === 'tr' ? 'tr' : 'us';
+    const resp = await fetch(`${CODEX_PROXY.replace('/codex','')}/item?id=${itemId}&l=${l}`);
+    const data = await resp.json();
+    // Codex returns { "0": { ... } } or array
+    const row  = data['0'] || (Array.isArray(data) ? data[0] : null);
+    const name = row?.name || row?.localName || null;
+    if (name) {
+      itemNameCache[itemId] = { tr: name, en: name };
+      return itemNameCache[itemId];
+    }
+  } catch(e) {}
+  return null;
+}
+
 // ── STEP 4: Match recipes to inventory ───────────────────────────────────
-function matchRecipes(recipes, inv) {
-  // Build TWO lookups: by item_id (from AI) AND by name (lowercase)
+async function matchRecipesAsync(recipes, inv) {
   const idMap   = {};
   const nameMap = {};
   inv.forEach(i => {
     nameMap[i.name.toLowerCase().trim()] = i.qty;
     if (i.item_id) idMap[i.item_id] = i.qty;
   });
+
+  // Collect all unknown item IDs first, fetch names in parallel
+  const unknownIds = new Set();
+  for (const row of recipes) {
+    const idStr = row[9] || '[]';
+    let ids = [];
+    try { ids = JSON.parse(idStr); } catch(e) {}
+    ids.forEach(id => { if (!ITEM_NAMES[id] && !itemNameCache[id]) unknownIds.add(id); });
+  }
+
+  // Fetch unknown names in batches of 10
+  const unknownArr = [...unknownIds];
+  for (let i = 0; i < unknownArr.length; i += 10) {
+    await Promise.all(unknownArr.slice(i, i + 10).map(id => resolveItemName(id)));
+  }
 
   const out = [];
 
@@ -639,13 +685,14 @@ function matchRecipes(recipes, inv) {
     const parsed = [];
 
     r.ingredientIds.forEach((itemId, idx) => {
-      const reqQty = r.quantities[idx] || 1;
-      const names  = ITEM_NAMES[itemId];
-      const trName = names ? names[0] : null;
-      const enName = names ? names[1] : null;
-      const displayName = lang === 'tr' ? (trName || `Item ${itemId}`) : (enName || `Item ${itemId}`);
+      const reqQty  = r.quantities[idx] || 1;
+      const names   = ITEM_NAMES[itemId] || (itemNameCache[itemId] ? [itemNameCache[itemId].tr, itemNameCache[itemId].en] : null);
+      const trName  = names ? names[0] : null;
+      const enName  = names ? names[1] : null;
+      const displayName = lang === 'tr'
+        ? (trName || (itemNameCache[itemId]?.tr) || `Item ${itemId}`)
+        : (enName || (itemNameCache[itemId]?.en) || `Item ${itemId}`);
 
-      // Priority: 1) item_id match, 2) tr name match, 3) en name match, 4) fuzzy
       let have = idMap[itemId] || 0;
       if (!have && trName) have = nameMap[trName.toLowerCase()] || 0;
       if (!have && enName) have = nameMap[enName.toLowerCase()] || 0;
@@ -659,13 +706,12 @@ function matchRecipes(recipes, inv) {
       if (have > 0) hasAny = true;
       const possible = have >= reqQty ? Math.floor(have / reqQty) : 0;
       if (possible < canCraft) canCraft = possible;
-      parsed.push({ name: displayName, required: reqQty, have });
+      parsed.push({ name: displayName, required: reqQty, have, itemId });
     });
 
     if (!hasAny || !parsed.length) continue;
 
-    // Count how many unique ingredients user has
-    const haveCount = parsed.filter(i => i.have > 0).length;
+    const haveCount  = parsed.filter(i => i.have > 0).length;
     const totalCount = parsed.length;
 
     out.push({
@@ -681,7 +727,6 @@ function matchRecipes(recipes, inv) {
     });
   }
 
-  // Sort: fully craftable first, then by % of ingredients owned desc
   return out.sort((a, b) => {
     if (a.hasAll !== b.hasAll) return a.hasAll ? -1 : 1;
     const aPct = a.haveCount / a.totalCount;
@@ -708,27 +753,19 @@ function renderCard(r) {
   const href = r.id ? `https://bdocodex.com/${cl}/recipe/${r.id}/` : '#';
   const iconHtml = r.icon ? `<img class="recipe-icon" src="${ICON_BASE}${r.icon}" alt="" onerror="this.style.display='none'">` : '';
 
-  // Badge
-  let badge;
-  if (r.hasAll) {
-    badge = `<span class="craft-badge craft-yes">${s.craftable(r.craftable)}</span>`;
-  } else {
-    const missing = r.totalCount - r.haveCount;
-    badge = `<span class="craft-badge craft-partial">${r.haveCount}/${r.totalCount} ${s.badgeMats}</span>`;
-  }
+  const badge = r.hasAll
+    ? `<span class="craft-badge craft-yes">★ ${s.craftable(r.craftable)}</span>`
+    : `<span class="craft-badge craft-partial">${r.haveCount}/${r.totalCount} ${s.badgeMats}</span>`;
 
   const rows = r.ingredients.map(i => {
     let cls, qtyText;
     if (i.have === 0) {
-      // Completely missing — red + "eksik"
       cls     = 'ing-missing';
       qtyText = `<span class="ing-missing-label">${s.missingLabel}</span> <span class="ing-req">(${i.required} ${s.need})</span>`;
     } else if (i.have >= i.required) {
-      // Enough — green
       cls     = 'ing-have';
       qtyText = `${i.have.toLocaleString()} / ${i.required} ${s.need}`;
     } else {
-      // Partial — orange
       cls     = 'ing-low';
       qtyText = `${i.have.toLocaleString()} / ${i.required} ${s.need}`;
     }
@@ -738,14 +775,32 @@ function renderCard(r) {
     </div>`;
   }).join('');
 
+  const craftStation = r.type === 'culinary'
+    ? (lang === 'tr' ? 'Aşçılık Tezgahı' : 'Cooking Utensil')
+    : (lang === 'tr' ? 'Kimya Tezgahı' : 'Alchemy Tool');
+
+  const stationLine = `<div class="recipe-station">
+    🏠 ${r.skillLevel || ''} · ${craftStation}
+  </div>`;
+
+  const craftableFooter = r.hasAll
+    ? `<div class="craftable-big">
+        <span class="craftable-num">${r.craftable.toLocaleString()}×</span>
+        <span class="craftable-label">${s.craftableLabel}</span>
+      </div>`
+    : `<div class="craftable-big missing-big">
+        <span class="craftable-num-red">${r.haveCount}/${r.totalCount}</span>
+        <span class="craftable-label">${s.badgeMats}</span>
+      </div>`;
+
   return `<div class="recipe-card ${r.hasAll ? 'card-craftable' : ''}">
     <div class="recipe-card-header">${iconHtml}<div class="recipe-name">${r.name}</div>${badge}</div>
     <div class="recipe-card-body">
-      ${r.skillLevel ? `<div class="skill-level">${r.skillLevel}</div>` : ''}
-      <div>${rows}</div>
+      ${stationLine}
+      <div class="ingredients-list">${rows}</div>
     </div>
     <div class="card-footer-row">
-      <span class="craftable-count">${r.hasAll ? s.craftable(r.craftable) : `${r.haveCount}/${r.totalCount} ${s.badgeMats}`}</span>
+      ${craftableFooter}
       <a class="codex-link" href="${href}" target="_blank">${s.codexLink}</a>
     </div>
   </div>`;
@@ -786,8 +841,12 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
       fetchCodexRecipes('alchemy')
     ]);
 
-    cachedCulinary = matchRecipes(culRaw, inventory);
-    cachedAlchemy  = matchRecipes(alcRaw, inventory);
+    setStatus('reading', lang === 'tr' ? 'İsimler çözümleniyor...' : 'Resolving item names...');
+
+    cachedCulinary = await matchRecipesAsync(culRaw.map(r => ({...r, _type:'culinary'})), inventory);
+    cachedAlchemy  = await matchRecipesAsync(alcRaw.map(r => ({...r, _type:'alchemy'})),  inventory);
+    cachedCulinary.forEach(r => r.type = 'culinary');
+    cachedAlchemy.forEach(r  => r.type = 'alchemy');
 
     hideLoading();
     setStatus('done', s.statusDone(inventory.length));
