@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>BDO Depo Analiz Sistemi</title>
+<title>BDO Storage Analyzer</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Crimson+Pro:wght@400;600&display=swap');
   :root { --gold: #c9a84c; --bg: #0a0806; --panel: #12100c; --text: #d4c9a8; --border: #3d3020; }
@@ -41,14 +41,13 @@
   </div>
 </div>
 
-<div id="loading">KARA RUH ANALİZ EDİYOR...</div>
+<div id="loading">KARA RUH OKUYOR...</div>
 
 <script>
 const WORKER_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/'; 
 let ITEM_DB = null;
 
-// bdo_items.json yükle
-fetch('bdo_items.json').then(r => r.json()).then(data => ITEM_DB = data);
+fetch('bdo_items.json').then(r => r.json()).then(data => ITEM_DB = data).catch(e => console.error("DB yüklenemedi"));
 
 const fileInput = document.createElement('input'); 
 fileInput.type = 'file';
@@ -64,7 +63,6 @@ fileInput.onchange = (e) => {
   reader.readAsDataURL(e.target.files[0]);
 };
 
-// ANALİZ BUTONU FONKSİYONU
 document.getElementById('analyze-btn').onclick = async () => {
   const imgBase64 = document.getElementById('preview').src.split(',')[1];
   document.getElementById('loading').style.display = 'flex';
@@ -80,8 +78,9 @@ document.getElementById('analyze-btn').onclick = async () => {
     const result = await response.json();
     if (result.error) throw new Error(result.error);
 
-    // Yanıtın içindeki JSON listesini bul
-    const items = JSON.parse(result.text.match(/\[.*\]/s)[0]);
+    const jsonMatch = result.text.match(/\[.*\]/s);
+    if (!jsonMatch) throw new Error("JSON formatı bulunamadı.");
+    const items = JSON.parse(jsonMatch[0]);
 
     items.forEach(item => {
       const entry = ITEM_DB ? Object.entries(ITEM_DB.id_to_info).find(([id, info]) => 
@@ -102,7 +101,7 @@ document.getElementById('analyze-btn').onclick = async () => {
       listDiv.appendChild(card);
     });
   } catch (err) {
-    alert("HATA: " + err.message);
+    alert("HATA DETAYI:\n" + err.message);
   } finally {
     document.getElementById('loading').style.display = 'none';
   }
