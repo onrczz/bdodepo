@@ -603,7 +603,7 @@ async function buildIconHashDB() {
           resolve();
         };
         img.onerror = () => { done++; resolve(); };
-        img.src = 'https://bdocodex.com' + info.icon;
+        img.src = `https://bdo-api-proxy.onurcilhoroz.workers.dev/icon?path=${encodeURIComponent(info.icon)}`;
       });
     }));
     hashBuildProgress = Math.round(done / total * 100);
