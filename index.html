@@ -25,54 +25,41 @@
 <div class="container">
   <header><h1>BDO STORAGE ANALYZER</h1></header>
   <div class="upload-box" id="drop-zone">
-    <div style="font-size: 40px;">📦</div>
-    <h3>Depo Görseli Yükle</h3>
-    <p>Tıkla veya sürükle bırak</p>
-    <input type="file" id="file-input" hidden accept="image/*">
+    <h3>📦 Görsel Yükle (Tıkla veya Sürükle)</h3>
   </div>
 
   <div class="main-layout" id="app-wrap">
     <div>
-      <div style="border: 1px solid var(--gold); padding: 5px; background: #000; margin-bottom: 15px;">
-        <img id="img-preview" style="width:100%; display: block;">
-      </div>
+      <img id="img-preview" style="width:100%; border: 1px solid var(--gold); margin-bottom: 15px;">
       <button class="btn" id="analyze-btn">⚔ ANALİZİ BAŞLAT</button>
       <button class="btn" style="background:#222; color:#888;" onclick="location.reload()">↩ YENİ RESİM</button>
     </div>
     <div>
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px;">
-        <h3 style="font-family:'Cinzel'; color:var(--gold); margin:0;">TESPİT EDİLENLER</h3>
-        <span id="stat-badge" style="font-size:0.8rem; background: #3d3020; padding: 2px 8px; border-radius: 10px; color: var(--gold);">0 Eşya</span>
-      </div>
+      <h3 style="font-family:'Cinzel'; color:var(--gold);">TESPİT EDİLENLER</h3>
       <div class="items-scroll" id="results"></div>
     </div>
   </div>
 </div>
 
 <div id="overlay">
-  <div style="width: 50px; height: 50px; border: 4px solid #3d3020; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-  <p style="margin-top: 20px; letter-spacing: 3px;">ANALİZ EDİLİYOR...</p>
+  <p>KARA RUH ANALİZ EDİYOR...</p>
 </div>
-
-<style> @keyframes spin { to { transform: rotate(360deg); } } </style>
 
 <script>
 const WORKER_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/'; 
 let ITEM_DB = null;
 
-// Veritabanını yükle
-fetch('bdo_items.json').then(r => r.json()).then(data => ITEM_DB = data);
+fetch('bdo_items.json').then(r => r.json()).then(data => ITEM_DB = data).catch(e => console.error("JSON Hatası"));
 
-const fInput = document.getElementById('file-input');
-const dZone = document.getElementById('drop-zone');
+const fInput = document.createElement('input'); fInput.type = 'file';
+document.getElementById('drop-zone').onclick = () => fInput.click();
 
-dZone.onclick = () => fInput.click();
 fInput.onchange = (e) => {
   const reader = new FileReader();
   reader.onload = (ev) => {
     document.getElementById('img-preview').src = ev.target.result;
     document.getElementById('app-wrap').classList.add('visible');
-    dZone.style.display = 'none';
+    document.getElementById('drop-zone').style.display = 'none';
   };
   reader.readAsDataURL(e.target.files[0]);
 };
@@ -91,14 +78,9 @@ document.getElementById('analyze-btn').onclick = async () => {
     const result = await response.json();
 
     if (result.error) throw new Error(result.error);
-    if (!result.text) throw new Error("Yapay zeka yanıtı boş.");
-
-    const cleanText = result.text.replace(/```json/g, "").replace(/```/g, "").trim();
-    const jsonMatch = cleanText.match(/\[.*\]/s);
-    if (!jsonMatch) throw new Error("Liste formatı bulunamadı.");
     
-    const items = JSON.parse(jsonMatch[0]);
-    document.getElementById('stat-badge').innerText = `${items.length} Eşya`;
+    const cleanText = result.text.replace(/```json/g, "").replace(/```/g, "").trim();
+    const items = JSON.parse(cleanText.match(/\[.*\]/s)[0]);
 
     items.forEach(item => {
       const entry = ITEM_DB ? Object.entries(ITEM_DB.id_to_info).find(([id, info]) => 
@@ -110,10 +92,10 @@ document.getElementById('analyze-btn').onclick = async () => {
       const icon = entry ? `https://bdocodex.com${entry[1].icon}` : 'https://bdocodex.com/items/new_icon/03_etc/00007001.png';
       
       card.innerHTML = `
-        <img src="${icon}" class="item-icon" onerror="this.src='https://via.placeholder.com/48?text=?'">
+        <img src="${icon}" class="item-icon">
         <div>
-          <div style="font-weight:bold; color:#fff; font-size:1.1rem;">${entry ? (entry[1].name_tr || entry[1].name_en) : item.name}</div>
-          <div style="color:var(--gold); font-family:'Cinzel';">${item.count.toLocaleString()} ADET</div>
+          <div style="font-weight:bold; color:#fff;">${entry ? (entry[1].name_tr || entry[1].name_en) : item.name}</div>
+          <div style="color:var(--gold);">${item.count.toLocaleString()} ADET</div>
         </div>
       `;
       resDiv.appendChild(card);
