@@ -23,18 +23,15 @@
 
 <div class="container">
   <header><h1>BDO STORAGE ANALYZER</h1></header>
-  
-  <div class="upload-area" id="drop-zone">
-    <h3>📦 DEPO GÖRSELİNİ BURAYA BIRAKIN VEYA TIKLAYIN</h3>
-  </div>
+  <div class="upload-area" id="drop-zone"><h3>📦 GÖRSELİ BURAYA BIRAKIN VEYA TIKLAYIN</h3></div>
 
   <div class="main-content" id="layout">
-    <div id="sidebar">
+    <div>
       <img id="preview" style="width:100%; border: 1px solid var(--gold);">
       <button class="btn" id="analyze-btn">⚔ ANALİZİ BAŞLAT</button>
       <button class="btn" style="background:#222; color:#888;" onclick="location.reload()">↩ YENİ GÖRSEL</button>
     </div>
-    <div id="results-panel">
+    <div>
       <h3 style="font-family:'Cinzel'; color:var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 5px;">BULUNAN EŞYALAR</h3>
       <div id="items-list"></div>
     </div>
@@ -49,8 +46,7 @@ let ITEM_DB = null;
 
 fetch('bdo_items.json').then(r => r.json()).then(data => ITEM_DB = data).catch(e => console.error("DB yüklenemedi"));
 
-const fileInput = document.createElement('input'); 
-fileInput.type = 'file';
+const fileInput = document.createElement('input'); fileInput.type = 'file';
 document.getElementById('drop-zone').onclick = () => fileInput.click();
 
 fileInput.onchange = (e) => {
@@ -70,11 +66,7 @@ document.getElementById('analyze-btn').onclick = async () => {
   listDiv.innerHTML = "";
 
   try {
-    const response = await fetch(WORKER_URL, {
-      method: 'POST',
-      body: JSON.stringify({ image: imgBase64 })
-    });
-    
+    const response = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ image: imgBase64 }) });
     const result = await response.json();
     if (result.error) throw new Error(result.error);
 
@@ -83,28 +75,19 @@ document.getElementById('analyze-btn').onclick = async () => {
     const items = JSON.parse(jsonMatch[0]);
 
     items.forEach(item => {
-      const entry = ITEM_DB ? Object.entries(ITEM_DB.id_to_info).find(([id, info]) => 
-        info.name_en.toLowerCase() === item.name.toLowerCase()
-      ) : null;
-
+      const entry = ITEM_DB ? Object.entries(ITEM_DB.id_to_info).find(([id, info]) => info.name_en.toLowerCase() === item.name.toLowerCase()) : null;
       const card = document.createElement('div');
       card.className = 'item-card';
       const icon = entry ? `https://bdocodex.com${entry[1].icon}` : 'https://bdocodex.com/items/new_icon/03_etc/00007001.png';
       
-      card.innerHTML = `
-        <img src="${icon}" class="item-icon">
+      card.innerHTML = `<img src="${icon}" class="item-icon">
         <div>
           <div style="font-weight:bold; color:#fff;">${entry ? (entry[1].name_tr || entry[1].name_en) : item.name}</div>
           <div style="color:var(--gold); font-family:'Cinzel';">${item.count.toLocaleString()} ADET</div>
-        </div>
-      `;
+        </div>`;
       listDiv.appendChild(card);
     });
-  } catch (err) {
-    alert("HATA DETAYI:\n" + err.message);
-  } finally {
-    document.getElementById('loading').style.display = 'none';
-  }
+  } catch (err) { alert(err.message); } finally { document.getElementById('loading').style.display = 'none'; }
 };
 </script>
 </body>
