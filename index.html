@@ -7,7 +7,6 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap');
 
-  /* ── DARK MODE (default) ── */
   :root {
     --gold: #c9a84c; --gold-light: #e8c97a; --gold-dark: #8a6a1e;
     --bg-deep: #0a0806; --bg-panel: #12100c; --bg-card: #1a1610; --bg-hover: #221e16;
@@ -17,7 +16,6 @@
     --shadow: rgba(0,0,0,0.4);
   }
 
-  /* ── LIGHT MODE ── */
   body.light {
     --gold: #8a5e10; --gold-light: #6b4a0e; --gold-dark: #c9a84c;
     --bg-deep: #f5f0e8; --bg-panel: #fffdf7; --bg-card: #f0ebe0; --bg-hover: #e8e0d0;
@@ -32,26 +30,17 @@
   body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(76,138,201,0.03) 0%, transparent 50%); pointer-events: none; z-index: 0; }
   .container { max-width: 1100px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; }
 
-  /* ── HEADER ── */
   header { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--border-gold); margin-bottom: 2rem; }
   .logo-line { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 0.4rem; }
   h1 { font-family: 'Cinzel', serif; font-size: 2rem; color: var(--gold); letter-spacing: 0.1em; }
   .subtitle { color: var(--text-dim); font-size: 1rem; font-style: italic; margin-bottom: 1rem; }
-
   .header-controls { display: flex; gap: 0.5rem; justify-content: center; align-items: center; margin-top: 0.8rem; flex-wrap: wrap; }
-
-  .lang-btn, .theme-btn {
-    font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.06em;
-    padding: 0.4rem 1rem; border-radius: 2px; border: 1px solid var(--border-gold);
-    background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.2s;
-  }
+  .lang-btn, .theme-btn { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.06em; padding: 0.4rem 1rem; border-radius: 2px; border: 1px solid var(--border-gold); background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
   .lang-btn:hover, .theme-btn:hover { border-color: var(--gold); color: var(--gold); }
   .lang-btn.active { background: var(--gold-dark); border-color: var(--gold); color: var(--gold-light); }
-  .theme-btn { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
-
+  .theme-btn { padding: 0.4rem 0.8rem; }
   .divider-btn { width: 1px; height: 20px; background: var(--border-gold); margin: 0 0.2rem; }
 
-  /* ── UPLOAD ── */
   .upload-zone { border: 2px dashed var(--border-gold); border-radius: 4px; padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--bg-panel); }
   .upload-zone:hover, .upload-zone.drag-over { border-color: var(--gold); background: var(--bg-card); }
   .upload-icon { font-size: 3rem; display: block; margin-bottom: 1rem; animation: float 3s ease-in-out infinite; }
@@ -60,7 +49,6 @@
   .upload-zone p { color: var(--text-dim); }
   #file-input { display: none; }
 
-  /* ── PREVIEW ── */
   .preview-section { display: none; gap: 1.5rem; margin-top: 1.5rem; }
   .preview-section.visible { display: grid; grid-template-columns: 300px 1fr; }
   .preview-card { background: var(--bg-panel); border: 1px solid var(--border-gold); border-radius: 4px; overflow: hidden; }
@@ -75,7 +63,6 @@
   .btn-secondary { background: transparent; border: 1px solid var(--border-gold); color: var(--text-dim); }
   .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
 
-  /* ── STATUS PANEL ── */
   .ai-panel { background: var(--bg-panel); border: 1px solid var(--border-gold); border-radius: 4px; padding: 1.2rem 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
   .ai-panel-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; display: flex; align-items: center; gap: 0.6rem; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; transition: background 0.3s; }
@@ -105,13 +92,11 @@
   .btn-inline-add { border-color: var(--green); color: var(--green); }
   .btn-inline-add:hover { background: rgba(76,175,118,0.1); }
 
-  /* ── RESULTS ── */
   .results-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-gold); flex-wrap: wrap; gap: 0.8rem; }
   .results-header { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.1rem; letter-spacing: 0.08em; margin: 0; padding: 0; border: none; }
   .export-btns { display: flex; gap: 0.5rem; }
   .btn-export { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.06em; padding: 0.4rem 0.9rem; border-radius: 2px; border: 1px solid var(--border-gold); background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
   .btn-export:hover { border-color: var(--gold); color: var(--gold); background: var(--bg-card); }
-
   #results-section { margin-top: 2.5rem; display: none; }
   #results-section.visible { display: block; }
 
@@ -124,22 +109,18 @@
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  /* ── RECIPE CARDS ── */
   .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
   .recipe-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: all 0.25s; position: relative; box-shadow: 0 2px 8px var(--shadow); }
   .recipe-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0; transition: opacity 0.3s; }
   .recipe-card:hover { border-color: var(--border-gold); transform: translateY(-2px); box-shadow: 0 4px 16px var(--shadow); }
   .recipe-card:hover::before { opacity: 1; }
-
   .recipe-card-header { padding: 0.8rem 1rem; display: flex; align-items: center; gap: 0.8rem; border-bottom: 1px solid var(--border); }
   .recipe-icon { width: 36px; height: 36px; border-radius: 3px; border: 1px solid var(--border); flex-shrink: 0; }
   .recipe-name { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--text-bright); line-height: 1.4; flex: 1; }
   .craft-badge { font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 2px; white-space: nowrap; flex-shrink: 0; }
   .craft-yes { background: rgba(76,175,118,0.15); color: var(--green); border: 1px solid rgba(76,175,118,0.3); }
-  .craft-no { background: rgba(201,92,76,0.12); color: var(--red); border: 1px solid rgba(201,92,76,0.25); }
-
+  .craft-partial { background: rgba(232,148,58,0.15); color: #e8943a; border: 1px solid rgba(232,148,58,0.35); }
   .recipe-card-body { padding: 0.8rem 1rem; }
-  .skill-level { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.5rem; }
   .ingredient-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.87rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border); }
   .ingredient-row:last-child { border-bottom: none; }
   .ing-name { color: var(--text); }
@@ -150,24 +131,18 @@
   .ing-missing-label { color: var(--red); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.06em; }
   .ing-req  { color: var(--text-dim); font-size: 0.78rem; }
   .ing-name-missing { color: var(--red); }
-  .craft-partial { background: rgba(232,148,58,0.15); color: #e8943a; border: 1px solid rgba(232,148,58,0.35); }
   .card-craftable { border-color: rgba(76,175,118,0.35) !important; }
   .card-craftable::after { content: ''; position: absolute; inset: 0; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(76,175,118,0.2); pointer-events: none; }
   .recipe-station { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.6rem; opacity: 0.8; }
-  .ingredients-list { display: flex; flex-direction: column; }
   .craftable-big { display: flex; align-items: baseline; gap: 0.4rem; }
   .craftable-num { font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--green); font-weight: 700; }
   .craftable-num-red { font-family: 'Cinzel', serif; font-size: 1rem; color: #e8943a; font-weight: 700; }
   .craftable-label { font-size: 0.8rem; color: var(--text-dim); }
-
   .card-footer-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1rem; border-top: 1px solid var(--border); background: var(--bg-card); }
-  .craftable-count { color: var(--gold); font-weight: 600; font-size: 0.85rem; }
   .codex-link { font-size: 0.78rem; color: var(--gold); text-decoration: none; opacity: 0.7; }
   .codex-link:hover { opacity: 1; text-decoration: underline; }
-
   .empty-state { text-align: center; padding: 3rem; color: var(--text-dim); font-style: italic; }
 
-  /* ── LOADING ── */
   .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(10,8,6,0.85); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 1.5rem; }
   body.light .loading-overlay { background: rgba(245,240,232,0.88); }
   .loading-overlay.visible { display: flex; }
@@ -175,16 +150,8 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1rem; letter-spacing: 0.1em; text-align: center; }
   .loading-sub { color: var(--text-dim); font-size: 0.9rem; font-style: italic; }
-
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg-deep); }
-  ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
-
-  @media (max-width: 700px) {
-    .preview-section.visible { grid-template-columns: 1fr; }
-    .recipe-grid { grid-template-columns: 1fr; }
-    h1 { font-size: 1.4rem; }
-  }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-deep); } ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+  @media (max-width: 700px) { .preview-section.visible { grid-template-columns: 1fr; } .recipe-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
 </style>
 </head>
 <body>
@@ -238,7 +205,7 @@
         </div>
         <div class="items-grid" id="items-grid"></div>
         <div id="find-recipes-row" style="display:none;margin-top:0.8rem;">
-          <button class="btn btn-primary" id="find-recipes-btn" onclick="findRecipes()" style="width:100%;">🔍 Tarifleri Bul</button>
+          <button class="btn btn-primary" onclick="findRecipes()" style="width:100%;" id="find-recipes-btn">🔍 Tarifleri Bul</button>
         </div>
       </div>
     </div>
@@ -247,7 +214,7 @@
   <div id="results-section">
     <div class="results-header-row">
       <div class="results-header" id="results-header">⚗ Gerçek BDO Tarifleri — BDO Codex</div>
-      <div class="export-btns" id="export-btns">
+      <div class="export-btns">
         <button class="btn btn-export" id="export-csv-btn" onclick="exportCSV()">⬇ CSV</button>
         <button class="btn btn-export" id="export-sheets-btn" onclick="exportSheets()">📊 Google Sheets</button>
       </div>
@@ -257,7 +224,7 @@
       <button class="tab" id="tab-alchemy-btn" onclick="switchTab('alchemy',this)">⚗ Kimya</button>
     </div>
     <div id="tab-culinary" class="tab-content active"><div class="recipe-grid" id="culinary-grid"></div></div>
-    <div id="tab-alchemy"  class="tab-content">       <div class="recipe-grid" id="alchemy-grid"></div> </div>
+    <div id="tab-alchemy" class="tab-content"><div class="recipe-grid" id="alchemy-grid"></div></div>
   </div>
 </div>
 
@@ -265,7 +232,7 @@
   <div class="spinner"></div>
   <div style="text-align:center;">
     <div class="loading-text" id="loading-text">Yükleniyor</div>
-    <div class="loading-sub"  id="loading-sub">Lütfen bekleyin...</div>
+    <div class="loading-sub" id="loading-sub">Lütfen bekleyin...</div>
   </div>
 </div>
 
@@ -274,115 +241,149 @@ const PROXY_URL   = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
 const CODEX_PROXY = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/codex';
 const ICON_BASE   = 'https://bdocodex.com/items/';
 
-// ── STRINGS ───────────────────────────────────────────────────────────────
+// ── STRINGS (UI only - item names always stay in English from Codex) ──────
 const S = {
   tr: {
-    title:         'BDO Depo Analizi',
-    subtitle:      'Depo ekran görüntüsü yükle — gerçek BDO Codex tarifleri ile analiz et',
-    uploadTitle:   'Depo Ekran Görüntüsü Yükle',
-    uploadDesc:    'Tıkla veya sürükle bırak · PNG, JPG desteklenir',
-    changeBtn:     '↩ Değiştir',
-    analyzeBtn:    '⚔ Analiz Et',
-    aiPanel:       'Durum',
-    detectedLabel: 'Tespit Edilen Malzemeler',
-    statusReady:   'Analiz etmek için butona bas.',
+    title: 'BDO Depo Analizi',
+    subtitle: 'Depo ekran görüntüsü yükle — gerçek BDO Codex tarifleri ile analiz et',
+    uploadTitle: 'Depo Ekran Görüntüsü Yükle',
+    uploadDesc: 'Tıkla veya sürükle bırak · PNG, JPG desteklenir',
+    changeBtn: '↩ Değiştir', analyzeBtn: '⚔ Analiz Et',
+    aiPanel: 'Durum', detectedLabel: 'Tespit Edilen Malzemeler',
+    statusReady: 'Analiz etmek için butona bas.',
     statusReading: 'Malzemeler okunuyor...',
-    statusSearch:  'BDO Codex\'ten gerçek tarifler aranıyor...',
-    statusDone:    n => `✓ ${n} malzeme bulundu, tarifler listeleniyor.`,
-    statusErr:     'Hata: ',
+    statusDone: n => `✓ ${n} malzeme bulundu, tarifler listeleniyor.`,
+    statusErr: 'Hata: ',
     resultsHeader: '⚗ Gerçek BDO Tarifleri — BDO Codex',
-    tabCulinary:   '🍲 Aşçılık',
-    tabAlchemy:    '⚗ Kimya',
-    loadRead:      'Malzemeler Okunuyor',
-    loadReadSub:   'Yapay zeka deponu analiz ediyor...',
-    loadCodex:     'BDO Codex Sorgulanıyor',
-    loadCodexSub:  'Gerçek tarifler getiriliyor...',
+    tabCulinary: '🍲 Aşçılık', tabAlchemy: '⚗ Kimya',
+    loadRead: 'Malzemeler Okunuyor', loadReadSub: 'Yapay zeka deponu analiz ediyor...',
+    loadCodex: 'BDO Codex Sorgulanıyor', loadCodexSub: 'Gerçek tarifler getiriliyor...',
     emptyCulinary: 'Bu malzemelerle eşleşen aşçılık tarifi bulunamadı.',
-    emptyAlchemy:  'Bu malzemelerle eşleşen kimya tarifi bulunamadı.',
-    craftable:     n => `${n}× üretilebilir`,
-    craftableLabel:'üretilebilir',
-    noMats:        'Eksik malzeme var',
-    badgeMats:     'malzeme mevcut',
-    missingLabel:  'Eksik',
-    codexLink:     '→ Codex\'te Gör',
-    need:          'gerekli',
-    themeLight:    'Aydınlık',
-    themeDark:     'Karanlık',
-    exportCSV:     '⬇ CSV',
-    exportSheets:  '📊 Google Sheets',
-    imagePrompt: `Bu Black Desert Online depo ekran görüntüsünde her hücrede bir ikon ve altında bir sayı var.
-SADECE sayıları oku — ikonun ne olduğunu tahmin etme, ikon eşleştirme ayrıca yapılacak.
-
-Her hücre için: hücre konumu (satır, sütun) ve altındaki sayı.
-Izgara soldan sağa, yukarıdan aşağıya gider. 8 sütun var.
-
-MİKTAR KURALI: B=bin (297B=297000, 415B=415000), M=milyon. Tam sayı yaz.
-Miktar görünmüyorsa veya belirsizse 1 yaz.
-
-Sadece JSON döndür:
-{"cells":[{"row":0,"col":0,"qty":415000},{"row":0,"col":1,"qty":298000},{"row":0,"col":2,"qty":297000}]}`
-  },
-  en: {
-    title:         'BDO Storage Analyzer',
-    subtitle:      'Upload storage screenshot — analyze with real BDO Codex recipes',
-    uploadTitle:   'Upload Storage Screenshot',
-    uploadDesc:    'Click or drag & drop · PNG, JPG supported',
-    changeBtn:     '↩ Change',
-    analyzeBtn:    '⚔ Analyze',
-    aiPanel:       'Status',
-    detectedLabel: 'Detected Materials',
-    statusReady:   'Press the button to analyze.',
-    statusReading: 'Reading materials...',
-    statusSearch:  'Fetching real recipes from BDO Codex...',
-    statusDone:    n => `✓ ${n} materials found, listing recipes.`,
-    statusErr:     'Error: ',
-    resultsHeader: '⚗ Real BDO Recipes — BDO Codex',
-    tabCulinary:   '🍲 Cooking',
-    tabAlchemy:    '⚗ Alchemy',
-    loadRead:      'Reading Storage',
-    loadReadSub:   'AI is scanning your storage...',
-    loadCodex:     'Querying BDO Codex',
-    loadCodexSub:  'Fetching real recipes...',
-    emptyCulinary: 'No matching cooking recipes found for your materials.',
-    emptyAlchemy:  'No matching alchemy recipes found for your materials.',
-    craftable:     n => `${n}× craftable`,
-    craftableLabel:'craftable',
-    noMats:        'Missing materials',
-    badgeMats:     'mats owned',
-    missingLabel:  'Missing',
-    codexLink:     '→ View on Codex',
-    need:          'needed',
-    themeLight:    'Light Mode',
-    themeDark:     'Dark Mode',
-    exportCSV:     '⬇ CSV',
-    exportSheets:  '📊 Google Sheets',
+    emptyAlchemy: 'Bu malzemelerle eşleşen kimya tarifi bulunamadı.',
+    craftable: n => `${n}× üretilebilir`, craftableLabel: 'üretilebilir',
+    badgeMats: 'malzeme mevcut', missingLabel: 'Eksik',
+    codexLink: '→ Codex\'te Gör', need: 'gerekli',
+    themeLight: 'Aydınlık', themeDark: 'Karanlık',
+    exportCSV: '⬇ CSV', exportSheets: '📊 Google Sheets',
+    editBtn: '✏ Düzenle', doneBtn: '✓ Tamam',
+    addBtn: '+ Ekle', saveBtn: 'Kaydet', deleteBtn: 'Sil', cancelBtn: 'İptal',
+    editTitle: 'Malzeme Düzenle', addTitle: 'Malzeme Ekle',
+    nameLbl: 'İsim', idLbl: 'Item ID (opsiyonel)', qtyLbl: 'Miktar',
+    // Image prompt — always asks for English item names (original Codex names)
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
-ONLY read the numbers — do NOT try to identify the icons, that will be done separately by an icon matching system.
+Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
 
-For each cell: grid position (row, col) and the number shown below the icon.
-Grid goes left to right, top to bottom. There are 8 columns.
+Grid: 8 columns, left to right, top to bottom.
+QUANTITY: B=thousands (415B=415000, 297B=297000), M=millions. Write full integer.
 
-QUANTITY RULE: B=thousands (297B=297000, 415B=415000), M=millions. Write full integer.
-If quantity is unclear write 1.
+Common items: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber,
+Ash Plywood, Maple Plywood, Pine Plywood, Iron Ore, Copper Ore, Silver Ore, Titanium Ore,
+Iron Ingot, Copper Ingot, Coal, Rough Stone, Wheat, Barley, Potato, Corn, Sweet Potato, Rye,
+Salt, Sugar, Milk, Egg, Butter, Flour, Vinegar, Olive Oil, Garlic, Onion, Tomato, Pumpkin,
+Red Meat, Chicken Meat, Fish, Bone, Hide, Blood, Deer Blood, Pig Blood, Wolf Blood, Bear Blood,
+Cotton, Flax, Wool, Hops, Sunrise Herb, Fire Flake Flower, Silver Azalea, Monk's Branch,
+Clear Liquid Reagent, Pure Powder Reagent, Melted Iron Shard, Processed Grain, Log,
+Strawberry, Coconut, Orange, Apple, Bean Sprouts, Flower, Fruit.
 
 Return ONLY JSON:
-{"cells":[{"row":0,"col":0,"qty":415000},{"row":0,"col":1,"qty":298000},{"row":0,"col":2,"qty":297000}]}`
+{"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000}]}`
+  },
+  en: {
+    title: 'BDO Storage Analyzer',
+    subtitle: 'Upload storage screenshot — analyze with real BDO Codex recipes',
+    uploadTitle: 'Upload Storage Screenshot',
+    uploadDesc: 'Click or drag & drop · PNG, JPG supported',
+    changeBtn: '↩ Change', analyzeBtn: '⚔ Analyze',
+    aiPanel: 'Status', detectedLabel: 'Detected Materials',
+    statusReady: 'Press the button to analyze.',
+    statusReading: 'Reading materials...',
+    statusDone: n => `✓ ${n} materials found, listing recipes.`,
+    statusErr: 'Error: ',
+    resultsHeader: '⚗ Real BDO Recipes — BDO Codex',
+    tabCulinary: '🍲 Cooking', tabAlchemy: '⚗ Alchemy',
+    loadRead: 'Reading Storage', loadReadSub: 'AI is scanning your storage...',
+    loadCodex: 'Querying BDO Codex', loadCodexSub: 'Fetching real recipes...',
+    emptyCulinary: 'No matching cooking recipes found for your materials.',
+    emptyAlchemy: 'No matching alchemy recipes found for your materials.',
+    craftable: n => `${n}× craftable`, craftableLabel: 'craftable',
+    badgeMats: 'mats owned', missingLabel: 'Missing',
+    codexLink: '→ View on Codex', need: 'needed',
+    themeLight: 'Light Mode', themeDark: 'Dark Mode',
+    exportCSV: '⬇ CSV', exportSheets: '📊 Google Sheets',
+    editBtn: '✏ Edit', doneBtn: '✓ Done',
+    addBtn: '+ Add', saveBtn: 'Save', deleteBtn: 'Delete', cancelBtn: 'Cancel',
+    editTitle: 'Edit Material', addTitle: 'Add Material',
+    nameLbl: 'Name', idLbl: 'Item ID (optional)', qtyLbl: 'Quantity',
+    imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
+Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
+
+Grid: 8 columns, left to right, top to bottom.
+QUANTITY: B=thousands (415B=415000, 297B=297000), M=millions. Write full integer.
+
+Common items: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber,
+Ash Plywood, Maple Plywood, Pine Plywood, Iron Ore, Copper Ore, Silver Ore, Titanium Ore,
+Iron Ingot, Copper Ingot, Coal, Rough Stone, Wheat, Barley, Potato, Corn, Sweet Potato, Rye,
+Salt, Sugar, Milk, Egg, Butter, Flour, Vinegar, Olive Oil, Garlic, Onion, Tomato, Pumpkin,
+Red Meat, Chicken Meat, Fish, Bone, Hide, Blood, Deer Blood, Pig Blood, Wolf Blood, Bear Blood,
+Cotton, Flax, Wool, Hops, Sunrise Herb, Fire Flake Flower, Silver Azalea, Monk's Branch,
+Clear Liquid Reagent, Pure Powder Reagent, Melted Iron Shard, Processed Grain, Log,
+Strawberry, Coconut, Orange, Apple, Bean Sprouts, Flower, Fruit.
+
+Return ONLY JSON:
+{"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000}]}`
   }
 };
 
 // ── STATE ─────────────────────────────────────────────────────────────────
-let lang      = localStorage.getItem('bdo_lang')  || 'tr';
-let isDark    = localStorage.getItem('bdo_theme') !== 'light';
+let lang = localStorage.getItem('bdo_lang') || 'tr';
+let isDark = localStorage.getItem('bdo_theme') !== 'light';
 let inventory = [];
 let currentBase64 = null;
 let mediaType = 'image/jpeg';
+let cachedCulinary = [];
+let cachedAlchemy = [];
+let editMode = false;
+
+// ── ITEM DATABASE ─────────────────────────────────────────────────────────
+let BDO_ITEMS = null;
+
+async function loadItemDB() {
+  if (BDO_ITEMS) return;
+  try {
+    const resp = await fetch('bdo_items.json');
+    BDO_ITEMS = await resp.json();
+  } catch(e) {
+    console.warn('Could not load bdo_items.json');
+    BDO_ITEMS = { id_to_info: {}, icon_to_id: {} };
+  }
+}
+
+// Always return English name from Codex
+function getItemNameEN(itemId) {
+  if (!BDO_ITEMS) return null;
+  const info = BDO_ITEMS.id_to_info[String(itemId)];
+  return info ? info.name_en : null;
+}
+
+// Find item_id by English name (fuzzy match)
+function findItemIdByName(name) {
+  if (!BDO_ITEMS || !name) return null;
+  const lower = name.toLowerCase().trim();
+  for (const [id, info] of Object.entries(BDO_ITEMS.id_to_info)) {
+    if (info.name_en && info.name_en.toLowerCase() === lower) return parseInt(id);
+  }
+  // Fuzzy: partial match
+  for (const [id, info] of Object.entries(BDO_ITEMS.id_to_info)) {
+    if (info.name_en && info.name_en.toLowerCase().includes(lower)) return parseInt(id);
+  }
+  return null;
+}
 
 // ── THEME ─────────────────────────────────────────────────────────────────
 function applyTheme() {
   document.body.classList.toggle('light', !isDark);
   document.getElementById('theme-btn').textContent = isDark ? S[lang].themeLight : S[lang].themeDark;
 }
-
 function toggleTheme() {
   isDark = !isDark;
   localStorage.setItem('bdo_theme', isDark ? 'dark' : 'light');
@@ -396,7 +397,6 @@ function setLang(l) {
   document.getElementById('lang-tr').classList.toggle('active', l === 'tr');
   document.getElementById('lang-en').classList.toggle('active', l === 'en');
   applyStrings();
-  // Re-render results if visible (so cards also get translated)
   if (document.getElementById('results-section').classList.contains('visible') && inventory.length) {
     rerenderResults();
   }
@@ -404,36 +404,36 @@ function setLang(l) {
 
 function applyStrings() {
   const s = S[lang];
-  document.getElementById('main-title').textContent          = s.title;
-  document.getElementById('main-subtitle').textContent       = s.subtitle;
-  document.getElementById('upload-title').textContent        = s.uploadTitle;
-  document.getElementById('upload-desc').textContent         = s.uploadDesc;
-  document.getElementById('change-btn').textContent          = s.changeBtn;
-  document.getElementById('analyze-btn').textContent         = s.analyzeBtn;
+  document.getElementById('main-title').textContent = s.title;
+  document.getElementById('main-subtitle').textContent = s.subtitle;
+  document.getElementById('upload-title').textContent = s.uploadTitle;
+  document.getElementById('upload-desc').textContent = s.uploadDesc;
+  document.getElementById('change-btn').textContent = s.changeBtn;
+  document.getElementById('analyze-btn').textContent = s.analyzeBtn;
   document.getElementById('ai-panel-title-text').textContent = s.aiPanel;
-  document.getElementById('detected-label').textContent      = s.detectedLabel;
-  document.getElementById('results-header').textContent      = s.resultsHeader;
-  document.getElementById('tab-culinary-btn').textContent    = s.tabCulinary;
-  document.getElementById('tab-alchemy-btn').textContent     = s.tabAlchemy;
-  document.getElementById('theme-btn').textContent           = isDark ? s.themeLight : s.themeDark;
-  document.getElementById('export-csv-btn').textContent    = s.exportCSV;
+  document.getElementById('detected-label').textContent = s.detectedLabel;
+  document.getElementById('results-header').textContent = s.resultsHeader;
+  document.getElementById('tab-culinary-btn').textContent = s.tabCulinary;
+  document.getElementById('tab-alchemy-btn').textContent = s.tabAlchemy;
+  document.getElementById('theme-btn').textContent = isDark ? s.themeLight : s.themeDark;
+  document.getElementById('export-csv-btn').textContent = s.exportCSV;
   document.getElementById('export-sheets-btn').textContent = s.exportSheets;
+  document.getElementById('find-recipes-btn').textContent = lang === 'tr' ? '🔍 Tarifleri Bul' : '🔍 Find Recipes';
   document.title = s.title;
   if (!currentBase64) setStatus('', s.statusReady);
 }
 
 // ── UI HELPERS ────────────────────────────────────────────────────────────
 function setStatus(state, text) {
-  document.getElementById('status-dot').className    = 'status-dot ' + state;
+  document.getElementById('status-dot').className = 'status-dot ' + state;
   document.getElementById('status-text').textContent = text;
 }
 function showLoading(t, s) {
   document.getElementById('loading-text').textContent = t;
-  document.getElementById('loading-sub').textContent  = s;
+  document.getElementById('loading-sub').textContent = s;
   document.getElementById('loading-overlay').classList.add('visible');
 }
 function hideLoading() { document.getElementById('loading-overlay').classList.remove('visible'); }
-
 function switchTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -442,11 +442,10 @@ function switchTab(name, btn) {
 }
 
 // ── UPLOAD ────────────────────────────────────────────────────────────────
-const zone   = document.getElementById('upload-zone');
+const zone = document.getElementById('upload-zone');
 const fInput = document.getElementById('file-input');
-
 zone.addEventListener('click', () => fInput.click());
-zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
 zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
 fInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
@@ -485,9 +484,8 @@ function handleFile(file) {
   reader.readAsDataURL(file);
 }
 
-// ── STEP 1: Cut image into cells and identify each one ───────────────────
+// ── READ INVENTORY (AI reads name in English + quantity) ──────────────────
 async function readInventory() {
-  // First pass: AI reads the full image for quantities only
   const resp = await fetch(PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -502,296 +500,43 @@ async function readInventory() {
   });
   const data = await resp.json();
   if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-  const text  = data.content.map(b => b.text || '').join('');
-  const match = text.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
-  if (!match) throw new Error(lang === 'tr' ? 'AI yanıt vermedi' : 'AI returned no response');
+  const text = data.content.map(b => b.text || '').join('');
+  const match = text.replace(/```json|```/g, '').trim().match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('AI returned no response');
   return JSON.parse(match[0]);
 }
 
-// ── STEP 1b: Identify icons by sending each row as a separate image ───────
-async function identifyIconsByRow(previewImg) {
-  const canvas = document.createElement('canvas');
-  const W = previewImg.naturalWidth  || previewImg.width;
-  const H = previewImg.naturalHeight || previewImg.height;
-  canvas.width  = W;
-  canvas.height = H;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(previewImg, 0, 0);
-
-  const COLS  = 8;
-  const cellW = Math.floor(W / COLS);
-  const cellH = cellW;
-  const rows  = Math.floor(H / cellH);
-
-  const cellResults = {}; // "row_col" -> item_id
-
-  // Build item name list for AI reference (top 200 most common)
-  const itemList = Object.entries(BDO_ITEMS.id_to_info)
-    .filter(([,v]) => v.name_en)
-    .slice(0, 300)
-    .map(([id, v]) => `${id}:${v.name_en}`)
-    .join(',');
-
-  // Send one row at a time to AI
-  const rowCanvas = document.createElement('canvas');
-  rowCanvas.width  = W;
-  rowCanvas.height = cellH;
-  const rowCtx = rowCanvas.getContext('2d');
-
-  for (let r = 0; r < rows; r++) {
-    // Extract this row
-    rowCtx.clearRect(0, 0, W, cellH);
-    rowCtx.drawImage(canvas, 0, r * cellH, W, cellH, 0, 0, W, cellH);
-    const rowBase64 = rowCanvas.toDataURL('image/jpeg', 0.9).split(',')[1];
-
-    const prompt = lang === 'tr'
-      ? `Bu BDO deposunun TEK bir satırı. Soldan sağa 8 ikon var. Her ikonu tanımla ve item ID'sini ver.
-Olası item ID'leri: ${itemList}
-Sadece JSON döndür: {"cells":[{"col":0,"item_id":4601},{"col":1,"item_id":7001}]}`
-      : `This is ONE row of a BDO storage. There are 8 icons left to right. Identify each icon and give its item ID.
-Possible item IDs: ${itemList}
-Return ONLY JSON: {"cells":[{"col":0,"item_id":4601},{"col":1,"item_id":7001}]}`;
-
-    try {
-      const resp = await fetch(PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 500,
-          messages: [{ role: 'user', content: [
-            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: rowBase64 } },
-            { type: 'text', text: prompt }
-          ]}]
-        })
-      });
-      const data = await resp.json();
-      if (data.error) continue;
-      const text  = data.content.map(b => b.text || '').join('');
-      const match = text.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
-      if (!match) continue;
-      const result = JSON.parse(match[0]);
-      (result.cells || []).forEach(cell => {
-        if (cell.item_id) cellResults[`${r}_${cell.col}`] = cell.item_id;
-      });
-    } catch(e) {
-      console.warn(`Row ${r} identification failed:`, e);
-    }
-  }
-
-  return cellResults;
-}
-
-
-// ── ITEM DATABASE (loaded from bdo_items.json) ──────────────────────────
-let BDO_ITEMS = null; // { id_to_info: {id: {name_en, name_tr, icon}}, icon_to_id: {icon_file: id} }
-
-async function loadItemDB() {
-  if (BDO_ITEMS) return;
-  try {
-    const resp = await fetch('bdo_items.json');
-    BDO_ITEMS = await resp.json();
-  } catch(e) {
-    console.warn('Could not load bdo_items.json, using fallback');
-    BDO_ITEMS = { id_to_info: {}, icon_to_id: {} };
-  }
-}
-
-function getItemName(itemId) {
-  if (!BDO_ITEMS) return null;
-  const info = BDO_ITEMS.id_to_info[String(itemId)];
-  if (!info) return null;
-  return lang === 'tr' ? (info.name_tr || info.name_en) : info.name_en;
-}
-
-
-// ── ICON HASH MATCHING ────────────────────────────────────────────────────
-const ICON_SIZE = 16; // Resize to 16x16 for hash comparison
-let iconHashDB = null; // { hash_string: item_id }
-let hashBuildProgress = 0;
-
-// Compute average hash (aHash) of an image element
-function computeHash(canvas, ctx, imgOrCanvas, x = 0, y = 0, w = 0, h = 0) {
-  ctx.clearRect(0, 0, ICON_SIZE, ICON_SIZE);
-  if (w && h) {
-    ctx.drawImage(imgOrCanvas, x, y, w, h, 0, 0, ICON_SIZE, ICON_SIZE);
-  } else {
-    ctx.drawImage(imgOrCanvas, 0, 0, ICON_SIZE, ICON_SIZE);
-  }
-  const data = ctx.getImageData(0, 0, ICON_SIZE, ICON_SIZE).data;
-  // Convert to grayscale
-  const gray = [];
-  for (let i = 0; i < data.length; i += 4) {
-    gray.push(0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2]);
-  }
-  const avg = gray.reduce((a, b) => a + b, 0) / gray.length;
-  return gray.map(v => v >= avg ? '1' : '0').join('');
-}
-
-function hammingDistance(h1, h2) {
-  let d = 0;
-  for (let i = 0; i < h1.length; i++) if (h1[i] !== h2[i]) d++;
-  return d;
-}
-
-async function buildIconHashDB() {
-  if (iconHashDB) return iconHashDB;
-  if (!BDO_ITEMS) return null;
-
-  iconHashDB = {}; // hash -> [{id, name_en, name_tr}]
-
-  const canvas = document.createElement('canvas');
-  canvas.width = ICON_SIZE; canvas.height = ICON_SIZE;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-  const items = Object.entries(BDO_ITEMS.id_to_info);
-  const total = items.length;
-  let done = 0;
-
-  // Process in batches to not block UI
-  const BATCH = 20;
-  for (let i = 0; i < items.length; i += BATCH) {
-    const batch = items.slice(i, i + BATCH);
-    await Promise.all(batch.map(([id, info]) => {
-      return new Promise(resolve => {
-        if (!info.icon) { done++; resolve(); return; }
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          try {
-            const hash = computeHash(canvas, ctx, img);
-            if (!iconHashDB[hash]) iconHashDB[hash] = [];
-            iconHashDB[hash].push({ id: parseInt(id), name_en: info.name_en, name_tr: info.name_tr });
-          } catch(e) {}
-          done++;
-          resolve();
-        };
-        img.onerror = () => { done++; resolve(); };
-        img.src = `https://bdo-api-proxy.onurcilhoroz.workers.dev/icon?path=${encodeURIComponent(info.icon)}`;
-      });
-    }));
-    hashBuildProgress = Math.round(done / total * 100);
-  }
-  console.log(`Icon hash DB built: ${Object.keys(iconHashDB).length} unique hashes from ${done} icons`);
-  return iconHashDB;
-}
-
-// Match a canvas region to the closest icon
-function matchIconRegion(srcCanvas, srcCtx, cellX, cellY, cellW, cellH) {
-  if (!iconHashDB) return null;
-
-  // Extract inner icon area (BDO icons have dark border, icon is centered ~80%)
-  const pad = Math.floor(cellW * 0.1);
-  const iw = cellW - pad * 2;
-  const ih = cellH - pad * 2;
-
-  const hashCanvas = document.createElement('canvas');
-  hashCanvas.width = ICON_SIZE; hashCanvas.height = ICON_SIZE;
-  const hashCtx = hashCanvas.getContext('2d', { willReadFrequently: true });
-  hashCtx.drawImage(srcCanvas, cellX + pad, cellY + pad, iw, ih, 0, 0, ICON_SIZE, ICON_SIZE);
-  const data = hashCtx.getImageData(0, 0, ICON_SIZE, ICON_SIZE).data;
-  const gray = [];
-  for (let i = 0; i < data.length; i += 4) {
-    gray.push(0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2]);
-  }
-  const avg = gray.reduce((a, b) => a + b, 0) / gray.length;
-  const queryHash = gray.map(v => v >= avg ? '1' : '0').join('');
-
-  // Find closest match
-  let bestMatch = null;
-  let bestDist  = Infinity;
-  for (const [hash, items] of Object.entries(iconHashDB)) {
-    const dist = hammingDistance(queryHash, hash);
-    if (dist < bestDist) {
-      bestDist = dist;
-      bestMatch = items[0];
-    }
-  }
-
-  // Only return match if confidence is good (< 30% different bits)
-  const threshold = ICON_SIZE * ICON_SIZE * 0.30;
-  return bestDist <= threshold ? { ...bestMatch, distance: bestDist } : null;
-}
-
-// ── GRID DETECTION + ICON MATCHING ───────────────────────────────────────
-async function readInventoryWithHashing(imgElement) {
-  // Draw image to canvas
-  const canvas = document.createElement('canvas');
-  canvas.width  = imgElement.naturalWidth  || imgElement.width;
-  canvas.height = imgElement.naturalHeight || imgElement.height;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  ctx.drawImage(imgElement, 0, 0);
-
-  const W = canvas.width;
-  const H = canvas.height;
-
-  // BDO storage grid: typically 8 cols, auto rows
-  // Detect cell size by looking for dark grid lines
-  const COLS = 8;
-  const cellW = Math.floor(W / COLS);
-  const cellH = cellW; // cells are square
-  const rows  = Math.floor(H / cellH);
-
-  const results = [];
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const x = c * cellW;
-      const y = r * cellH;
-
-      const match = matchIconRegion(canvas, ctx, x, y, cellW, cellH);
-      if (match) {
-        results.push({ x, y, cellW, cellH, match });
-      }
-    }
-  }
-  return results;
-}
-
-
+// ── CODEX RECIPES ─────────────────────────────────────────────────────────
 async function fetchCodexRecipes(type) {
-  const l    = lang === 'tr' ? 'tr' : 'us';
-  const resp = await fetch(`${CODEX_PROXY}?type=${type}&l=${l}&o=0&s=500`);
+  // Always fetch English Codex data for matching
+  const resp = await fetch(`${CODEX_PROXY}?type=${type}&l=us&o=0&s=500`);
   if (!resp.ok) throw new Error('BDO Codex ' + resp.status);
   const data = await resp.json();
   return data.aaData || data.data || [];
 }
 
-// ── STEP 3: Parse Codex row ───────────────────────────────────────────────
 function parseCodexRow(row) {
-  // row format: [id, icon_html, name_html, type, skill, exp, ingredients_html, weight, output_html, ingredient_ids_json, ...]
   if (!Array.isArray(row) || row.length < 10) return null;
-
   const id = row[0];
-
-  // Extract recipe name from HTML - name is in row[2]
   const nameHtml = typeof row[2] === 'string' ? row[2] : (typeof row[1] === 'string' ? row[1] : '');
   const name = (nameHtml.match(/<b>(.*?)<\/b>/) || [])[1] || `Recipe ${id}`;
-
-  // Extract ingredient IDs from JSON string e.g. "[9018,9065,7313,9017]"
   const idStr = row[9] || '[]';
-
-  // Extract ingredient quantities from HTML
-  const ingHtml  = row[5] || '';
-
-  // Extract icon from output HTML
-  const outHtml  = row[7] || '';
-
-  const skillObj   = row[3] || {};
+  const ingHtml = row[5] || '';
+  const outHtml = row[7] || '';
+  const skillObj = row[3] || {};
   const skillLevel = typeof skillObj === 'object' ? (skillObj.display || '') : String(skillObj);
-
   let ingredientIds = [];
   try { ingredientIds = JSON.parse(idStr); } catch(e) {}
   const quantities = [...ingHtml.matchAll(/quantity_small nowrap[^>]*>(\d+)/g)].map(m => parseInt(m[1]));
-  const iconMatch  = outHtml.match(/src="\/items\/([^"]+)"/);
-  const icon       = iconMatch ? iconMatch[1] : '';
-
+  const iconMatch = outHtml.match(/src="\/items\/([^"]+)"/);
+  const icon = iconMatch ? iconMatch[1] : '';
   return { id, name, icon, skillLevel, ingredientIds, quantities };
 }
 
-// ── STEP 4: Match recipes to inventory ───────────────────────────────────
+// ── MATCH RECIPES ─────────────────────────────────────────────────────────
 async function matchRecipesAsync(recipes, inv) {
-  const idMap   = {};
+  // Build lookup by item_id AND by English name
+  const idMap = {};
   const nameMap = {};
   inv.forEach(i => {
     nameMap[i.name.toLowerCase().trim()] = i.qty;
@@ -799,30 +544,26 @@ async function matchRecipesAsync(recipes, inv) {
   });
 
   const out = [];
-
   for (const row of recipes) {
     const r = parseCodexRow(row);
     if (!r || !r.ingredientIds.length) continue;
 
     let canCraft = Infinity;
-    let hasAny   = false;
+    let hasAny = false;
     const parsed = [];
 
     r.ingredientIds.forEach((itemId, idx) => {
-      const reqQty  = r.quantities[idx] || 1;
-      const info    = BDO_ITEMS?.id_to_info?.[String(itemId)];
-      const trName  = info ? (info.name_tr || info.name_en) : null;
-      const enName  = info ? info.name_en : null;
-      const displayName = lang === 'tr'
-        ? (trName || `#${itemId}`)
-        : (enName || `#${itemId}`);
+      const reqQty = r.quantities[idx] || 1;
+      // Always use English name from Codex DB
+      const info = BDO_ITEMS?.id_to_info?.[String(itemId)];
+      const enName = info ? info.name_en : `#${itemId}`;
 
+      // Match by ID first, then by English name
       let have = idMap[itemId] || 0;
-      if (!have && trName) have = nameMap[trName.toLowerCase()] || 0;
       if (!have && enName) have = nameMap[enName.toLowerCase()] || 0;
-      if (!have && trName) {
+      if (!have && enName) {
         const key = Object.keys(nameMap).find(k =>
-          k.includes(trName.toLowerCase()) || trName.toLowerCase().includes(k)
+          k.includes(enName.toLowerCase()) || enName.toLowerCase().includes(k)
         );
         if (key) have = nameMap[key];
       }
@@ -830,24 +571,19 @@ async function matchRecipesAsync(recipes, inv) {
       if (have > 0) hasAny = true;
       const possible = have >= reqQty ? Math.floor(have / reqQty) : 0;
       if (possible < canCraft) canCraft = possible;
-      parsed.push({ name: displayName, required: reqQty, have, itemId });
+      parsed.push({ name: enName, required: reqQty, have, itemId });
     });
 
     if (!hasAny || !parsed.length) continue;
 
-    const haveCount  = parsed.filter(i => i.have > 0).length;
+    const haveCount = parsed.filter(i => i.have > 0).length;
     const totalCount = parsed.length;
 
     out.push({
-      id:          r.id,
-      name:        r.name,
-      icon:        r.icon,
-      skillLevel:  r.skillLevel,
+      id: r.id, name: r.name, icon: r.icon, skillLevel: r.skillLevel,
       ingredients: parsed,
-      craftable:   canCraft === Infinity ? 0 : canCraft,
-      hasAll:      canCraft > 0,
-      haveCount,
-      totalCount
+      craftable: canCraft === Infinity ? 0 : canCraft,
+      hasAll: canCraft > 0, haveCount, totalCount
     });
   }
 
@@ -860,22 +596,16 @@ async function matchRecipesAsync(recipes, inv) {
   });
 }
 
-// ── RENDER ────────────────────────────────────────────────────────────────
-let cachedCulinary = [];
-let cachedAlchemy  = [];
-
 // ── EDIT MODE ─────────────────────────────────────────────────────────────
-let editMode = false;
-
 function toggleEditMode() {
   editMode = !editMode;
-  const btn    = document.getElementById('edit-toggle-btn');
+  const btn = document.getElementById('edit-toggle-btn');
   const addBtn = document.getElementById('add-item-btn');
-  const findRow= document.getElementById('find-recipes-row');
-  btn.textContent  = editMode ? (lang === 'tr' ? '✓ Tamam' : '✓ Done') : (lang === 'tr' ? '✏ Düzenle' : '✏ Edit');
+  const findRow = document.getElementById('find-recipes-row');
+  btn.textContent = editMode ? S[lang].doneBtn : S[lang].editBtn;
   btn.style.borderColor = editMode ? 'var(--green)' : '';
-  btn.style.color       = editMode ? 'var(--green)' : '';
-  addBtn.style.display  = editMode ? 'inline' : 'none';
+  btn.style.color = editMode ? 'var(--green)' : '';
+  addBtn.style.display = editMode ? 'inline' : 'none';
   findRow.style.display = editMode ? 'none' : (inventory.length ? 'block' : 'none');
   renderItems(inventory);
 }
@@ -886,23 +616,24 @@ function openEditPopup(item, idx) {
   document.getElementById('edit-overlay')?.remove();
   document.getElementById('edit-popup')?.remove();
   const isNew = idx === -1;
+  const s = S[lang];
   const overlay = document.createElement('div');
   overlay.id = 'edit-overlay'; overlay.className = 'edit-overlay';
   overlay.onclick = closeEditPopup;
   const popup = document.createElement('div');
   popup.id = 'edit-popup'; popup.className = 'edit-popup';
   popup.innerHTML = `
-    <h3>${isNew ? (lang==='tr'?'Malzeme Ekle':'Add Material') : (lang==='tr'?'Malzeme Düzenle':'Edit Material')}</h3>
-    <label>${lang==='tr'?'İsim':'Name'}</label>
-    <input id="popup-name" type="text" value="${item?item.name:''}" placeholder="${lang==='tr'?'Malzeme adı...':'Material name...'}">
-    <label>${lang==='tr'?'Item ID (opsiyonel)':'Item ID (optional)'}</label>
-    <input id="popup-id" type="number" value="${item?.item_id||''}" placeholder="örn: 9003">
-    <label>${lang==='tr'?'Miktar':'Quantity'}</label>
-    <input id="popup-qty" type="number" value="${item?item.qty:''}" placeholder="297000">
+    <h3>${isNew ? s.addTitle : s.editTitle}</h3>
+    <label>${s.nameLbl}</label>
+    <input id="popup-name" type="text" value="${item ? item.name : ''}" placeholder="Ash Timber, Iron Ore...">
+    <label>${s.idLbl}</label>
+    <input id="popup-id" type="number" value="${item?.item_id || ''}" placeholder="4601">
+    <label>${s.qtyLbl}</label>
+    <input id="popup-qty" type="number" value="${item ? item.qty : ''}" placeholder="415000">
     <div class="edit-popup-btns">
-      <button class="btn btn-primary" style="flex:1;" onclick="saveEditPopup(${idx})">${lang==='tr'?'Kaydet':'Save'}</button>
-      ${!isNew?`<button class="btn btn-secondary" onclick="deleteItem(${idx})">${lang==='tr'?'Sil':'Delete'}</button>`:''}
-      <button class="btn btn-secondary" onclick="closeEditPopup()">${lang==='tr'?'İptal':'Cancel'}</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="saveEditPopup(${idx})">${s.saveBtn}</button>
+      ${!isNew ? `<button class="btn btn-secondary" onclick="deleteItem(${idx})">${s.deleteBtn}</button>` : ''}
+      <button class="btn btn-secondary" onclick="closeEditPopup()">${s.cancelBtn}</button>
     </div>`;
   document.body.appendChild(overlay);
   document.body.appendChild(popup);
@@ -916,11 +647,13 @@ function closeEditPopup() {
 
 function saveEditPopup(idx) {
   const name = document.getElementById('popup-name').value.trim();
-  const qty  = parseInt(document.getElementById('popup-qty').value) || 0;
-  const id   = parseInt(document.getElementById('popup-id').value) || null;
+  const qty = parseInt(document.getElementById('popup-qty').value) || 0;
+  let itemId = parseInt(document.getElementById('popup-id').value) || null;
   if (!name || !qty) return;
-  if (idx === -1) inventory.push({ name, qty, item_id: id });
-  else inventory[idx] = { ...inventory[idx], name, qty, item_id: id };
+  // Auto-find item_id if not provided
+  if (!itemId) itemId = findItemIdByName(name);
+  if (idx === -1) inventory.push({ name, qty, item_id: itemId });
+  else inventory[idx] = { ...inventory[idx], name, qty, item_id: itemId };
   closeEditPopup();
   renderItems(inventory);
 }
@@ -934,7 +667,7 @@ function deleteItem(idx) {
 function renderItems(items) {
   const grid = document.getElementById('items-grid');
   grid.innerHTML = items.map((i, idx) =>
-    `<div class="item-tag ${editMode?'editable':''}" ${editMode?`onclick="openEditPopup(inventory[${idx}],${idx})"`:''}>
+    `<div class="item-tag ${editMode ? 'editable' : ''}" ${editMode ? `onclick="openEditPopup(inventory[${idx}],${idx})"` : ''}>
       ${i.name} <span class="qty">×${i.qty.toLocaleString()}</span>
       <span class="delete-btn" onclick="event.stopPropagation();deleteItem(${idx})">✕</span>
     </div>`
@@ -944,27 +677,24 @@ function renderItems(items) {
   if (findRow) findRow.style.display = (!editMode && items.length) ? 'block' : 'none';
 }
 
+// ── FIND RECIPES ──────────────────────────────────────────────────────────
 async function findRecipes() {
   const s = S[lang];
   try {
     showLoading(s.loadCodex, s.loadCodexSub);
-    
-    // Load item database first
     await loadItemDB();
-    
     const [culRaw, alcRaw] = await Promise.all([
       fetchCodexRecipes('culinary'),
       fetchCodexRecipes('alchemy')
     ]);
-    setStatus('reading', lang==='tr'?'İsimler çözümleniyor...':'Resolving item names...');
     cachedCulinary = await matchRecipesAsync(culRaw, inventory);
-    cachedAlchemy  = await matchRecipesAsync(alcRaw, inventory);
+    cachedAlchemy = await matchRecipesAsync(alcRaw, inventory);
     cachedCulinary.forEach(r => r.type = 'culinary');
-    cachedAlchemy.forEach(r  => r.type = 'alchemy');
+    cachedAlchemy.forEach(r => r.type = 'alchemy');
     hideLoading();
     setStatus('done', s.statusDone(inventory.length));
     renderGrid('culinary-grid', cachedCulinary, s.emptyCulinary);
-    renderGrid('alchemy-grid',  cachedAlchemy,  s.emptyAlchemy);
+    renderGrid('alchemy-grid', cachedAlchemy, s.emptyAlchemy);
     document.getElementById('results-section').classList.add('visible');
     document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
   } catch(err) {
@@ -973,12 +703,12 @@ async function findRecipes() {
   }
 }
 
+// ── RENDER CARDS ──────────────────────────────────────────────────────────
 function renderCard(r) {
-  const s    = S[lang];
-  const cl   = lang === 'tr' ? 'tr' : 'us';
+  const s = S[lang];
+  const cl = lang === 'tr' ? 'tr' : 'us';
   const href = r.id ? `https://bdocodex.com/${cl}/recipe/${r.id}/` : '#';
   const iconHtml = r.icon ? `<img class="recipe-icon" src="${ICON_BASE}${r.icon}" alt="" onerror="this.style.display='none'">` : '';
-
   const badge = r.hasAll
     ? `<span class="craft-badge craft-yes">★ ${s.craftable(r.craftable)}</span>`
     : `<span class="craft-badge craft-partial">${r.haveCount}/${r.totalCount} ${s.badgeMats}</span>`;
@@ -986,13 +716,13 @@ function renderCard(r) {
   const rows = r.ingredients.map(i => {
     let cls, qtyText;
     if (i.have === 0) {
-      cls     = 'ing-missing';
+      cls = 'ing-missing';
       qtyText = `<span class="ing-missing-label">${s.missingLabel}</span> <span class="ing-req">(${i.required} ${s.need})</span>`;
     } else if (i.have >= i.required) {
-      cls     = 'ing-have';
+      cls = 'ing-have';
       qtyText = `${i.have.toLocaleString()} / ${i.required} ${s.need}`;
     } else {
-      cls     = 'ing-low';
+      cls = 'ing-low';
       qtyText = `${i.have.toLocaleString()} / ${i.required} ${s.need}`;
     }
     return `<div class="ingredient-row">
@@ -1005,25 +735,15 @@ function renderCard(r) {
     ? (lang === 'tr' ? 'Aşçılık Tezgahı' : 'Cooking Utensil')
     : (lang === 'tr' ? 'Kimya Tezgahı' : 'Alchemy Tool');
 
-  const stationLine = `<div class="recipe-station">
-    🏠 ${r.skillLevel || ''} · ${craftStation}
-  </div>`;
-
   const craftableFooter = r.hasAll
-    ? `<div class="craftable-big">
-        <span class="craftable-num">${r.craftable.toLocaleString()}×</span>
-        <span class="craftable-label">${s.craftableLabel}</span>
-      </div>`
-    : `<div class="craftable-big missing-big">
-        <span class="craftable-num-red">${r.haveCount}/${r.totalCount}</span>
-        <span class="craftable-label">${s.badgeMats}</span>
-      </div>`;
+    ? `<div class="craftable-big"><span class="craftable-num">${r.craftable.toLocaleString()}×</span><span class="craftable-label">${s.craftableLabel}</span></div>`
+    : `<div class="craftable-big"><span class="craftable-num-red">${r.haveCount}/${r.totalCount}</span><span class="craftable-label">${s.badgeMats}</span></div>`;
 
   return `<div class="recipe-card ${r.hasAll ? 'card-craftable' : ''}">
     <div class="recipe-card-header">${iconHtml}<div class="recipe-name">${r.name}</div>${badge}</div>
     <div class="recipe-card-body">
-      ${stationLine}
-      <div class="ingredients-list">${rows}</div>
+      <div class="recipe-station">🏠 ${r.skillLevel || ''} · ${craftStation}</div>
+      <div>${rows}</div>
     </div>
     <div class="card-footer-row">
       ${craftableFooter}
@@ -1039,16 +759,14 @@ function renderGrid(id, recipes, emptyMsg) {
 }
 
 function rerenderResults() {
-  const s = S[lang];
-  renderGrid('culinary-grid', cachedCulinary, s.emptyCulinary);
-  renderGrid('alchemy-grid',  cachedAlchemy,  s.emptyAlchemy);
-  // Update header & tabs
-  document.getElementById('results-header').textContent     = s.resultsHeader;
-  document.getElementById('tab-culinary-btn').textContent   = s.tabCulinary;
-  document.getElementById('tab-alchemy-btn').textContent    = s.tabAlchemy;
+  renderGrid('culinary-grid', cachedCulinary, S[lang].emptyCulinary);
+  renderGrid('alchemy-grid', cachedAlchemy, S[lang].emptyAlchemy);
+  document.getElementById('results-header').textContent = S[lang].resultsHeader;
+  document.getElementById('tab-culinary-btn').textContent = S[lang].tabCulinary;
+  document.getElementById('tab-alchemy-btn').textContent = S[lang].tabAlchemy;
 }
 
-// ── MAIN ──────────────────────────────────────────────────────────────────
+// ── MAIN ANALYZE ──────────────────────────────────────────────────────────
 document.getElementById('analyze-btn').addEventListener('click', async () => {
   if (!currentBase64) return;
   const s = S[lang];
@@ -1057,55 +775,41 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     setStatus('reading', s.statusReading);
     await loadItemDB();
 
-    const previewImg = document.getElementById('preview-img');
+    document.getElementById('loading-sub').textContent = lang === 'tr' ? 'Malzemeler okunuyor...' : 'Reading materials...';
 
-    // Step 1: AI reads quantities from full image
-    document.getElementById('loading-sub').textContent =
-      lang === 'tr' ? 'Miktarlar okunuyor...' : 'Reading quantities...';
     const aiResult = await readInventory();
     const cells = aiResult.cells || aiResult.items || [];
 
-    // Step 2: Row-by-row icon identification
-    document.getElementById('loading-sub').textContent =
-      lang === 'tr' ? `İkonlar tanımlanıyor (satır satır)...` : 'Identifying icons (row by row)...';
-
-    let iconMap = {}; // "row_col" -> item_id
-    try {
-      iconMap = await identifyIconsByRow(previewImg);
-    } catch(e) {
-      console.warn('Row identification failed:', e);
-    }
-
-    // Step 3: Combine qty + icon ID
+    // Build inventory from AI result
+    // AI returns English names → find item_id from DB → use English name always
     const items = [];
     for (const cell of cells) {
       const qty = cell.qty || cell.quantity || 1;
-      if (!qty) continue;
-      const row = cell.row ?? 0;
-      const col = cell.col ?? 0;
-      const key = `${row}_${col}`;
+      if (!qty || qty < 1) continue;
+      const aiName = cell.name || '';
+      let itemId = cell.item_id || null;
 
-      const itemId = iconMap[key] || cell.item_id || null;
-      let name = cell.name || (lang === 'tr' ? 'Bilinmeyen' : 'Unknown');
+      // Try to find item_id from English name
+      if (!itemId && aiName) itemId = findItemIdByName(aiName);
 
+      // Get canonical English name from DB
+      let name = aiName;
       if (itemId) {
-        const info = BDO_ITEMS.id_to_info[String(itemId)];
-        if (info) {
-          name = lang === 'tr' ? (info.name_tr || info.name_en) : info.name_en;
-        }
+        const dbName = getItemNameEN(itemId);
+        if (dbName) name = dbName; // Use exact Codex English name
       }
 
-      if (name !== 'Bilinmeyen' && name !== 'Unknown') {
+      if (name && name !== 'Unknown') {
         items.push({ name, item_id: itemId, qty });
       }
     }
 
-    inventory = items.length > 0 ? items : (aiResult.items || []);
+    inventory = items.length > 0 ? items : [];
     renderItems(inventory);
     hideLoading();
     await findRecipes();
 
-  } catch (err) {
+  } catch(err) {
     hideLoading();
     setStatus('error', s.statusErr + err.message);
     console.error(err);
@@ -1115,40 +819,26 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
 // ── EXPORT ────────────────────────────────────────────────────────────────
 function exportCSV() {
   if (!inventory.length) return;
-  const s = S[lang];
-  const header = lang === 'tr'
-    ? 'Malzeme,Item ID,Miktar\n'
-    : 'Material,Item ID,Quantity\n';
-  const rows = inventory.map(i =>
-    `"${i.name}",${i.item_id || ''},${i.qty}`
-  ).join('\n');
+  const header = lang === 'tr' ? 'Malzeme,Item ID,Miktar\n' : 'Material,Item ID,Quantity\n';
+  const rows = inventory.map(i => `"${i.name}",${i.item_id || ''},${i.qty}`).join('\n');
   const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url;
-  a.download = 'bdo-storage.csv';
-  a.click();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'bdo-storage.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 
 function exportSheets() {
   if (!inventory.length) return;
-  // Build TSV (tab-separated) — Google Sheets pastes this perfectly
   const header = lang === 'tr' ? 'Malzeme\tItem ID\tMiktar' : 'Material\tItem ID\tQuantity';
   const rows = inventory.map(i => `${i.name}\t${i.item_id || ''}\t${i.qty}`).join('\n');
-  const tsv  = header + '\n' + rows;
-
-  // Copy to clipboard then show instructions
-  navigator.clipboard.writeText(tsv).then(() => {
-    const msg = lang === 'tr'
-      ? '✓ Kopyalandı! Google Sheets\'i aç, A1 hücresine tıkla ve Ctrl+V ile yapıştır.'
-      : '✓ Copied! Open Google Sheets, click cell A1 and press Ctrl+V to paste.';
-    showToast(msg);
+  navigator.clipboard.writeText(header + '\n' + rows).then(() => {
+    showToast(lang === 'tr'
+      ? '✓ Kopyalandı! Google Sheets\'i aç, A1 hücresine tıkla ve Ctrl+V yap.'
+      : '✓ Copied! Open Google Sheets, click A1 and press Ctrl+V.');
   }).catch(() => {
-    // Fallback: open a new window with the data
     const w = window.open('', '_blank');
-    w.document.write(`<pre style="font-family:monospace;font-size:14px;">${tsv}</pre>`);
-    w.document.title = 'BDO Storage Data';
+    w.document.write(`<pre>${header + '\n' + rows}</pre>`);
   });
 }
 
@@ -1157,11 +847,7 @@ function showToast(msg) {
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'toast';
-    toast.style.cssText = `position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);
-      background:var(--bg-panel);border:1px solid var(--gold);color:var(--text-bright);
-      padding:0.8rem 1.5rem;border-radius:3px;font-family:'Crimson Pro',serif;font-size:0.95rem;
-      z-index:999;box-shadow:0 4px 20px rgba(0,0,0,0.4);max-width:500px;text-align:center;
-      transition:opacity 0.3s;`;
+    toast.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--bg-panel);border:1px solid var(--gold);color:var(--text-bright);padding:0.8rem 1.5rem;border-radius:3px;font-family:"Crimson Pro",serif;font-size:0.95rem;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,0.4);max-width:500px;text-align:center;transition:opacity 0.3s;';
     document.body.appendChild(toast);
   }
   toast.textContent = msg;
@@ -1170,7 +856,7 @@ function showToast(msg) {
   toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 4000);
 }
 
-
+// ── INIT ──────────────────────────────────────────────────────────────────
 applyTheme();
 applyStrings();
 document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
