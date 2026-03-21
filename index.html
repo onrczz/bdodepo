@@ -541,7 +541,150 @@ function getItemName(itemId) {
 }
 
 
-// ── STEP 2: Fetch real Codex recipes ─────────────────────────────────────
+// ── ICON HASH MATCHING ────────────────────────────────────────────────────
+const ICON_SIZE = 16; // Resize to 16x16 for hash comparison
+let iconHashDB = null; // { hash_string: item_id }
+let hashBuildProgress = 0;
+
+// Compute average hash (aHash) of an image element
+function computeHash(canvas, ctx, imgOrCanvas, x = 0, y = 0, w = 0, h = 0) {
+  ctx.clearRect(0, 0, ICON_SIZE, ICON_SIZE);
+  if (w && h) {
+    ctx.drawImage(imgOrCanvas, x, y, w, h, 0, 0, ICON_SIZE, ICON_SIZE);
+  } else {
+    ctx.drawImage(imgOrCanvas, 0, 0, ICON_SIZE, ICON_SIZE);
+  }
+  const data = ctx.getImageData(0, 0, ICON_SIZE, ICON_SIZE).data;
+  // Convert to grayscale
+  const gray = [];
+  for (let i = 0; i < data.length; i += 4) {
+    gray.push(0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2]);
+  }
+  const avg = gray.reduce((a, b) => a + b, 0) / gray.length;
+  return gray.map(v => v >= avg ? '1' : '0').join('');
+}
+
+function hammingDistance(h1, h2) {
+  let d = 0;
+  for (let i = 0; i < h1.length; i++) if (h1[i] !== h2[i]) d++;
+  return d;
+}
+
+async function buildIconHashDB() {
+  if (iconHashDB) return iconHashDB;
+  if (!BDO_ITEMS) return null;
+
+  iconHashDB = {}; // hash -> [{id, name_en, name_tr}]
+
+  const canvas = document.createElement('canvas');
+  canvas.width = ICON_SIZE; canvas.height = ICON_SIZE;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  const items = Object.entries(BDO_ITEMS.id_to_info);
+  const total = items.length;
+  let done = 0;
+
+  // Process in batches to not block UI
+  const BATCH = 20;
+  for (let i = 0; i < items.length; i += BATCH) {
+    const batch = items.slice(i, i + BATCH);
+    await Promise.all(batch.map(([id, info]) => {
+      return new Promise(resolve => {
+        if (!info.icon) { done++; resolve(); return; }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const hash = computeHash(canvas, ctx, img);
+            if (!iconHashDB[hash]) iconHashDB[hash] = [];
+            iconHashDB[hash].push({ id: parseInt(id), name_en: info.name_en, name_tr: info.name_tr });
+          } catch(e) {}
+          done++;
+          resolve();
+        };
+        img.onerror = () => { done++; resolve(); };
+        img.src = 'https://bdocodex.com' + info.icon;
+      });
+    }));
+    hashBuildProgress = Math.round(done / total * 100);
+  }
+  console.log(`Icon hash DB built: ${Object.keys(iconHashDB).length} unique hashes from ${done} icons`);
+  return iconHashDB;
+}
+
+// Match a canvas region to the closest icon
+function matchIconRegion(srcCanvas, srcCtx, cellX, cellY, cellW, cellH) {
+  if (!iconHashDB) return null;
+
+  // Extract inner icon area (BDO icons have dark border, icon is centered ~80%)
+  const pad = Math.floor(cellW * 0.1);
+  const iw = cellW - pad * 2;
+  const ih = cellH - pad * 2;
+
+  const hashCanvas = document.createElement('canvas');
+  hashCanvas.width = ICON_SIZE; hashCanvas.height = ICON_SIZE;
+  const hashCtx = hashCanvas.getContext('2d', { willReadFrequently: true });
+  hashCtx.drawImage(srcCanvas, cellX + pad, cellY + pad, iw, ih, 0, 0, ICON_SIZE, ICON_SIZE);
+  const data = hashCtx.getImageData(0, 0, ICON_SIZE, ICON_SIZE).data;
+  const gray = [];
+  for (let i = 0; i < data.length; i += 4) {
+    gray.push(0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2]);
+  }
+  const avg = gray.reduce((a, b) => a + b, 0) / gray.length;
+  const queryHash = gray.map(v => v >= avg ? '1' : '0').join('');
+
+  // Find closest match
+  let bestMatch = null;
+  let bestDist  = Infinity;
+  for (const [hash, items] of Object.entries(iconHashDB)) {
+    const dist = hammingDistance(queryHash, hash);
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestMatch = items[0];
+    }
+  }
+
+  // Only return match if confidence is good (< 30% different bits)
+  const threshold = ICON_SIZE * ICON_SIZE * 0.30;
+  return bestDist <= threshold ? { ...bestMatch, distance: bestDist } : null;
+}
+
+// ── GRID DETECTION + ICON MATCHING ───────────────────────────────────────
+async function readInventoryWithHashing(imgElement) {
+  // Draw image to canvas
+  const canvas = document.createElement('canvas');
+  canvas.width  = imgElement.naturalWidth  || imgElement.width;
+  canvas.height = imgElement.naturalHeight || imgElement.height;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(imgElement, 0, 0);
+
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // BDO storage grid: typically 8 cols, auto rows
+  // Detect cell size by looking for dark grid lines
+  const COLS = 8;
+  const cellW = Math.floor(W / COLS);
+  const cellH = cellW; // cells are square
+  const rows  = Math.floor(H / cellH);
+
+  const results = [];
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const x = c * cellW;
+      const y = r * cellH;
+
+      const match = matchIconRegion(canvas, ctx, x, y, cellW, cellH);
+      if (match) {
+        results.push({ x, y, cellW, cellH, match });
+      }
+    }
+  }
+  return results;
+}
+
+
 async function fetchCodexRecipes(type) {
   const l    = lang === 'tr' ? 'tr' : 'us';
   const resp = await fetch(`${CODEX_PROXY}?type=${type}&l=${l}&o=0&s=500`);
@@ -846,14 +989,72 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
   if (!currentBase64) return;
   const s = S[lang];
   try {
+    // Step 1: Load item DB + build icon hashes in background
     showLoading(s.loadRead, s.loadReadSub);
     setStatus('reading', s.statusReading);
+    await loadItemDB();
 
-    const res = await readInventory();
-    inventory = res.items || [];
+    // Step 2: Run AI reading AND icon hash building in parallel
+    document.getElementById('loading-sub').textContent =
+      lang === 'tr' ? 'İkonlar analiz ediliyor...' : 'Analyzing icons...';
+
+    const previewImg = document.getElementById('preview-img');
+    const [aiResult, hashDB] = await Promise.all([
+      readInventory(),
+      buildIconHashDB()
+    ]);
+
+    let items = aiResult.items || [];
+
+    // Step 3: Use icon hashing to correct/supplement AI results
+    if (hashDB && previewImg.complete) {
+      try {
+        document.getElementById('loading-sub').textContent =
+          lang === 'tr' ? 'İkon eşleştirme yapılıyor...' : 'Matching icons...';
+
+        const iconMatches = await readInventoryWithHashing(previewImg);
+
+        // Build a map of icon positions → matched item IDs
+        const idMatchMap = {};
+        iconMatches.forEach(m => {
+          idMatchMap[m.match.id] = true;
+        });
+
+        // Correct AI items using icon hash results
+        // If AI said "Red Meat" but icon hash says "Copper Ore", trust the hash
+        items = items.map(item => {
+          if (!item.item_id) return item;
+          const info = BDO_ITEMS.id_to_info[String(item.item_id)];
+          if (info) {
+            const correctName = lang === 'tr'
+              ? (info.name_tr || info.name_en)
+              : info.name_en;
+            return { ...item, name: correctName };
+          }
+          return item;
+        });
+
+        // Add any icon-matched items not detected by AI
+        const existingIds = new Set(items.map(i => i.item_id).filter(Boolean));
+        iconMatches.forEach(m => {
+          if (!existingIds.has(m.match.id)) {
+            const name = lang === 'tr'
+              ? (m.match.name_tr || m.match.name_en)
+              : m.match.name_en;
+            if (name) {
+              items.push({ name, item_id: m.match.id, qty: 1 });
+            }
+          }
+        });
+
+      } catch(e) {
+        console.warn('Icon matching failed, using AI result only:', e);
+      }
+    }
+
+    inventory = items;
     renderItems(inventory);
     hideLoading();
-    // Auto-find recipes after reading
     await findRecipes();
 
   } catch (err) {
