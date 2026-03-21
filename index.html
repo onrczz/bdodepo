@@ -513,6 +513,70 @@ function handleFile(file) {
   reader.readAsDataURL(file);
 }
 
+// ── ICON HASH DATABASE ───────────────────────────────────────────────────
+let ICON_HASHES = null; // { item_id: "0101..." }
+
+async function loadIconHashes() {
+  if (ICON_HASHES) return;
+  try {
+    const resp = await fetch('icon_hashes.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    ICON_HASHES = await resp.json();
+    console.log('Icon hashes loaded:', Object.keys(ICON_HASHES).length);
+  } catch(e) {
+    console.warn('Could not load icon_hashes.json:', e.message);
+    ICON_HASHES = {};
+  }
+}
+
+function hammingDistance(h1, h2) {
+  let d = 0;
+  for (let i = 0; i < h1.length; i++) if (h1[i] !== h2[i]) d++;
+  return d;
+}
+
+function hashToArray(str) {
+  const arr = new Uint8Array(str.length);
+  for (let i = 0; i < str.length; i++) arr[i] = str[i] === '1' ? 1 : 0;
+  return arr;
+}
+
+// Hash a canvas region to 16x16 average hash
+const _hCanvas = document.createElement('canvas');
+_hCanvas.width = 16; _hCanvas.height = 16;
+const _hCtx = _hCanvas.getContext('2d', { willReadFrequently: true });
+
+function hashRegion(srcCanvas, sx, sy, sw, sh) {
+  _hCtx.clearRect(0, 0, 16, 16);
+  _hCtx.drawImage(srcCanvas, sx, sy, sw, sh, 0, 0, 16, 16);
+  const d = _hCtx.getImageData(0, 0, 16, 16).data;
+  const gray = new Float32Array(256);
+  for (let i = 0; i < d.length; i += 4)
+    gray[i >> 2] = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
+  let avg = 0;
+  for (let i = 0; i < 256; i++) avg += gray[i];
+  avg /= 256;
+  let hash = '';
+  for (let i = 0; i < 256; i++) hash += gray[i] >= avg ? '1' : '0';
+  return hash;
+}
+
+// Find best matching item_id for a given hash
+function findBestMatch(queryHash) {
+  if (!ICON_HASHES || Object.keys(ICON_HASHES).length === 0) return null;
+  let bestId = null;
+  let bestDist = Infinity;
+  for (const [id, hash] of Object.entries(ICON_HASHES)) {
+    const dist = hammingDistance(queryHash, hash);
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestId = id;
+    }
+  }
+  // Only accept if similarity > 70% (dist < 77 out of 256 bits)
+  return bestDist < 77 ? { id: bestId, dist: bestDist, confidence: ((256 - bestDist) / 256 * 100).toFixed(1) } : null;
+}
+
 // ── READ INVENTORY ────────────────────────────────────────────────────────
 async function readInventory() {
   const previewImg = document.getElementById('preview-img');
@@ -523,214 +587,103 @@ async function readInventory() {
   const cellW = Math.floor(W / COLS);
   const cellH = cellW;
   const rows  = Math.floor(H / cellH);
-  const iconH = Math.floor(cellH * 0.65); // top 65% = icon area
-  const numH  = cellH - iconH;            // bottom 35% = number area
+  const iconH = Math.floor(cellH * 0.65);
+  const numH  = cellH - iconH;
 
-  // Draw full image
+  // Draw full image to canvas
   const fullCanvas = document.createElement('canvas');
   fullCanvas.width = W; fullCanvas.height = H;
   const fullCtx = fullCanvas.getContext('2d');
   fullCtx.drawImage(previewImg, 0, 0);
 
-  // ── Canvas 1: Icons only (black out the number area) ──
-  const iconOnlyCanvas = document.createElement('canvas');
-  iconOnlyCanvas.width = W; iconOnlyCanvas.height = H;
-  const iconOnlyCtx = iconOnlyCanvas.getContext('2d');
-  iconOnlyCtx.drawImage(fullCanvas, 0, 0);
-  // Black out bottom of every cell
-  iconOnlyCtx.fillStyle = '#000000';
+  // ── Step 1: Hash-based icon identification ──
+  document.getElementById('loading-sub').textContent =
+    lang === 'tr' ? 'İkonlar hash ile eşleştiriliyor...' : 'Matching icons with hash...';
+
+  const iconResults = []; // [{row, col, item_id, name, confidence}]
+  const pad = Math.floor(cellW * 0.05);
+
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < COLS; c++) {
-      iconOnlyCtx.fillRect(c * cellW, r * cellH + iconH, cellW, numH);
+      const sx = c * cellW + pad;
+      const sy = r * cellH + pad;
+      const sw = cellW - pad * 2;
+      const sh = iconH - pad;
+
+      const queryHash = hashRegion(fullCanvas, sx, sy, sw, sh);
+      const match = findBestMatch(queryHash);
+
+      if (match) {
+        const info = BDO_ITEMS.id_to_info[match.id];
+        const name = info ? info.name_en : null;
+        if (name) {
+          iconResults.push({ row: r, col: c, item_id: parseInt(match.id), name, confidence: match.confidence });
+          console.log(`(${r},${c}) → ${name} [${match.confidence}%]`);
+        }
+      }
     }
   }
 
-  // ── Canvas 2: Numbers only (black out the icon area) ──
-  const numOnlyCanvas = document.createElement('canvas');
-  numOnlyCanvas.width = W; numOnlyCanvas.height = H;
-  const numOnlyCtx = numOnlyCanvas.getContext('2d');
-  numOnlyCtx.drawImage(fullCanvas, 0, 0);
-  // Black out top of every cell
-  numOnlyCtx.fillStyle = '#000000';
+  // ── Step 2: AI reads quantities only (numbers masked icons) ──
+  document.getElementById('loading-sub').textContent =
+    lang === 'tr' ? 'Miktarlar okunuyor...' : 'Reading quantities...';
+
+  // Black out icon area, keep only numbers
+  const numCanvas = document.createElement('canvas');
+  numCanvas.width = W; numCanvas.height = H;
+  const numCtx = numCanvas.getContext('2d');
+  numCtx.drawImage(fullCanvas, 0, 0);
+  numCtx.fillStyle = '#111111';
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < COLS; c++) {
-      numOnlyCtx.fillRect(c * cellW, r * cellH, cellW, iconH);
+      numCtx.fillRect(c * cellW, r * cellH, cellW, iconH);
     }
   }
+  const numB64 = numCanvas.toDataURL('image/jpeg', 0.92).split(',')[1];
 
-  const iconB64 = iconOnlyCanvas.toDataURL('image/jpeg', 0.92).split(',')[1];
-  const numB64  = numOnlyCanvas.toDataURL('image/jpeg', 0.92).split(',')[1];
-
-  // ── Step 1 & 2 in parallel: identify icons + read numbers ──
-  const iconPrompt = `BDO storage grid. ${COLS} columns × ${rows} rows. The bottom of each cell is blacked out (numbers hidden).
-Identify each item icon in ENGLISH (BDO/Codex name). Read LEFT TO RIGHT, TOP TO BOTTOM.
-Skip empty/black cells.
-
-Common items: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber,
-Ash Plywood, Maple Plywood, Pine Plywood, Cedar Plywood, Birch Plywood, Fir Plywood,
-Iron Ore, Copper Ore, Silver Ore, Titanium Ore, Coal, Rough Stone, Zinc Ore, Lead Ore, Tin Ore,
-Iron Ingot, Copper Ingot, Steel Ingot, Titanium Ingot, Melted Iron Shard, Melted Copper Shard,
-Wheat, Barley, Potato, Corn, Sweet Potato, Rye, Salt, Sugar, Milk, Egg, Butter, Flour,
-Vinegar, Olive Oil, Garlic, Onion, Tomato, Pumpkin, Pepper, Strawberry, Coconut, Apple,
-Red Meat, Chicken Meat, Fish, Bone, Hide, Thick Hide, Blood, Deer Blood, Pig Blood, Wolf Blood, Bear Blood,
-Cotton, Flax, Wool, Hops, Sunrise Herb, Fire Flake Flower, Silver Azalea, Monk Branch, Dragon Root,
-Clear Liquid Reagent, Pure Powder Reagent, Processed Grain, Log, Bean Sprouts, Flower, Fruit,
-Cooking Honey, Leavening Agent, Mushroom, Dried Fish,
-Ash Timber Crate, Maple Timber Crate, Pine Timber Crate, Copper Ore Crate, Iron Ore Crate.
-
-Return ONLY JSON:
-{"cells":[{"row":0,"col":0,"name":"Copper Ore"},{"row":0,"col":1,"name":"Potato"}]}`;
-
-  const numPrompt = `BDO storage grid. ${COLS} columns × ${rows} rows. The top of each cell is blacked out (icons hidden).
-Read ONLY the quantity number at the bottom of each cell. LEFT TO RIGHT, TOP TO BOTTOM.
-B=thousands (415B=415000, 297B=297000), M=millions. Write full integer. Skip empty/black cells.
+  const numPrompt = `BDO storage grid image. ${COLS} columns × ${rows} rows.
+The TOP of each cell is black (icons hidden). Only the quantity numbers at the bottom are visible.
+Read each number LEFT TO RIGHT, TOP TO BOTTOM.
+B=thousands (415B=415000, 297B=297000), M=millions. Write full integer.
+Skip cells with no visible number.
 
 Return ONLY JSON:
 {"cells":[{"row":0,"col":0,"qty":415000},{"row":0,"col":1,"qty":298000}]}`;
 
-  const [iconResp, numResp] = await Promise.all([
-    fetch(PROXY_URL, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 2000,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: iconB64 } },
-          { type: 'text', text: iconPrompt }
-        ]}]
-      })
-    }),
-    fetch(PROXY_URL, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 2000,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: numB64 } },
-          { type: 'text', text: numPrompt }
-        ]}]
-      })
+  const numResp = await fetch(PROXY_URL, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: numB64 } },
+        { type: 'text', text: numPrompt }
+      ]}]
     })
-  ]);
+  });
+  const numData = await numResp.json();
+  if (numData.error) throw new Error(numData.error.message);
+  const numText = numData.content.map(b => b.text || '').join('');
+  const numMatch = numText.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
+  if (!numMatch) throw new Error('AI returned no quantity data');
+  const numResult = JSON.parse(numMatch[0]);
 
-  const [iconData, numData] = await Promise.all([iconResp.json(), numResp.json()]);
-  if (iconData.error) throw new Error(iconData.error.message);
-  if (numData.error)  throw new Error(numData.error.message);
-
-  const iconText = iconData.content.map(b => b.text || '').join('');
-  const numText  = numData.content.map(b => b.text || '').join('');
-
-  const iconMatch = iconText.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
-  const numMatch  = numText.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
-  if (!iconMatch || !numMatch) throw new Error('AI returned no response');
-
-  const iconResult = JSON.parse(iconMatch[0]);
-  const numResult  = JSON.parse(numMatch[0]);
-
-  // Merge by row+col
+  // ── Step 3: Merge hash results + AI quantities ──
   const qtyMap = {};
   (numResult.cells || []).forEach(c => { qtyMap[`${c.row}_${c.col}`] = c.qty; });
 
-  // ── Step 3: Verify each icon match against Codex icon ──
-  document.getElementById('loading-sub').textContent =
-    lang === 'tr' ? 'Codex ikonlarıyla doğrulanıyor...' : 'Verifying with Codex icons...';
-
-  const verifiedCells = await verifyWithCodexIcons(iconResult.cells || [], fullCanvas, cellW, cellH);
-
-  const cells = verifiedCells
+  const cells = iconResults
     .map(c => ({
       row: c.row, col: c.col,
       name: c.name,
+      item_id: c.item_id,
       qty: qtyMap[`${c.row}_${c.col}`] || 1
     }))
-    .filter(c => c.name && c.qty > 0)
+    .filter(c => c.qty > 0)
     .sort((a, b) => (a.row - b.row) || (a.col - b.col));
 
   return { cells };
 }
 
-// ── VERIFY: Compare cell icon with Codex icon via pixel similarity ────────
-async function verifyWithCodexIcons(aiCells, fullCanvas, cellW, cellH) {
-  const ICON_SIZE = 32;
-  const hashCanvas = document.createElement('canvas');
-  hashCanvas.width = ICON_SIZE; hashCanvas.height = ICON_SIZE;
-  const hashCtx = hashCanvas.getContext('2d', { willReadFrequently: true });
-
-  function getHash(srcCanvas, sx, sy, sw, sh) {
-    hashCtx.clearRect(0, 0, ICON_SIZE, ICON_SIZE);
-    hashCtx.drawImage(srcCanvas, sx, sy, sw, sh, 0, 0, ICON_SIZE, ICON_SIZE);
-    const d = hashCtx.getImageData(0, 0, ICON_SIZE, ICON_SIZE).data;
-    const gray = [];
-    for (let i = 0; i < d.length; i += 4)
-      gray.push(0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2]);
-    const avg = gray.reduce((a,b) => a+b, 0) / gray.length;
-    return gray.map(v => v >= avg ? 1 : 0);
-  }
-
-  function similarity(h1, h2) {
-    let same = 0;
-    for (let i = 0; i < h1.length; i++) if (h1[i] === h2[i]) same++;
-    return same / h1.length;
-  }
-
-  const iconPad = Math.floor(cellW * 0.08);
-  const iconSize = cellW - iconPad * 2;
-  const iconAreaH = Math.floor(cellW * 0.65) - iconPad;
-
-  const results = [];
-
-  for (const cell of aiCells) {
-    if (!cell.name) continue;
-    const cx = cell.col * cellW + iconPad;
-    const cy = cell.row * cellW + iconPad;
-    const cellHash = getHash(fullCanvas, cx, cy, iconSize, iconAreaH);
-
-    // Find item in DB
-    const itemId = findItemIdByName(cell.name);
-    if (!itemId) {
-      results.push(cell);
-      continue;
-    }
-
-    const info = BDO_ITEMS.id_to_info[String(itemId)];
-    if (!info?.icon) {
-      results.push(cell);
-      continue;
-    }
-
-    // Fetch Codex icon via proxy and compare
-    try {
-      const proxyUrl = `https://bdo-api-proxy.onurcilhoroz.workers.dev/icon?path=${encodeURIComponent(info.icon)}`;
-      const img = await new Promise((resolve, reject) => {
-        const i = new Image();
-        i.crossOrigin = 'anonymous';
-        i.onload = () => resolve(i);
-        i.onerror = reject;
-        i.src = proxyUrl;
-        setTimeout(() => reject(new Error('timeout')), 3000);
-      });
-
-      // Draw codex icon to hash canvas
-      const codexCanvas = document.createElement('canvas');
-      codexCanvas.width = ICON_SIZE; codexCanvas.height = ICON_SIZE;
-      const codexCtx = codexCanvas.getContext('2d');
-      codexCtx.drawImage(img, 0, 0, ICON_SIZE, ICON_SIZE);
-      const codexHash = getHash(codexCanvas, 0, 0, ICON_SIZE, ICON_SIZE);
-
-      const sim = similarity(cellHash, codexHash);
-      console.log(`${cell.name} (${cell.row},${cell.col}): similarity=${(sim*100).toFixed(1)}%`);
-
-      // If similarity < 45%, AI might be wrong — keep name but flag low confidence
-      if (sim < 0.45) {
-        console.warn(`Low confidence for ${cell.name} at (${cell.row},${cell.col}): ${(sim*100).toFixed(1)}%`);
-      }
-    } catch(e) {
-      // Verification failed — keep AI result
-    }
-
-    results.push(cell);
-  }
-
-  return results;
-}
 
 // ── CODEX RECIPES ─────────────────────────────────────────────────────────
 async function fetchCodexRecipes(type) {
@@ -1006,6 +959,7 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     showLoading(s.loadRead, s.loadReadSub);
     setStatus('reading', s.statusReading);
     await loadItemDB();
+    await loadIconHashes();
 
     document.getElementById('loading-sub').textContent = lang === 'tr' ? 'Malzemeler okunuyor...' : 'Reading materials...';
 
