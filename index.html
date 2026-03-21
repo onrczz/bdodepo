@@ -814,7 +814,7 @@ async function readInventoryFromImage(base64) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
+      max_tokens: 4000,
       messages: [{
         role: 'user',
         content: [
@@ -824,12 +824,24 @@ async function readInventoryFromImage(base64) {
           },
           {
             type: 'text',
-            text: `Bu Black Desert Online depo/envanter ekran görüntüsündeki TÜM malzemeleri listele.
-Her eşya için: isim ve miktar.
-Sadece JSON döndür, başka bir şey yazma. Format:
-{"items": [{"name": "Pirinç", "qty": 297}, {"name": "Buğday", "qty": 385}, ...]}
-Miktarları tam sayı olarak ver. Eğer miktar görünmüyorsa 1 yaz.
-Türkçe isimler kullan.`
+            text: `Bu Black Desert Online depo ekran görüntüsündeki SADECE craft ve üretim malzemelerini listele. Sadece JSON döndür, kesinlikle başka hiçbir şey yazma, açıklama yapma. Yanıtın ilk karakteri { olmalı, son karakteri } olmalı.
+Format: {"items":[{"name":"isim","qty":sayi}]}
+
+SADECE şunları say:
+- Hammaddeler (tahıl, et, balık, sebze, maden cevheri, odun, bitki, kan, deri vb.)
+- İşlenmiş malzemeler (kereste, metal parçası, kumaş, ip vb.)
+- Kimya/aşçılık malzemeleri (baharlar, yağ, şeker, tuz vb.)
+- Tohumlar, fideler
+- Craft bileşenleri
+
+SAYMA:
+- Silah, zırh, aksesuar, kostüm
+- Tüketim iksiri, yiyecek (hazır)
+- Evcil hayvan, binek
+- Kara taş, yükseltme taşları
+- Para, jeton
+
+Kural: qty her zaman tam sayı olmalı.`
           }
         ]
       }]
