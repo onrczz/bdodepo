@@ -64,7 +64,7 @@
   .preview-section { display: none; gap: 1.5rem; margin-top: 1.5rem; }
   .preview-section.visible { display: grid; grid-template-columns: 300px 1fr; }
   .preview-card { background: var(--bg-panel); border: 1px solid var(--border-gold); border-radius: 4px; overflow: hidden; }
-  .preview-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
+  .preview-card img { width: 100%; height: auto; max-height: 300px; object-fit: contain; display: block; background: var(--bg-deep); }
   .card-footer { padding: 0.8rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.8rem; }
 
   .btn { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.08em; padding: 0.6rem 1.2rem; border-radius: 2px; border: none; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
