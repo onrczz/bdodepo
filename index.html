@@ -310,23 +310,17 @@ const S = {
     themeDark:     'Karanlık',
     exportCSV:     '⬇ CSV',
     exportSheets:  '📊 Google Sheets',
-    imagePrompt: `Bu Black Desert Online depo ekran görüntüsündeki malzemeleri listele.
-Her ikonun altındaki sayı o malzemenin miktarıdır.
+    imagePrompt: `Bu Black Desert Online depo ekran görüntüsünde her hücrede bir ikon ve altında bir sayı var.
+SADECE sayıları oku — ikonun ne olduğunu tahmin etme, ikon eşleştirme ayrıca yapılacak.
 
-Malzeme isimlerini ve BDO Codex item ID'lerini belirle. Yaygın item ID'leri:
-Tuz=9018, Su=7313, Süt=9065, Şeker=9017, Un=7703, Yumurta=9066,
-Buğday=9001, Mısır=9002, Pirinç=9003, Arpa=9004, Patates=9005,
-Çavdar=9008, Domates=9009, Soğan=9010, Sarımsak=9011, Kabak=9014,
-Yulaf=9078, Esrar=9082, Hindistancevizi=9075, Çilek=9073,
-Kırmızı Et=9021, Balık=7906, Kemik=9270, Deri=9276, Kan=9277,
-Pamuk=7304, Keten=7305, Kıl=7301, Odun=7001, Kereste=7017,
-Demir Parçası=8501, Gümüş Ore=5003, Çiçek=7438, Meyve=7704,
-Tahıl İşlenmiş=7702, Altın İşlenmiş=4003, Gümüş İşlenmiş=4002,
-Kimya Malzemesi=6201, Bitki Tohumu=7101.
+Her hücre için: hücre konumu (satır, sütun) ve altındaki sayı.
+Izgara soldan sağa, yukarıdan aşağıya gider. 8 sütun var.
 
-MİKTAR: B=bin (297B=297000), M=milyon. Tam sayı yaz.
+MİKTAR KURALI: B=bin (297B=297000, 415B=415000), M=milyon. Tam sayı yaz.
+Miktar görünmüyorsa veya belirsizse 1 yaz.
+
 Sadece JSON döndür:
-{"items":[{"name":"Pirinç","item_id":9003,"qty":297000},{"name":"Buğday","item_id":9001,"qty":385}]}`
+{"cells":[{"row":0,"col":0,"qty":415000},{"row":0,"col":1,"qty":298000},{"row":0,"col":2,"qty":297000}]}`
   },
   en: {
     title:         'BDO Storage Analyzer',
@@ -362,23 +356,17 @@ Sadece JSON döndür:
     themeDark:     'Dark Mode',
     exportCSV:     '⬇ CSV',
     exportSheets:  '📊 Google Sheets',
-    imagePrompt: `List the materials from this Black Desert Online storage screenshot.
-The number under each icon is the quantity of that material.
+    imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
+ONLY read the numbers — do NOT try to identify the icons, that will be done separately by an icon matching system.
 
-Identify material names and BDO Codex item IDs. Common item IDs:
-Salt=9018, Water=7313, Milk=9065, Sugar=9017, Flour=7703, Egg=9066,
-Wheat=9001, Corn=9002, Rice=9003, Barley=9004, Potato=9005,
-Rye=9008, Tomato=9009, Onion=9010, Garlic=9011, Pumpkin=9014,
-Oat=9078, Hops=9082, Coconut=9075, Strawberry=9073,
-Red Meat=9021, Fish=7906, Bone=9270, Hide=9276, Blood=9277,
-Cotton=7304, Flax=7305, Wool=7301, Log=7001, Plywood=7017,
-Iron Shard=8501, Silver Ore=5003, Flower=7438, Fruit=7704,
-Processed Grain=7702, Processed Gold=4003, Processed Silver=4002,
-Hops=6201, Plant Seed=7101.
+For each cell: grid position (row, col) and the number shown below the icon.
+Grid goes left to right, top to bottom. There are 8 columns.
 
-QUANTITY: B=thousands (297B=297000), M=millions. Write full integer.
+QUANTITY RULE: B=thousands (297B=297000, 415B=415000), M=millions. Write full integer.
+If quantity is unclear write 1.
+
 Return ONLY JSON:
-{"items":[{"name":"Rice","item_id":9003,"qty":297000},{"name":"Wheat","item_id":9001,"qty":385}]}`
+{"cells":[{"row":0,"col":0,"qty":415000},{"row":0,"col":1,"qty":298000},{"row":0,"col":2,"qty":297000}]}`
   }
 };
 
@@ -989,70 +977,80 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
   if (!currentBase64) return;
   const s = S[lang];
   try {
-    // Step 1: Load item DB + build icon hashes in background
     showLoading(s.loadRead, s.loadReadSub);
     setStatus('reading', s.statusReading);
     await loadItemDB();
 
-    // Step 2: Run AI reading AND icon hash building in parallel
     document.getElementById('loading-sub').textContent =
-      lang === 'tr' ? 'İkonlar analiz ediliyor...' : 'Analyzing icons...';
+      lang === 'tr' ? 'İkonlar ve sayılar okunuyor...' : 'Reading icons and quantities...';
 
     const previewImg = document.getElementById('preview-img');
+
+    // Run AI (qty reading) and icon hash building in parallel
     const [aiResult, hashDB] = await Promise.all([
       readInventory(),
       buildIconHashDB()
     ]);
 
-    let items = aiResult.items || [];
+    // AI returns {cells: [{row, col, qty}]}
+    // Hash returns grid matches with item IDs
+    const cells = aiResult.cells || aiResult.items || [];
 
-    // Step 3: Use icon hashing to correct/supplement AI results
-    if (hashDB && previewImg.complete) {
+    document.getElementById('loading-sub').textContent =
+      lang === 'tr' ? 'İkon eşleştirme yapılıyor...' : 'Matching icons...';
+
+    let items = [];
+
+    if (hashDB && previewImg.complete && cells.length > 0) {
       try {
-        document.getElementById('loading-sub').textContent =
-          lang === 'tr' ? 'İkon eşleştirme yapılıyor...' : 'Matching icons...';
+        // Draw preview image to canvas for icon matching
+        const canvas = document.createElement('canvas');
+        const naturalW = previewImg.naturalWidth || previewImg.width;
+        const naturalH = previewImg.naturalHeight || previewImg.height;
+        canvas.width  = naturalW;
+        canvas.height = naturalH;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(previewImg, 0, 0, naturalW, naturalH);
 
-        const iconMatches = await readInventoryWithHashing(previewImg);
+        const COLS  = 8;
+        const cellW = Math.floor(naturalW / COLS);
+        const cellH = cellW;
 
-        // Build a map of icon positions → matched item IDs
-        const idMatchMap = {};
-        iconMatches.forEach(m => {
-          idMatchMap[m.match.id] = true;
-        });
+        // For each AI-detected cell, match the icon
+        for (const cell of cells) {
+          const qty = cell.qty || 1;
+          if (!qty) continue;
 
-        // Correct AI items using icon hash results
-        // If AI said "Red Meat" but icon hash says "Copper Ore", trust the hash
-        items = items.map(item => {
-          if (!item.item_id) return item;
-          const info = BDO_ITEMS.id_to_info[String(item.item_id)];
-          if (info) {
-            const correctName = lang === 'tr'
-              ? (info.name_tr || info.name_en)
-              : info.name_en;
-            return { ...item, name: correctName };
+          const row = cell.row ?? 0;
+          const col = cell.col ?? 0;
+          const x   = col * cellW;
+          const y   = row * cellH;
+
+          const match = matchIconRegion(canvas, ctx, x, y, cellW, cellH);
+          if (match) {
+            const info = BDO_ITEMS.id_to_info[String(match.id)];
+            const name = info
+              ? (lang === 'tr' ? (info.name_tr || info.name_en) : info.name_en)
+              : match.name_en;
+            items.push({ name, item_id: match.id, qty });
+          } else {
+            // Hash couldn't match — keep cell with qty but unknown name
+            items.push({ name: lang === 'tr' ? 'Bilinmeyen' : 'Unknown', item_id: null, qty });
           }
-          return item;
-        });
-
-        // Add any icon-matched items not detected by AI
-        const existingIds = new Set(items.map(i => i.item_id).filter(Boolean));
-        iconMatches.forEach(m => {
-          if (!existingIds.has(m.match.id)) {
-            const name = lang === 'tr'
-              ? (m.match.name_tr || m.match.name_en)
-              : m.match.name_en;
-            if (name) {
-              items.push({ name, item_id: m.match.id, qty: 1 });
-            }
-          }
-        });
-
+        }
       } catch(e) {
-        console.warn('Icon matching failed, using AI result only:', e);
+        console.warn('Icon matching failed, falling back to AI names:', e);
+        // Fallback: use AI items format if cells failed
+        items = (aiResult.items || []);
       }
+    } else if (aiResult.items) {
+      // Old format fallback
+      items = aiResult.items;
     }
 
-    inventory = items;
+    // Filter out unknowns and zero-qty items
+    inventory = items.filter(i => i.qty > 0 && i.name !== 'Unknown' && i.name !== 'Bilinmeyen');
+
     renderItems(inventory);
     hideLoading();
     await findRecipes();
