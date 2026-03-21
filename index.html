@@ -2,109 +2,133 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>BDO Depo Analizi</title>
+<title>BDO Storage Analyzer</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro&display=swap');
-  :root { --gold: #c9a84c; --bg: #0a0806; --panel: #12100c; --text: #d4c9a8; }
+  :root { --gold: #c9a84c; --bg: #0a0806; --panel: #12100c; --text: #d4c9a8; --border: #3d3020; }
   body { background: var(--bg); color: var(--text); font-family: 'Crimson Pro', serif; margin: 0; padding: 20px; }
-  .container { max-width: 1000px; margin: 0 auto; text-align: center; }
-  h1 { font-family: 'Cinzel', serif; color: var(--gold); }
-  .upload-zone { border: 2px dashed #3d3020; padding: 40px; cursor: pointer; background: var(--panel); margin-bottom: 20px; }
-  .preview-section { display: none; grid-template-columns: 300px 1fr; gap: 20px; text-align: left; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header { text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 30px; }
+  h1 { font-family: 'Cinzel', serif; color: var(--gold); margin: 0; }
+  .upload-box { border: 2px dashed var(--border); padding: 40px; text-align: center; background: var(--panel); cursor: pointer; transition: 0.3s; }
+  .upload-box:hover { border-color: var(--gold); }
+  .main-layout { display: none; grid-template-columns: 350px 1fr; gap: 25px; margin-top: 20px; }
   .visible { display: grid; }
-  .item-card { background: #1a1610; border: 1px solid #2e2618; padding: 10px; display: flex; align-items: center; gap: 15px; margin-bottom: 10px; border-left: 3px solid var(--gold); }
-  .item-icon { width: 44px; height: 44px; background: #000; border: 1px solid #3d3020; }
-  .btn { background: var(--gold); color: #000; border: none; padding: 10px 20px; cursor: pointer; font-family: 'Cinzel'; font-weight: bold; width: 100%; }
-  #loading { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; color: var(--gold); flex-direction: column; }
+  .item-card { background: #1a1610; border: 1px solid #2e2618; padding: 12px; display: flex; align-items: center; gap: 15px; margin-bottom: 8px; border-left: 4px solid var(--gold); }
+  .item-icon { width: 48px; height: 48px; border: 1px solid var(--border); background: #000; }
+  .btn { background: linear-gradient(to bottom, var(--gold), #8a6a1e); color: #000; border: none; padding: 12px; cursor: pointer; font-family: 'Cinzel'; font-weight: bold; width: 100%; text-transform: uppercase; }
+  #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999; align-items: center; justify-content: center; color: var(--gold); font-family: 'Cinzel'; flex-direction: column; }
+  .items-scroll { max-height: 600px; overflow-y: auto; padding-right: 10px; }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>BDO STORAGE ANALYZER</h1>
-  
-  <div class="upload-zone" id="drop-zone">
-    <p>Depo görselini buraya sürükle veya tıkla</p>
+  <header><h1>BDO STORAGE ANALYZER</h1></header>
+
+  <div class="upload-box" id="drop-zone">
+    <div style="font-size: 40px;">📦</div>
+    <h3>Depo Ekran Görüntüsü Yükle</h3>
+    <p>PNG veya JPG sürükle veya tıkla</p>
     <input type="file" id="file-input" hidden accept="image/*">
   </div>
 
-  <div class="preview-section" id="preview-wrap">
+  <div class="main-layout" id="app-wrap">
     <div>
-      <img id="img-preview" style="width:100%; border: 1px solid var(--gold);">
-      <button class="btn" id="run-btn" style="margin-top:10px;">⚔ ANALİZ ET</button>
+      <img id="img-preview" style="width:100%; border: 1px solid var(--gold); margin-bottom: 15px;">
+      <button class="btn" id="analyze-btn">⚔ ANALİZİ BAŞLAT</button>
+      <button class="btn" style="margin-top:10px; background: #222; color: #888;" onclick="location.reload()">↩ YENİ RESİM</button>
     </div>
-    <div id="results-list">
-      <h3 style="color:var(--gold); font-family:'Cinzel'; border-bottom:1px solid #3d3020; padding-bottom:5px;">BULUNAN MATERYALLER</h3>
-      <div id="items-container"></div>
+    <div>
+      <h3 style="font-family:'Cinzel'; color:var(--gold); border-bottom:1px solid var(--border); padding-bottom:10px;">TESPİT EDİLENLER</h3>
+      <div class="items-scroll" id="results"></div>
     </div>
   </div>
 </div>
 
-<div id="loading"><div>Analiz Ediliyor...</div></div>
+<div id="overlay">
+  <div style="width: 50px; height: 50px; border: 4px solid #3d3020; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+  <p style="margin-top: 20px; letter-spacing: 3px;">KARA RUH OKUYOR...</p>
+</div>
+
+<style> @keyframes spin { to { transform: rotate(360deg); } } </style>
 
 <script>
-const WORKER_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
-let DB = null;
+const WORKER_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/'; // Kendi URL'in
+let ITEM_DB = null;
 
-// JSON Veritabanını Yükle
-fetch('bdo_items.json').then(r => r.json()).then(data => { DB = data; console.log("DB Hazır"); });
+// Yerel Veritabanını Yükle
+fetch('bdo_items.json').then(r => r.json()).then(data => { 
+  ITEM_DB = data; 
+  console.log("Eşya veritabanı hazır."); 
+});
 
-const fileInput = document.getElementById('file-input');
-const dropZone = document.getElementById('drop-zone');
+const fInput = document.getElementById('file-input');
+const dZone = document.getElementById('drop-zone');
 
-dropZone.onclick = () => fileInput.click();
-fileInput.onchange = (e) => {
+dZone.onclick = () => fInput.click();
+fInput.onchange = (e) => {
   const file = e.target.files[0];
+  if(!file) return;
   const reader = new FileReader();
   reader.onload = (ev) => {
     document.getElementById('img-preview').src = ev.target.result;
-    document.getElementById('preview-wrap').classList.add('visible');
-    dropZone.style.display = 'none';
+    document.getElementById('app-wrap').classList.add('visible');
+    dZone.style.display = 'none';
   };
   reader.readAsDataURL(file);
 };
 
-document.getElementById('run-btn').onclick = async () => {
+document.getElementById('analyze-btn').onclick = async () => {
   const imgData = document.getElementById('img-preview').src.split(',')[1];
-  document.getElementById('loading').style.display = 'flex';
-  const container = document.getElementById('items-container');
-  container.innerHTML = "";
+  document.getElementById('overlay').style.display = 'flex';
+  const resDiv = document.getElementById('results');
+  resDiv.innerHTML = "";
 
   try {
-    const res = await fetch(WORKER_URL, {
+    const response = await fetch(WORKER_URL, {
       method: 'POST',
       body: JSON.stringify({ image: imgData })
     });
-    const data = await res.json();
+    const result = await response.json();
 
-    if (!data.text) throw new Error("Yapay zeka yanıtı boş döndü.");
+    if (result.error) throw new Error(result.error);
+    if (!result.text) throw new Error("Yapay zeka yanıt veremedi.");
 
-    const jsonMatch = data.text.match(/\[.*\]/s);
-    if (!jsonMatch) throw new Error("Liste formatı bulunamadı.");
+    // JSON Ayıklama ve Temizleme
+    const cleanText = result.text.replace(/```json/g, "").replace(/```/g, "").trim();
+    const jsonMatch = cleanText.match(/\[[\s\S]*\]/s);
+    
+    if (!jsonMatch) throw new Error("Liste formatı bulunamadı. Yanıt: " + cleanText.substring(0, 50));
     
     const items = JSON.parse(jsonMatch[0]);
 
     items.forEach(item => {
-      const entry = DB ? Object.entries(DB.id_to_info).find(([id, info]) => info.name_en.toLowerCase() === item.name.toLowerCase()) : null;
-      
-      const div = document.createElement('div');
-      div.className = 'item-card';
-      const icon = entry ? `https://bdocodex.com${entry[1].icon}` : 'https://bdocodex.com/items/new_icon/03_etc/00007001.png';
-      const name = entry ? entry[1].name_tr : item.name;
+      // JSON Veritabanında (name_en) eşleştirme
+      const entry = ITEM_DB ? Object.entries(ITEM_DB.id_to_info).find(([id, info]) => 
+        info.name_en.toLowerCase() === item.name.toLowerCase()
+      ) : null;
 
-      div.innerHTML = `
-        <img src="${icon}" class="item-icon">
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      const icon = entry ? `https://bdocodex.com${entry[1].icon}` : 'https://bdocodex.com/items/new_icon/03_etc/00007001.png';
+      const trName = entry ? (entry[1].name_tr || entry[1].name_en) : item.name;
+
+      card.innerHTML = `
+        <img src="${icon}" class="item-icon" onerror="this.src='https://via.placeholder.com/48?text=?'">
         <div>
-          <div style="font-weight:bold; color:#fff;">${name}</div>
-          <div style="color:var(--gold); font-size:0.9rem;">${item.count.toLocaleString()} Adet</div>
+          <div style="font-weight:700; color:#fff; font-size:1.1rem;">${trName}</div>
+          <div style="color:var(--gold); font-family:'Cinzel';">${item.count.toLocaleString()} ADET</div>
         </div>
       `;
-      container.appendChild(div);
+      resDiv.appendChild(card);
     });
+
   } catch (err) {
     alert("Hata: " + err.message);
+    console.error(err);
   } finally {
-    document.getElementById('loading').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
   }
 };
 </script>
