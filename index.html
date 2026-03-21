@@ -272,6 +272,7 @@
 <script>
 const PROXY_URL   = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
 const CODEX_PROXY = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/codex';
+const ITEM_PROXY  = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/item';
 const ICON_BASE   = 'https://bdocodex.com/items/';
 
 // ── STRINGS ───────────────────────────────────────────────────────────────
@@ -468,6 +469,7 @@ document.getElementById('change-btn').addEventListener('click', () => {
   document.getElementById('results-section').classList.remove('visible');
   inventory = []; currentBase64 = null; fInput.value = '';
   cachedCulinary = []; cachedAlchemy = [];
+  editMode = false;
   setStatus('', S[lang].statusReady);
 });
 
@@ -662,7 +664,7 @@ async function resolveItemName(itemId) {
   }
   try {
     const l    = lang === 'tr' ? 'tr' : 'us';
-    const resp = await fetch(`${CODEX_PROXY.replace('/codex','')}/item?id=${itemId}&l=${l}`);
+    const resp = await fetch(`${ITEM_PROXY}?id=${itemId}&l=${l}`);
     const data = await resp.json();
     // Codex returns { "0": { ... } } or array
     const row  = data['0'] || (Array.isArray(data) ? data[0] : null);
