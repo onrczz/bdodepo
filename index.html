@@ -351,10 +351,25 @@ async function loadItemDB() {
   if (BDO_ITEMS) return;
   try {
     const resp = await fetch('bdo_items.json');
-    BDO_ITEMS = await resp.json();
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const raw = JSON.parse(text);
+    // Support both formats
+    if (raw.items) {
+      // New minimal format: {items: {id: {n, i}}}
+      BDO_ITEMS = { id_to_info: {} };
+      for (const [id, v] of Object.entries(raw.items)) {
+        BDO_ITEMS.id_to_info[id] = { name_en: v.n, icon: v.i };
+      }
+    } else if (raw.id_to_info) {
+      BDO_ITEMS = raw;
+    } else {
+      throw new Error('Unknown format');
+    }
+    console.log('BDO Items loaded:', Object.keys(BDO_ITEMS.id_to_info).length);
   } catch(e) {
-    console.warn('Could not load bdo_items.json');
-    BDO_ITEMS = { id_to_info: {}, icon_to_id: {} };
+    console.warn('Could not load bdo_items.json:', e.message);
+    BDO_ITEMS = { id_to_info: {} };
   }
 }
 
@@ -792,11 +807,18 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
       // Try to find item_id from English name
       if (!itemId && aiName) itemId = findItemIdByName(aiName);
 
-      // Get canonical English name from DB
+      // Get canonical English name from DB (always use DB name, not AI name)
       let name = aiName;
       if (itemId) {
         const dbName = getItemNameEN(itemId);
         if (dbName) name = dbName; // Use exact Codex English name
+      } else if (aiName) {
+        // Try case-insensitive match one more time
+        itemId = findItemIdByName(aiName);
+        if (itemId) {
+          const dbName = getItemNameEN(itemId);
+          if (dbName) name = dbName;
+        }
       }
 
       if (name && name !== 'Unknown') {
