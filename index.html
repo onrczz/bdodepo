@@ -92,6 +92,61 @@
     margin-top: 0.3rem;
   }
 
+  /* API Key Panel */
+  .apikey-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-gold);
+    border-radius: 4px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .apikey-title {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .apikey-desc {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    margin-bottom: 0.8rem;
+    line-height: 1.6;
+  }
+
+  .apikey-desc a { color: var(--gold); text-decoration: none; }
+  .apikey-desc a:hover { color: var(--gold-light); }
+  .apikey-desc strong { color: var(--text); }
+
+  .apikey-row {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+  }
+
+  .apikey-row input {
+    flex: 1;
+    background: var(--bg-deep);
+    border: 1px solid var(--border-gold);
+    border-radius: 2px;
+    padding: 0.55rem 0.9rem;
+    color: var(--text-bright);
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .apikey-row input:focus { border-color: var(--gold); }
+  .apikey-row input::placeholder { color: var(--text-dim); }
+
+  .apikey-panel.locked {
+    border-color: rgba(76,175,118,0.4);
+    background: rgba(76,175,118,0.04);
+  }
+
   /* Upload Zone */
   .upload-zone {
     border: 2px dashed var(--border-gold);
@@ -580,6 +635,20 @@
     <p class="subtitle">Malzemelerini yükle — en karlı seçeneği bul</p>
   </header>
 
+  <!-- API Key Input -->
+  <div class="apikey-panel" id="apikey-panel">
+    <div class="apikey-title">🔑 Anthropic API Anahtarı</div>
+    <div class="apikey-desc">
+      Bu araç yapay zeka için Anthropic API'si kullanır. Anahtarın <strong>sadece tarayıcında</strong> saklanır, hiçbir yere gönderilmez.<br>
+      <a href="https://console.anthropic.com/keys" target="_blank">→ Buradan ücretsiz API anahtarı al</a>
+    </div>
+    <div class="apikey-row">
+      <input type="password" id="api-key-input" placeholder="sk-ant-..." spellcheck="false">
+      <button class="btn btn-primary" id="save-key-btn" onclick="saveApiKey()">Kaydet</button>
+    </div>
+    <div id="apikey-status" style="font-size:0.85rem; margin-top:0.5rem;"></div>
+  </div>
+
   <!-- Upload Zone -->
   <div class="upload-zone" id="upload-zone">
     <span class="upload-icon">📦</span>
@@ -665,8 +734,33 @@
 
 <script>
 // =============================================
-// STATE
+// API KEY
 // =============================================
+let apiKey = localStorage.getItem('bdo_api_key') || '';
+
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val.startsWith('sk-ant-')) {
+    document.getElementById('apikey-status').innerHTML = '<span style="color:var(--red)">⚠ Geçersiz anahtar — "sk-ant-" ile başlamalı</span>';
+    return;
+  }
+  apiKey = val;
+  localStorage.setItem('bdo_api_key', val);
+  document.getElementById('apikey-status').innerHTML = '<span style="color:var(--green)">✓ Kaydedildi</span>';
+  document.getElementById('apikey-panel').classList.add('locked');
+  document.getElementById('api-key-input').value = '••••••••••••••••••••';
+  document.getElementById('save-key-btn').textContent = '✓ Kayıtlı';
+}
+
+// Init key display
+if (apiKey) {
+  document.getElementById('api-key-input').value = '••••••••••••••••••••';
+  document.getElementById('save-key-btn').textContent = '✓ Kayıtlı';
+  document.getElementById('apikey-panel').classList.add('locked');
+  document.getElementById('apikey-status').innerHTML = '<span style="color:var(--green)">✓ API anahtarı kayıtlı</span>';
+}
+
+
 let inventoryItems = [];
 let currentImageBase64 = null;
 let analysisResults = null;
@@ -745,6 +839,11 @@ function handleFile(file) {
 // =============================================
 document.getElementById('analyze-btn').addEventListener('click', async () => {
   if (!currentImageBase64) return;
+  if (!apiKey) {
+    setStatus('error', '⚠ Önce API anahtarını gir ve kaydet!');
+    document.getElementById('api-key-input').focus();
+    return;
+  }
   await runAnalysis();
 });
 
@@ -754,7 +853,12 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
 async function readInventoryFromImage(base64) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1000,
@@ -793,7 +897,12 @@ async function getRecipesAndProfit(items) {
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4000,
