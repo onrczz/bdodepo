@@ -41,11 +41,11 @@
 
   .btn { font-family: 'Cinzel', serif; padding: 10px 20px; cursor: pointer; border: none; text-transform: uppercase; width: 100%; transition: 0.2s; }
   .btn-primary { background: linear-gradient(to bottom, var(--gold), var(--gold-dark)); color: #000; font-weight: bold; }
-  .btn-primary:hover { filter: brightness(1.2); }
+  .btn-primary:hover:not(:disabled) { filter: brightness(1.2); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
   #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; color: var(--gold); font-family: 'Cinzel'; }
   
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-thumb { background: var(--gold-dark); }
 </style>
@@ -55,13 +55,13 @@
 <div class="container">
   <header>
     <h1>BDO STORAGE ANALYZER</h1>
-    <p class="subtitle">Tüm materyalleri (Tahıl, Et, Cevher, Bitki) otomatik tanır ve listeler.</p>
+    <p class="subtitle">Depo analiz sistemi</p>
   </header>
 
   <div class="upload-zone" id="upload-zone">
     <span style="font-size: 3rem;">📜</span>
-    <h2>Envanter / Depo Görseli Yükle</h2>
-    <p>PNG veya JPG sürükleyebilirsin</p>
+    <h2>Envanter Görseli Yükle</h2>
+    <p>Tıkla veya sürükle bırak</p>
     <input type="file" id="file-input" accept="image/*">
   </div>
 
@@ -79,38 +79,39 @@
           <h3 style="font-family:'Cinzel'; color:var(--gold); margin:0;">TESPİT EDİLEN MATERYALLER</h3>
           <span id="item-count-badge" style="font-size:0.8rem; background:var(--gold-dark); color:white; padding:2px 8px; border-radius:10px;">0 Eşya</span>
       </div>
-      <div class="items-grid" id="items-grid">
-        </div>
+      <div class="items-grid" id="items-grid"></div>
     </div>
   </div>
 </div>
 
 <div id="loading-overlay">
-  <div style="border: 3px solid var(--gold-dark); border-top: 3px solid var(--gold); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
-  <p style="margin-top:20px; letter-spacing:2px;">KARA RUH ANALİZ EDİYOR...</p>
+  <p id="loading-status" style="letter-spacing:2px;">KARA RUH ANALİZ EDİYOR...</p>
 </div>
 
-<style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
-
 <script>
+// --- AYARLAR ---
 const WORKER_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/'; 
 let ITEM_DATABASE = null;
 
-// Sayfa açılırken senin bdo_items.json dosyanı yükler
+// Sayfa açılırken veritabanını yükle
 async function init() {
     try {
         const r = await fetch('bdo_items.json');
         ITEM_DATABASE = await r.json();
-        console.log("Veritabanı hazır!");
-    } catch (e) { console.error("JSON yüklenemedi!", e); }
+        console.log("Veritabanı yüklendi.");
+    } catch (e) {
+        console.error("JSON dosyası bulunamadı! bdo_items.json dosyasının aynı klasörde olduğundan emin olun.");
+    }
 }
 init();
 
 const fileInput = document.getElementById('file-input');
 const uploadZone = document.getElementById('upload-zone');
 const itemsGrid = document.getElementById('items-grid');
+const analyzeBtn = document.getElementById('analyze-btn');
 
 uploadZone.onclick = () => fileInput.click();
+
 fileInput.onchange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -123,44 +124,52 @@ fileInput.onchange = (e) => {
     reader.readAsDataURL(file);
 };
 
-document.getElementById('analyze-btn').onclick = async () => {
-    const imgData = document.getElementById('preview-img').src.split(',')[1];
+analyzeBtn.onclick = async () => {
+    const imgElement = document.getElementById('preview-img');
+    if (!imgElement.src) return;
+
+    const imgData = imgElement.src.split(',')[1];
     document.getElementById('loading-overlay').style.display = 'flex';
+    analyzeBtn.disabled = true;
     itemsGrid.innerHTML = "";
 
     try {
         const response = await fetch(WORKER_URL, {
             method: 'POST',
-            body: JSON.stringify({ 
-                image: imgData,
-                prompt: `Analyze this BDO storage. List ALL materials (grains, meats, ores, fruits, etc.). 
-                         Return ONLY a JSON array like this: [{"name": "Wheat", "count": 1500}, {"name": "Iron Ore", "count": 250}]`
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imgData })
         });
 
         const result = await response.json();
-        // Claude'dan gelen metni güvenli bir şekilde JSON'a çeviriyoruz
+        
+        // Hata Kontrolü: result.content dizisi var mı?
+        if (!result.content || !result.content[0]) {
+            throw new Error("API'den geçersiz yanıt geldi. Worker kodunuzu kontrol edin.");
+        }
+
         const text = result.content[0].text;
         const jsonMatch = text.match(/\[.*\]/s);
+        
+        if (!jsonMatch) throw new Error("Yapay zeka liste oluşturamadı.");
+        
         const aiItems = JSON.parse(jsonMatch[0]);
-
         document.getElementById('item-count-badge').textContent = aiItems.length + " Eşya";
 
         aiItems.forEach(item => {
-            // Seninki JSON'da (bdo_items.json) bu ismi arıyoruz
-            const entry = Object.entries(ITEM_DATABASE.id_to_info).find(([id, info]) => 
-                info.name_en.toLowerCase() === item.name.toLowerCase()
-            );
+            // Veritabanında eşleştirme
+            const entry = (ITEM_DATABASE && ITEM_DATABASE.id_to_info) ? 
+                Object.entries(ITEM_DATABASE.id_to_info).find(([id, info]) => 
+                    info.name_en.toLowerCase() === item.name.toLowerCase()
+                ) : null;
 
             const card = document.createElement('div');
             card.className = "item-card";
 
-            // Eğer veritabanında varsa gerçek ikonu, yoksa soru işareti koyar
             const iconPath = entry ? `https://bdocodex.com${entry[1].icon}` : 'https://bdocodex.com/items/new_icon/03_etc/00007001.png';
-            const displayName = entry ? entry[1].name_tr : item.name;
+            const displayName = entry ? (entry[1].name_tr || entry[1].name_en) : item.name;
 
             card.innerHTML = `
-                <img src="${iconPath}" class="item-icon">
+                <img src="${iconPath}" class="item-icon" onerror="this.src='https://via.placeholder.com/44?text=?'">
                 <div class="item-info">
                     <span class="item-name">${displayName}</span>
                     <span class="item-qty">${item.count.toLocaleString()} adet</span>
@@ -170,9 +179,11 @@ document.getElementById('analyze-btn').onclick = async () => {
         });
 
     } catch (err) {
-        alert("Analiz başarısız: " + err.message);
+        console.error("Hata Detayı:", err);
+        alert("Hata: " + err.message);
     } finally {
         document.getElementById('loading-overlay').style.display = 'none';
+        analyzeBtn.disabled = false;
     }
 };
 </script>
