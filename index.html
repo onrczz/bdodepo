@@ -529,6 +529,78 @@ function handleFile(file) {
 
 // ── READ INVENTORY ────────────────────────────────────────────────────────
 async function readInventory() {
+  const previewImg = document.getElementById('preview-img');
+  const W = previewImg.naturalWidth || previewImg.width;
+  const H = previewImg.naturalHeight || previewImg.height;
+
+  const COLS = 8;
+  const cellW = Math.floor(W / COLS);
+  const cellH = cellW;
+  const totalRows = Math.floor(H / cellH);
+
+  // Draw full image
+  const fullCanvas = document.createElement('canvas');
+  fullCanvas.width = W; fullCanvas.height = H;
+  fullCanvas.getContext('2d').drawImage(previewImg, 0, 0);
+
+  // Split into groups of 2 rows, scale each group 3x, send as ONE tall image
+  // This makes each icon ~150px instead of ~50px
+  const ROWS_PER_CHUNK = 2;
+  const SCALE = 3;
+  const chunkH = ROWS_PER_CHUNK * cellH;
+  const numChunks = Math.ceil(totalRows / ROWS_PER_CHUNK);
+
+  // Build one tall composite: all chunks stacked, each scaled 3x
+  const compositeCanvas = document.createElement('canvas');
+  compositeCanvas.width  = W * SCALE;
+  compositeCanvas.height = numChunks * chunkH * SCALE;
+  const compCtx = compositeCanvas.getContext('2d');
+  compCtx.imageSmoothingEnabled = true;
+  compCtx.imageSmoothingQuality = 'high';
+
+  for (let chunk = 0; chunk < numChunks; chunk++) {
+    const srcY = chunk * chunkH;
+    const srcH = Math.min(chunkH, H - srcY);
+    compCtx.drawImage(fullCanvas,
+      0, srcY, W, srcH,
+      0, chunk * chunkH * SCALE, W * SCALE, srcH * SCALE
+    );
+  }
+
+  const compositeB64 = compositeCanvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+
+  const prompt = `You are analyzing a Black Desert Online storage grid.
+The image shows ${numChunks} groups of ${ROWS_PER_CHUNK} rows each, stacked vertically.
+Each group is scaled up 3x for clarity. Total: ${totalRows} rows × ${COLS} columns.
+
+For EACH cell, identify the item icon and read the quantity number below it.
+- Cells go LEFT TO RIGHT within each row
+- Rows go TOP TO BOTTOM
+- Row numbering: group 0 = rows 0-1, group 1 = rows 2-3, etc.
+- Quantity: B=thousands (415B=415000, 297B=297000), M=millions
+- Use EXACT BDO English names from bdocodex.com
+- Skip empty cells only
+
+ITEM NAMES:
+Ores: Iron Ore, Copper Ore, Silver Ore, Gold Ore, Titanium Ore, Platinum Ore, Tin Ore, Zinc Ore, Lead Ore, Coal, Rough Stone
+Processed: Melted Iron Shard, Melted Copper Shard, Iron Ingot, Copper Ingot, Steel Ingot, Titanium Ingot, Silver Ingot, Gold Ingot
+Timber: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber, Log, White Cedar Timber, Elder Tree Timber, Acacia Timber, Palm Timber
+Plywood: Ash Plywood, Maple Plywood, Pine Plywood, Cedar Plywood, Birch Plywood, Fir Plywood
+Cooking: Wheat, Barley, Potato, Corn, Sweet Potato, Rye, Salt, Sugar, Milk, Egg, Butter, Flour, Vinegar, Olive Oil, Cooking Honey, Leavening Agent, Dried Fish
+Vegetables: Garlic, Onion, Tomato, Pumpkin, Pepper, Paprika, Hot Pepper
+Fruit: Strawberry, Coconut, Apple, Orange, Cherry, Fig, Banana, Grape
+Meat: Red Meat, Chicken Meat, Fish, Dried Fish, Lizard Meat, Fox Meat, Wolf Meat, Bear Meat
+Blood: Deer Blood, Pig Blood, Wolf Blood, Bear Blood, Fox Blood, Sheep Blood, Weasel Blood
+Hides: Hide, Thick Hide, Hard Hide, Dragon Skin
+Herbs: Sunrise Herb, Silver Azalea, Fire Flake Flower, Monk Branch, Dragon Root, Hops, White Umbrella Mushroom, Dwarf Mushroom, Truffle Mushroom
+Alchemy: Clear Liquid Reagent, Pure Powder Reagent, Trace of Nature, Trace of Savagery, Trace of Violence, Trace of Decay, Trace of Chaos, Trace of Breath
+Cloth: Cotton, Flax, Wool, Silk
+Processed: Processed Grain, Bean Sprouts, Flower, Fruit
+Crates: Ash Timber Crate, Maple Timber Crate, Pine Timber Crate, Copper Ore Crate, Iron Ore Crate
+
+Return ONLY valid JSON:
+{"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000}]}`;
+
   const resp = await fetch(PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -536,38 +608,12 @@ async function readInventory() {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4000,
       messages: [{ role: 'user', content: [
-        { type: 'image', source: { type: 'base64', media_type: mediaType, data: currentBase64 } },
-        { type: 'text', text: `You are analyzing a Black Desert Online storage screenshot.
-The grid has 8 columns. Each cell contains a small item icon on top and a quantity number below it.
-
-TASK: For each non-empty cell, identify the item and read its quantity.
-- Read cells LEFT TO RIGHT, TOP TO BOTTOM (row 0 col 0 first, then col 1, 2... then row 1...)
-- Item names must be EXACT BDO English names as they appear on bdocodex.com
-- Quantity: B=thousands (415B=415000), M=millions. Write as full integer.
-- Do NOT skip cells. Do NOT invent items. Only list cells you can clearly see.
-
-COMMON STORAGE ITEMS (use these exact names):
-Ores: Iron Ore, Copper Ore, Silver Ore, Gold Ore, Titanium Ore, Platinum Ore, Tin Ore, Zinc Ore, Lead Ore, Coal, Rough Stone
-Processed metals: Melted Iron Shard, Melted Copper Shard, Iron Ingot, Copper Ingot, Steel Ingot, Titanium Ingot, Silver Ingot, Gold Ingot, Brass Ingot, Bronze Ingot
-Timber: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber, Log, White Cedar Timber, Elder Tree Timber, Acacia Timber, Palm Timber
-Plywood: Ash Plywood, Maple Plywood, Pine Plywood, Cedar Plywood, Birch Plywood, Fir Plywood
-Cooking: Wheat, Barley, Potato, Corn, Sweet Potato, Rye, Salt, Sugar, Milk, Egg, Butter, Flour, Vinegar, Olive Oil, Cooking Honey, Leavening Agent, Mineral Water, Dried Fish
-Vegetables: Garlic, Onion, Tomato, Pumpkin, Pepper, Paprika, Hot Pepper, Cabbage, Lettuce, Broccoli
-Fruit: Strawberry, Coconut, Apple, Orange, Cherry, Fig, Banana, Grape
-Meat: Red Meat, Chicken Meat, Kuku Bird Meat, Fish, Dried Fish, Lizard Meat, Fox Meat, Wolf Meat, Bear Meat
-Blood: Deer Blood, Pig Blood, Wolf Blood, Bear Blood, Fox Blood, Sheep Blood, Weasel Blood, Waragon Blood
-Hides: Hide, Thick Hide, Hard Hide, Tough Hide, Dragon Skin, Lizard Skin
-Herbs: Sunrise Herb, Silver Azalea, Fire Flake Flower, Monk Branch, Dragon Root, Hops, White Umbrella Mushroom, Dwarf Mushroom, Truffle Mushroom, Alchemy Ingredient
-Alchemy: Clear Liquid Reagent, Pure Powder Reagent, Trace of Nature, Trace of Savagery, Trace of Violence, Trace of Decay, Trace of Chaos, Trace of Breath
-Cloth: Cotton, Flax, Wool, Silk
-Processed: Processed Grain, Processed Meat, Processed Fish, Bean Sprouts, Flower, Fruit
-Crates: Ash Timber Crate, Maple Timber Crate, Pine Timber Crate, Copper Ore Crate, Iron Ore Crate, Steel Ingot Crate
-
-Return ONLY valid JSON (no explanation):
-{"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000},{"row":0,"col":2,"name":"Corn","qty":297000}]}` }
+        { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: compositeB64 } },
+        { type: 'text', text: prompt }
       ]}]
     })
   });
+
   const data = await resp.json();
   if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
   const text = data.content.map(b => b.text || '').join('');
