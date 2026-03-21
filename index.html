@@ -805,7 +805,6 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
 // =============================================
 // STEP 1: READ IMAGE WITH AI
 // =============================================
-const PROXY_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
 
 async function readInventoryFromImage(base64) {
   const response = await fetch(PROXY_URL, {
