@@ -272,7 +272,6 @@
 <script>
 const PROXY_URL   = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
 const CODEX_PROXY = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/codex';
-const ITEM_PROXY  = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/item';
 const ICON_BASE   = 'https://bdocodex.com/items/';
 
 // ── STRINGS ───────────────────────────────────────────────────────────────
@@ -653,30 +652,6 @@ function parseCodexRow(row) {
   return { id, name, icon, skillLevel, ingredientIds, quantities };
 }
 
-// ── ITEM NAME CACHE + FETCH ───────────────────────────────────────────────
-const itemNameCache = {}; // id → {tr, en}
-
-async function resolveItemName(itemId) {
-  if (itemNameCache[itemId]) return itemNameCache[itemId];
-  if (ITEM_NAMES[itemId]) {
-    itemNameCache[itemId] = { tr: ITEM_NAMES[itemId][0], en: ITEM_NAMES[itemId][1] };
-    return itemNameCache[itemId];
-  }
-  try {
-    const l    = lang === 'tr' ? 'tr' : 'us';
-    const resp = await fetch(`${ITEM_PROXY}?id=${itemId}&l=${l}`);
-    const data = await resp.json();
-    // Codex returns { "0": { ... } } or array
-    const row  = data['0'] || (Array.isArray(data) ? data[0] : null);
-    const name = row?.name || row?.localName || null;
-    if (name) {
-      itemNameCache[itemId] = { tr: name, en: name };
-      return itemNameCache[itemId];
-    }
-  } catch(e) {}
-  return null;
-}
-
 // ── STEP 4: Match recipes to inventory ───────────────────────────────────
 async function matchRecipesAsync(recipes, inv) {
   const idMap   = {};
@@ -685,21 +660,6 @@ async function matchRecipesAsync(recipes, inv) {
     nameMap[i.name.toLowerCase().trim()] = i.qty;
     if (i.item_id) idMap[i.item_id] = i.qty;
   });
-
-  // Collect all unknown item IDs first, fetch names in parallel
-  const unknownIds = new Set();
-  for (const row of recipes) {
-    const idStr = row[9] || '[]';
-    let ids = [];
-    try { ids = JSON.parse(idStr); } catch(e) {}
-    ids.forEach(id => { if (!ITEM_NAMES[id] && !itemNameCache[id]) unknownIds.add(id); });
-  }
-
-  // Fetch unknown names in batches of 10
-  const unknownArr = [...unknownIds];
-  for (let i = 0; i < unknownArr.length; i += 10) {
-    await Promise.all(unknownArr.slice(i, i + 10).map(id => resolveItemName(id)));
-  }
 
   const out = [];
 
@@ -713,12 +673,12 @@ async function matchRecipesAsync(recipes, inv) {
 
     r.ingredientIds.forEach((itemId, idx) => {
       const reqQty  = r.quantities[idx] || 1;
-      const names   = ITEM_NAMES[itemId] || (itemNameCache[itemId] ? [itemNameCache[itemId].tr, itemNameCache[itemId].en] : null);
+      const names   = ITEM_NAMES[itemId];
       const trName  = names ? names[0] : null;
       const enName  = names ? names[1] : null;
       const displayName = lang === 'tr'
-        ? (trName || (itemNameCache[itemId]?.tr) || `Item ${itemId}`)
-        : (enName || (itemNameCache[itemId]?.en) || `Item ${itemId}`);
+        ? (trName || `#${itemId}`)
+        : (enName || `#${itemId}`);
 
       let have = idMap[itemId] || 0;
       if (!have && trName) have = nameMap[trName.toLowerCase()] || 0;
