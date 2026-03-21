@@ -156,6 +156,25 @@
 </head>
 <body>
 <div class="container">
+  <div id="dev-banner" style="
+    background: rgba(0,255,100,0.08);
+    border: 1px solid #00ff64;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    color: #00ff64;
+    text-shadow: 0 0 8px #00ff6480;
+    animation: devpulse 2s ease-in-out infinite;
+  ">
+    ⚠ <span id="dev-banner-text">Geliştirme Aşamasında — Veriler Doğru Çıkmayabilir</span> ⚠
+  </div>
+  <style>
+    @keyframes devpulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  </style>
   <header>
     <div class="logo-line">
       <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
@@ -270,6 +289,7 @@ const S = {
     addBtn: '+ Ekle', saveBtn: 'Kaydet', deleteBtn: 'Sil', cancelBtn: 'İptal',
     editTitle: 'Malzeme Düzenle', addTitle: 'Malzeme Ekle',
     nameLbl: 'İsim', idLbl: 'Item ID (opsiyonel)', qtyLbl: 'Miktar',
+    devBanner: '⚠ Geliştirme Aşamasında — Veriler Doğru Çıkmayabilir ⚠',
     // Image prompt — always asks for English item names (original Codex names)
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
 Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
@@ -323,6 +343,7 @@ Return ONLY JSON with ONLY the items you can clearly see:
     addBtn: '+ Add', saveBtn: 'Save', deleteBtn: 'Delete', cancelBtn: 'Cancel',
     editTitle: 'Edit Material', addTitle: 'Add Material',
     nameLbl: 'Name', idLbl: 'Item ID (optional)', qtyLbl: 'Quantity',
+    devBanner: '⚠ Under Development — Data May Not Be Accurate ⚠',
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
 Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
 
@@ -451,6 +472,8 @@ function applyStrings() {
   document.getElementById('export-sheets-btn').textContent = s.exportSheets;
   document.getElementById('find-recipes-btn').textContent = lang === 'tr' ? '🔍 Tarifleri Bul' : '🔍 Find Recipes';
   document.title = s.title;
+  const banner = document.getElementById('dev-banner-text');
+  if (banner) banner.textContent = s.devBanner;
   if (!currentBase64) setStatus('', s.statusReady);
 }
 
