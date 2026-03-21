@@ -30,4 +30,176 @@
   .container { max-width: 1100px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; }
 
   header { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--border-gold); margin-bottom: 2rem; }
-  h1 { font-family: 'Cinzel', serif; font-size: 2rem; color:
+  h1 { font-family: 'Cinzel', serif; font-size: 2rem; color: var(--gold); letter-spacing: 0.1em; }
+  .subtitle { color: var(--text-dim); font-size: 1rem; font-style: italic; margin-bottom: 1rem; }
+
+  .upload-zone { border: 2px dashed var(--border-gold); border-radius: 4px; padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--bg-panel); }
+  .upload-zone:hover { border-color: var(--gold); background: var(--bg-card); }
+  #file-input { display: none; }
+
+  .preview-section { display: none; gap: 1.5rem; margin-top: 1.5rem; }
+  .preview-section.visible { display: grid; grid-template-columns: 300px 1fr; }
+  .preview-card img { width: 100%; height: auto; max-height: 400px; object-fit: contain; display: block; background: var(--bg-deep); border-radius: 4px; }
+  
+  .ai-panel { background: var(--bg-panel); border: 1px solid var(--border-gold); border-radius: 4px; padding: 1.2rem 1.5rem; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text-dim); display: inline-block; margin-right: 8px; }
+  .status-dot.reading { background: var(--gold); animation: pulse 1s infinite; }
+  .status-dot.done { background: var(--green); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .items-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+  .item-tag { background: var(--bg-card); border: 1px solid var(--border); padding: 5px 10px; border-radius: 3px; font-size: 0.9rem; }
+  .item-tag .qty { color: var(--gold); font-weight: bold; margin-left: 8px; }
+
+  .btn { font-family: 'Cinzel', serif; padding: 10px 20px; cursor: pointer; border: none; text-transform: uppercase; font-size: 0.8rem; border-radius: 2px; }
+  .btn-primary { background: var(--gold); color: black; font-weight: bold; width: 100%; margin-top: 10px; }
+  .btn-secondary { background: transparent; border: 1px solid var(--border-gold); color: var(--text-dim); }
+
+  .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
+  .loading-overlay.visible { display: flex; }
+  .spinner { width: 40px; height: 40px; border: 4px solid var(--border-gold); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>BDO Depo Analizi</h1>
+    <p class="subtitle">Depo görüntüsünü yükleyin ve Claude 3.5 Sonnet ile analiz edin</p>
+  </header>
+
+  <div class="upload-zone" id="upload-zone">
+    <span style="font-size: 3rem;">🖼️</span>
+    <h2>Resmi Buraya Bırakın</h2>
+    <p>veya tıklayarak seçin</p>
+    <input type="file" id="file-input" accept="image/*">
+  </div>
+
+  <div class="preview-section" id="preview-section">
+    <div class="preview-card">
+      <img id="preview-img" src="">
+      <button class="btn btn-secondary" style="margin-top: 10px; width: 100%;" onclick="location.reload()">↩ Temizle</button>
+      <button class="btn btn-primary" id="analyze-btn" onclick="readInventory()">⚔ Analiz Et</button>
+    </div>
+    <div class="ai-panel">
+      <div id="status-container">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Analiz bekleniyor...</span>
+      </div>
+      <div id="items-container" style="display:none;">
+        <div class="items-grid" id="items-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <p style="color: var(--gold); margin-top: 15px; font-family: 'Cinzel';">Yapay Zeka Okuyor...</p>
+</div>
+
+<script>
+const PROXY_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/'; 
+let currentBase64 = null;
+let inventory = [];
+
+const promptText = `Bu bir Black Desert Online depo ekranıdır (8 sütunlu yapı). 
+Lütfen her hücredeki eşyayı ve miktarını belirle.
+KRİTİK: Sayı sonunda 'B' varsa 1000 ile çarp (Örn: 415B -> 415000).
+Yanıtı SADECE şu JSON formatında döndür: {"items": [{"name": "Potato", "count": 415000}, {"name": "Corn", "count": 298000}]}`;
+
+const fInput = document.getElementById('file-input');
+const zone = document.getElementById('upload-zone');
+
+zone.onclick = () => fInput.click();
+fInput.onchange = (e) => handleFile(e.target.files[0]);
+
+function handleFile(file) {
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      // AI için 1.5 kat büyütme
+      canvas.width = img.width * 1.5;
+      canvas.height = img.height * 1.5;
+      ctx.scale(1.5, 1.5);
+      ctx.drawImage(img, 0, 0);
+      const resized = canvas.toDataURL('image/jpeg', 0.85);
+      currentBase64 = resized.split(',')[1];
+      document.getElementById('preview-img').src = resized;
+      document.getElementById('preview-section').style.display = 'grid';
+      document.getElementById('upload-zone').style.display = 'none';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function readInventory() {
+  if (!currentBase64) return;
+  
+  document.getElementById('loading-overlay').classList.add('visible');
+  document.getElementById('status-dot').className = 'status-dot reading';
+  document.getElementById('status-text').innerText = "AI verileri işliyor...";
+
+  try {
+    const resp = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20240620',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: currentBase64 } },
+            { type: 'text', text: promptText }
+          ]
+        }]
+      })
+    });
+
+    const data = await resp.json();
+    
+    // Anthropic API yanıt yapısını kontrol et (data.content[0].text)
+    if (data.content && data.content[0] && data.content[0].text) {
+        const rawText = data.content[0].text;
+        const cleanJson = rawText.replace(/```json|```/g, '').trim();
+        const resultObj = JSON.parse(cleanJson);
+
+        if (resultObj.items) {
+            inventory = resultObj.items;
+            renderItems();
+            document.getElementById('status-dot').className = 'status-dot done';
+            document.getElementById('status-text').innerText = inventory.length + " adet malzeme bulundu.";
+            document.getElementById('items-container').style.display = 'block';
+        }
+    } else {
+        throw new Error("API'den beklenmedik yanıt formatı geldi.");
+    }
+
+  } catch (error) {
+    console.error("Hata:", error);
+    document.getElementById('status-text').innerText = "Hata: " + error.message;
+  } finally {
+    document.getElementById('loading-overlay').classList.remove('visible');
+  }
+}
+
+function renderItems() {
+  const grid = document.getElementById('items-grid');
+  grid.innerHTML = '';
+  inventory.forEach(item => {
+    const tag = document.createElement('div');
+    tag.className = 'item-tag';
+    tag.innerHTML = `${item.name} <span class="qty">${item.count.toLocaleString()}</span>`;
+    grid.appendChild(tag);
+  });
+}
+</script>
+</body>
+</html>
