@@ -772,12 +772,15 @@ function saveEditPopup(idx) {
   const qty = parseInt(document.getElementById('popup-qty').value) || 0;
   let itemId = parseInt(document.getElementById('popup-id').value) || null;
   if (!name || !qty) return;
-  // Auto-find item_id if not provided
   if (!itemId) itemId = findItemIdByName(name);
   if (idx === -1) inventory.push({ name, qty, item_id: itemId });
   else inventory[idx] = { ...inventory[idx], name, qty, item_id: itemId };
   closeEditPopup();
   renderItems(inventory);
+  // Auto-refresh recipes if results are visible
+  if (document.getElementById('results-section').classList.contains('visible')) {
+    findRecipes();
+  }
 }
 
 function deleteItem(idx) {
