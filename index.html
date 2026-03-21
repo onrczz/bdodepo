@@ -906,10 +906,10 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     document.getElementById('loading-sub').textContent = lang === 'tr' ? 'Malzemeler okunuyor...' : 'Reading materials...';
 
     const aiResult = await readInventory();
-    const cells = aiResult.cells || aiResult.items || [];
+    const cells = (aiResult.cells || aiResult.items || [])
+      .sort((a, b) => (a.row - b.row) || (a.col - b.col)); // grid sırasına göre sırala
 
     // Build inventory from AI result
-    // AI returns English names → find item_id from DB → use English name always
     const items = [];
     for (const cell of cells) {
       const qty = cell.qty || cell.quantity || 1;
@@ -917,25 +917,16 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
       const aiName = cell.name || '';
       let itemId = cell.item_id || null;
 
-      // Try to find item_id from English name
       if (!itemId && aiName) itemId = findItemIdByName(aiName);
 
-      // Get canonical English name from DB (always use DB name, not AI name)
       let name = aiName;
       if (itemId) {
         const dbName = getItemNameEN(itemId);
-        if (dbName) name = dbName; // Use exact Codex English name
-      } else if (aiName) {
-        // Try case-insensitive match one more time
-        itemId = findItemIdByName(aiName);
-        if (itemId) {
-          const dbName = getItemNameEN(itemId);
-          if (dbName) name = dbName;
-        }
+        if (dbName) name = dbName;
       }
 
       if (name && name !== 'Unknown') {
-        items.push({ name, item_id: itemId, qty });
+        items.push({ name, item_id: itemId, qty, _row: cell.row, _col: cell.col });
       }
     }
 
