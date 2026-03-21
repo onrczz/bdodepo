@@ -519,97 +519,27 @@ async function readInventory() {
   return JSON.parse(match[0]);
 }
 
-// ── ITEM ID LOOKUP TABLE ──────────────────────────────────────────────────
-// item_id → [tr_name, en_name]
-const ITEM_NAMES = {
-  // Tahıllar / Grains
-  9001: ['Buğday','Wheat'], 9002: ['Mısır','Corn'], 9003: ['Pirinç','Rice'],
-  9004: ['Arpa','Barley'], 9005: ['Patates','Potato'], 9006: ['Şeker Pancarı','Sugar Beet'],
-  9007: ['Tatlı Patates','Sweet Potato'], 9008: ['Çavdar','Rye'],
-  9009: ['Domates','Tomato'], 9010: ['Soğan','Onion'], 9011: ['Sarımsak','Garlic'],
-  9012: ['Salatalık','Cucumber'], 9013: ['Biber','Pepper'], 9014: ['Kabak','Pumpkin'],
-  9015: ['Marul','Lettuce'], 9016: ['Nane','Mint'], 9017: ['Şeker','Sugar'],
-  9018: ['Tuz','Salt'], 9019: ['Sirke','Vinegar'], 9020: ['Zeytinyağı','Olive Oil'],
-  9021: ['Kırmızı Et','Red Meat'], 9022: ['Tavuk Eti','Chicken'],
-  9023: ['Güvercin Eti','Pigeon Meat'], 9024: ['Kuru İt Üzümü','Dried Mudskipper'],
-  // Balık / Fish
-  9057: ['Balık','Fish'], 9058: ['Balık Eti','Fish Meat'],
-  9059: ['Domates','Tomato'], 9061: ['Paprika','Paprika'],
-  9062: ['Köri Tozu','Curry Powder'], 9063: ['Elma','Apple'],
-  9064: ['Portakal','Orange'], 9065: ['Süt','Milk'],
-  9066: ['Yumurta','Egg'], 9067: ['Tereyağı','Butter'],
-  9068: ['Peynir','Cheese'], 9069: ['Krema','Cream'],
-  9070: ['Un','Flour'], 9071: ['Limon','Lemon'],
-  9072: ['Kabak','Pumpkin'], 9073: ['Çilek','Strawberry'],
-  9074: ['Blueberry','Blueberry'], 9075: ['Hindistancevizi','Coconut'],
-  9076: ['Mango','Mango'], 9077: ['Avokado','Avocado'],
-  9078: ['Yulaf','Oat'], 9079: ['Darı','Millet'],
-  9080: ['Çay Yaprağı','Tea Leaves'], 9082: ['Esrar','Hops'],
-  9083: ['Tarçın','Cinnamon'], 9201: ['Kara Inci Suyu','Black Essence: Agility'],
-  // Hayvan malzemeleri / Animal materials
-  9213: ['Kırmızı Et','Red Meat'], 9214: ['Tavuk Eti','Chicken Meat'],
-  9215: ['Domuz Eti','Pork'], 9216: ['Yılan Eti','Snake Meat'],
-  9217: ['Eşek Eti','Donkey Meat'], 9218: ['Fil Eti','Elephant Meat'],
-  9219: ['Çita Eti','Cheetah Meat'], 9220: ['Leopar Eti','Leopard Meat'],
-  9260: ['İnce Deri','Thin Hide'], 9261: ['Sert Deri','Thick Hide'],
-  9262: ['Parlak Deri','Sturdy Hide'], 9263: ['Sert Kabuk','Tough Hide'],
-  9265: ['Asil Deri','Refined Hide'], 9266: ['Kaba Kan','Clotted Blood'],
-  9267: ['Kırmızı Kan','Red Thick Blood'], 9268: ['Koyun Kanı','Sheep\'s Blood'],
-  9270: ['Kemik','Bone'], 9276: ['Deri','Hide'],
-  9277: ['Kan','Blood'], 9279: ['Yağ','Fat'],
-  // Maden / Ore
-  5001: ['Demir Parçası','Iron Ore'], 5002: ['Bakır Parçası','Copper Ore'],
-  5003: ['Gümüş Parçası','Silver Ore'], 5004: ['Titanyum Parçası','Titanium Ore'],
-  5005: ['Mithril Parçası','Mithril Ore'], 5006: ['Adamantium Parçası','Adamantium Ore'],
-  5007: ['Krom Parçası','Chromite Ore'], 5008: ['Platin Parçası','Platinum Ore'],
-  5009: ['Tungsten Parçası','Tungsten Ore'], 5010: ['Karbonlu Parça','Vanadium Ore'],
-  // İşlenmiş / Processed
-  4001: ['Demir Külçesi','Iron Ingot'], 4002: ['Bakır Külçesi','Copper Ingot'],
-  4003: ['Gümüş Külçesi','Silver Ingot'], 4004: ['Titanyum Külçesi','Titanium Ingot'],
-  4005: ['Mithril Külçesi','Mithril Ingot'], 4006: ['Kaliteli Odun','High-Quality Timber'],
-  // Odun / Timber
-  7001: ['Kütük','Log'], 7002: ['Kerestelik Odun','Timber'],
-  7003: ['Sert Odun','Hardwood'], 7004: ['Olgunlaşmış Odun','Ash Timber'],
-  7005: ['Çam Odunu','Pine Timber'], 7006: ['Meşe Odunu','Cedar Timber'],
-  7007: ['Gürgen Odunu','Birch Timber'], 7008: ['Karaağaç Odunu','Maple Timber'],
-  7009: ['Kestane Odunu','Fir Timber'], 7010: ['Kara Bambu','Black Bamboo'],
-  7016: ['İşlenmiş Odun','Processed Timber'], 7017: ['Kereste','Plywood'],
-  7018: ['Sert Kereste','Hardwood Plywood'], 7019: ['Olgunlaşmış Kereste','Ash Plywood'],
-  7020: ['Çam Kerestesi','Pine Plywood'], 7021: ['Meşe Kerestesi','Cedar Plywood'],
-  7022: ['Gürgen Kerestesi','Birch Plywood'], 7101: ['Çam Tohumu','Pine Seed'],
-  7201: ['Meşe Tohumu','Cedar Seed'], 7301: ['Kıl','Wool'],
-  7302: ['Kalın Kıl','Thick Wool'], 7303: ['İpek','Silk'],
-  7304: ['Pamuk','Cotton'], 7305: ['Keten','Flax'],
-  7311: ['İşlenmiş Pamuk','Processed Cotton'], 7312: ['İşlenmiş Keten','Processed Flax'],
-  7313: ['Su','Water'], 7314: ['Tatlı Su','Fresh Water'],
-  7315: ['Pınar Suyu','Spring Water'], 7316: ['Birikmiş Su','Filtered Water'],
-  7317: ['Arıtılmış Su','Purified Water'], 7318: ['Ateş Taşı Tozu','Powder of Flame'],
-  7319: ['Ateş Taşı','Flame Stone'], 7320: ['Toprak Tozu','Powder of Earth'],
-  7321: ['Rüzgar Tozu','Powder of Wind'], 7322: ['Işık Tozu','Powder of Crevice'],
-  7329: ['Süzülmüş Toprak','Trace of Earth'], 7341: ['Süzülmüş Vahşet','Trace of Savagery'],
-  7438: ['Çiçek','Flower'], 7701: ['Tahıl','Grain'],
-  7702: ['Tahıl İşlenmiş','Processed Grain'], 7703: ['Un','Flour'],
-  7704: ['Meyve','Fruit'], 7800: ['Yulaf','Oat'],
-  7900: ['Kırmızı Et','Red Meat'], 7901: ['Et','Meat'],
-  7902: ['Piliç Eti','Chicken Meat'], 7903: ['Domuz Eti','Pork Meat'],
-  7904: ['Domuz Pastırması','Bacon'], 7905: ['Biftek','Steak'],
-  7906: ['Balık','Fish'], 7907: ['Balık Fileto','Fish Fillet'],
-  7910: ['Karides','Shrimp'], 7911: ['Midye','Oyster'],
-  7912: ['Kalamar','Squid'], 7913: ['Yengeç','Crab'],
-  7916: ['Hardal','Mustard'],  7918: ['Zencefil','Ginger'],
-  7920: ['Badem','Almond'], 7921: ['Fındık','Hazelnut'],
-  7922: ['Kaju','Cashew'], 7923: ['Antep Fıstığı','Pistachio'],
-  7924: ['Rezene','Fennel'], 7925: ['Lahana','Cabbage'],
-  7954: ['Acı Biber','Hot Pepper'], 7955: ['Tatlı Biber','Sweet Pepper'],
-  7956: ['Mor Mantar','Purple Mushroom'], 7957: ['Kırmızı Mantar','Red Mushroom'],
-  7958: ['Mantar','Mushroom'], 8201: ['Odun Kömürü','Charcoal'],
-  8501: ['Demir Parçası','Iron Shard'],
-  // Kimya malzemeleri / Alchemy
-  6201: ['Esrar','Hops'], 6226: ['Hindistancevizi','Coconut'],
-  6511: ['Çiçek Tozu','Flower Pollen'], 6515: ['Bitki Özü','Plant Concentrate'],
-  6516: ['Kaya Tuzu','Rock Salt'], 6520: ['Kristal Parçası','Crystal Shard'],
-  6656: ['Gemi Malzemesi','Ship Part'],
-};
+// ── ITEM DATABASE (loaded from bdo_items.json) ──────────────────────────
+let BDO_ITEMS = null; // { id_to_info: {id: {name_en, name_tr, icon}}, icon_to_id: {icon_file: id} }
+
+async function loadItemDB() {
+  if (BDO_ITEMS) return;
+  try {
+    const resp = await fetch('bdo_items.json');
+    BDO_ITEMS = await resp.json();
+  } catch(e) {
+    console.warn('Could not load bdo_items.json, using fallback');
+    BDO_ITEMS = { id_to_info: {}, icon_to_id: {} };
+  }
+}
+
+function getItemName(itemId) {
+  if (!BDO_ITEMS) return null;
+  const info = BDO_ITEMS.id_to_info[String(itemId)];
+  if (!info) return null;
+  return lang === 'tr' ? (info.name_tr || info.name_en) : info.name_en;
+}
+
 
 // ── STEP 2: Fetch real Codex recipes ─────────────────────────────────────
 async function fetchCodexRecipes(type) {
@@ -673,9 +603,9 @@ async function matchRecipesAsync(recipes, inv) {
 
     r.ingredientIds.forEach((itemId, idx) => {
       const reqQty  = r.quantities[idx] || 1;
-      const names   = ITEM_NAMES[itemId];
-      const trName  = names ? names[0] : null;
-      const enName  = names ? names[1] : null;
+      const info    = BDO_ITEMS?.id_to_info?.[String(itemId)];
+      const trName  = info ? (info.name_tr || info.name_en) : null;
+      const enName  = info ? info.name_en : null;
       const displayName = lang === 'tr'
         ? (trName || `#${itemId}`)
         : (enName || `#${itemId}`);
@@ -811,6 +741,10 @@ async function findRecipes() {
   const s = S[lang];
   try {
     showLoading(s.loadCodex, s.loadCodexSub);
+    
+    // Load item database first
+    await loadItemDB();
+    
     const [culRaw, alcRaw] = await Promise.all([
       fetchCodexRecipes('culinary'),
       fetchCodexRecipes('alchemy')
