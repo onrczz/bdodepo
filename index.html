@@ -702,11 +702,13 @@ function openEditPopup(item, idx) {
   popup.innerHTML = `
     <h3>${isNew ? s.addTitle : s.editTitle}</h3>
     <label>${s.nameLbl}</label>
-    <input id="popup-name" type="text" value="${item ? item.name : ''}" placeholder="Ash Timber, Iron Ore...">
-    <label>${s.idLbl}</label>
-    <input id="popup-id" type="number" value="${item?.item_id || ''}" placeholder="4601">
-    <label>${s.qtyLbl}</label>
+    <div style="position:relative;">
+      <input id="popup-name" type="text" value="${item ? item.name : ''}" placeholder="Ara... (Copper Ore, Ash Timber...)" autocomplete="off" oninput="searchItems(this.value)">
+      <div id="search-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg-panel);border:1px solid var(--gold);border-top:none;border-radius:0 0 3px 3px;max-height:200px;overflow-y:auto;z-index:300;"></div>
+    </div>
+    <label style="margin-top:0.5rem;">${s.qtyLbl}</label>
     <input id="popup-qty" type="number" value="${item ? item.qty : ''}" placeholder="415000">
+    <input id="popup-id" type="hidden" value="${item?.item_id || ''}">
     <div class="edit-popup-btns">
       <button class="btn btn-primary" style="flex:1;" onclick="saveEditPopup(${idx})">${s.saveBtn}</button>
       ${!isNew ? `<button class="btn btn-secondary" onclick="deleteItem(${idx})">${s.deleteBtn}</button>` : ''}
@@ -716,6 +718,49 @@ function openEditPopup(item, idx) {
   document.body.appendChild(popup);
   document.getElementById('popup-name').focus();
 }
+
+function searchItems(query) {
+  const results = document.getElementById('search-results');
+  if (!results) return;
+  if (!query || query.length < 2) { results.style.display = 'none'; return; }
+
+  // Search only in materials (bdo_items.json id_to_info — first 1147 items from materials page)
+  // Filter by icon path containing 'productmaterial' to get only material items
+  const q = query.toLowerCase();
+  const matches = [];
+  if (BDO_ITEMS) {
+    for (const [id, info] of Object.entries(BDO_ITEMS.id_to_info)) {
+      if (!info.name_en) continue;
+      if (!info.icon || !info.icon.includes('productmaterial')) continue; // materials only
+      if (info.name_en.toLowerCase().includes(q)) {
+        matches.push({ id, name: info.name_en, icon: info.icon });
+        if (matches.length >= 12) break;
+      }
+    }
+  }
+
+  if (!matches.length) { results.style.display = 'none'; return; }
+
+  results.innerHTML = matches.map(m => `
+    <div onclick="selectSearchResult('${m.id}','${m.name.replace(/'/g,"\\'")}',${JSON.stringify(m.icon)})"
+      style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.8rem;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--border);"
+      onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+      <img src="https://bdocodex.com${m.icon}" style="width:22px;height:22px;border-radius:2px;" onerror="this.style.display='none'">
+      <span>${m.name}</span>
+      <span style="color:var(--text-dim);font-size:0.75rem;margin-left:auto">#${m.id}</span>
+    </div>`).join('');
+  results.style.display = 'block';
+}
+
+function selectSearchResult(id, name, icon) {
+  const nameInput = document.getElementById('popup-name');
+  const idInput   = document.getElementById('popup-id');
+  const results   = document.getElementById('search-results');
+  if (nameInput) nameInput.value = name;
+  if (idInput)   idInput.value   = id;
+  if (results)   results.style.display = 'none';
+}
+
 
 function closeEditPopup() {
   document.getElementById('edit-overlay')?.remove();
