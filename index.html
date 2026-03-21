@@ -85,9 +85,25 @@
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
   .ai-status-text { color: var(--text-dim); font-size: 0.95rem; font-style: italic; }
 
-  .items-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; max-height: 180px; overflow-y: auto; }
-  .item-tag { background: var(--bg-card); border: 1px solid var(--border); border-radius: 2px; padding: 0.3rem 0.7rem; font-size: 0.85rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem; }
+  .items-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; max-height: 220px; overflow-y: auto; }
+  .item-tag { background: var(--bg-card); border: 1px solid var(--border); border-radius: 2px; padding: 0.3rem 0.7rem; font-size: 0.85rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
   .item-tag .qty { color: var(--gold); font-weight: 600; font-size: 0.8rem; }
+  .item-tag.editable { cursor: pointer; border-color: var(--border-gold); }
+  .item-tag.editable:hover { border-color: var(--gold); background: var(--bg-hover); }
+  .item-tag .delete-btn { color: var(--red); font-size: 0.75rem; cursor: pointer; opacity: 0.6; margin-left: 0.2rem; display: none; }
+  .item-tag.editable .delete-btn { display: inline; }
+  .item-tag .delete-btn:hover { opacity: 1; }
+  .edit-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg-panel); border: 1px solid var(--gold); border-radius: 4px; padding: 1.5rem; z-index: 200; width: 320px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); }
+  .edit-popup h3 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 0.9rem; margin-bottom: 1rem; }
+  .edit-popup label { font-size: 0.82rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.3rem; }
+  .edit-popup input { width: 100%; background: var(--bg-deep); border: 1px solid var(--border-gold); border-radius: 2px; padding: 0.5rem 0.8rem; color: var(--text-bright); font-family: 'Crimson Pro', serif; font-size: 0.95rem; outline: none; margin-bottom: 0.8rem; }
+  .edit-popup input:focus { border-color: var(--gold); }
+  .edit-popup-btns { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+  .edit-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+  .btn-inline { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em; padding: 0.25rem 0.7rem; border-radius: 2px; border: 1px solid var(--border-gold); background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+  .btn-inline:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-inline-add { border-color: var(--green); color: var(--green); }
+  .btn-inline-add:hover { background: rgba(76,175,118,0.1); }
 
   /* ── RESULTS ── */
   .results-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-gold); flex-wrap: wrap; gap: 0.8rem; }
@@ -213,8 +229,17 @@
       </div>
       <div class="ai-status-text" id="status-text">Analiz etmek için butona bas.</div>
       <div id="items-container" style="display:none;">
-        <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em;" id="detected-label">Tespit Edilen Malzemeler</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+          <div style="font-size:0.8rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;" id="detected-label">Tespit Edilen Malzemeler</div>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="btn-inline" id="edit-toggle-btn" onclick="toggleEditMode()">✏ Düzenle</button>
+            <button class="btn-inline btn-inline-add" id="add-item-btn" onclick="addItem()" style="display:none;">+ Ekle</button>
+          </div>
+        </div>
         <div class="items-grid" id="items-grid"></div>
+        <div id="find-recipes-row" style="display:none;margin-top:0.8rem;">
+          <button class="btn btn-primary" id="find-recipes-btn" onclick="findRecipes()" style="width:100%;">🔍 Tarifleri Bul</button>
+        </div>
       </div>
     </div>
   </div>
@@ -740,11 +765,109 @@ async function matchRecipesAsync(recipes, inv) {
 let cachedCulinary = [];
 let cachedAlchemy  = [];
 
+// ── EDIT MODE ─────────────────────────────────────────────────────────────
+let editMode = false;
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn    = document.getElementById('edit-toggle-btn');
+  const addBtn = document.getElementById('add-item-btn');
+  const findRow= document.getElementById('find-recipes-row');
+  btn.textContent  = editMode ? (lang === 'tr' ? '✓ Tamam' : '✓ Done') : (lang === 'tr' ? '✏ Düzenle' : '✏ Edit');
+  btn.style.borderColor = editMode ? 'var(--green)' : '';
+  btn.style.color       = editMode ? 'var(--green)' : '';
+  addBtn.style.display  = editMode ? 'inline' : 'none';
+  findRow.style.display = editMode ? 'none' : (inventory.length ? 'block' : 'none');
+  renderItems(inventory);
+}
+
+function addItem() { openEditPopup(null, -1); }
+
+function openEditPopup(item, idx) {
+  document.getElementById('edit-overlay')?.remove();
+  document.getElementById('edit-popup')?.remove();
+  const isNew = idx === -1;
+  const overlay = document.createElement('div');
+  overlay.id = 'edit-overlay'; overlay.className = 'edit-overlay';
+  overlay.onclick = closeEditPopup;
+  const popup = document.createElement('div');
+  popup.id = 'edit-popup'; popup.className = 'edit-popup';
+  popup.innerHTML = `
+    <h3>${isNew ? (lang==='tr'?'Malzeme Ekle':'Add Material') : (lang==='tr'?'Malzeme Düzenle':'Edit Material')}</h3>
+    <label>${lang==='tr'?'İsim':'Name'}</label>
+    <input id="popup-name" type="text" value="${item?item.name:''}" placeholder="${lang==='tr'?'Malzeme adı...':'Material name...'}">
+    <label>${lang==='tr'?'Item ID (opsiyonel)':'Item ID (optional)'}</label>
+    <input id="popup-id" type="number" value="${item?.item_id||''}" placeholder="örn: 9003">
+    <label>${lang==='tr'?'Miktar':'Quantity'}</label>
+    <input id="popup-qty" type="number" value="${item?item.qty:''}" placeholder="297000">
+    <div class="edit-popup-btns">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveEditPopup(${idx})">${lang==='tr'?'Kaydet':'Save'}</button>
+      ${!isNew?`<button class="btn btn-secondary" onclick="deleteItem(${idx})">${lang==='tr'?'Sil':'Delete'}</button>`:''}
+      <button class="btn btn-secondary" onclick="closeEditPopup()">${lang==='tr'?'İptal':'Cancel'}</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.body.appendChild(popup);
+  document.getElementById('popup-name').focus();
+}
+
+function closeEditPopup() {
+  document.getElementById('edit-overlay')?.remove();
+  document.getElementById('edit-popup')?.remove();
+}
+
+function saveEditPopup(idx) {
+  const name = document.getElementById('popup-name').value.trim();
+  const qty  = parseInt(document.getElementById('popup-qty').value) || 0;
+  const id   = parseInt(document.getElementById('popup-id').value) || null;
+  if (!name || !qty) return;
+  if (idx === -1) inventory.push({ name, qty, item_id: id });
+  else inventory[idx] = { ...inventory[idx], name, qty, item_id: id };
+  closeEditPopup();
+  renderItems(inventory);
+}
+
+function deleteItem(idx) {
+  inventory.splice(idx, 1);
+  closeEditPopup();
+  renderItems(inventory);
+}
+
 function renderItems(items) {
-  document.getElementById('items-grid').innerHTML = items.map(i =>
-    `<div class="item-tag">${i.name} <span class="qty">×${i.qty.toLocaleString()}</span></div>`
+  const grid = document.getElementById('items-grid');
+  grid.innerHTML = items.map((i, idx) =>
+    `<div class="item-tag ${editMode?'editable':''}" ${editMode?`onclick="openEditPopup(inventory[${idx}],${idx})"`:''}>
+      ${i.name} <span class="qty">×${i.qty.toLocaleString()}</span>
+      <span class="delete-btn" onclick="event.stopPropagation();deleteItem(${idx})">✕</span>
+    </div>`
   ).join('');
   document.getElementById('items-container').style.display = 'block';
+  const findRow = document.getElementById('find-recipes-row');
+  if (findRow) findRow.style.display = (!editMode && items.length) ? 'block' : 'none';
+}
+
+async function findRecipes() {
+  const s = S[lang];
+  try {
+    showLoading(s.loadCodex, s.loadCodexSub);
+    const [culRaw, alcRaw] = await Promise.all([
+      fetchCodexRecipes('culinary'),
+      fetchCodexRecipes('alchemy')
+    ]);
+    setStatus('reading', lang==='tr'?'İsimler çözümleniyor...':'Resolving item names...');
+    cachedCulinary = await matchRecipesAsync(culRaw, inventory);
+    cachedAlchemy  = await matchRecipesAsync(alcRaw, inventory);
+    cachedCulinary.forEach(r => r.type = 'culinary');
+    cachedAlchemy.forEach(r  => r.type = 'alchemy');
+    hideLoading();
+    setStatus('done', s.statusDone(inventory.length));
+    renderGrid('culinary-grid', cachedCulinary, s.emptyCulinary);
+    renderGrid('alchemy-grid',  cachedAlchemy,  s.emptyAlchemy);
+    document.getElementById('results-section').classList.add('visible');
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+  } catch(err) {
+    hideLoading();
+    setStatus('error', s.statusErr + err.message);
+  }
 }
 
 function renderCard(r) {
@@ -833,27 +956,9 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     const res = await readInventory();
     inventory = res.items || [];
     renderItems(inventory);
-    setStatus('reading', s.statusSearch);
-
-    showLoading(s.loadCodex, s.loadCodexSub);
-    const [culRaw, alcRaw] = await Promise.all([
-      fetchCodexRecipes('culinary'),
-      fetchCodexRecipes('alchemy')
-    ]);
-
-    setStatus('reading', lang === 'tr' ? 'İsimler çözümleniyor...' : 'Resolving item names...');
-
-    cachedCulinary = await matchRecipesAsync(culRaw.map(r => ({...r, _type:'culinary'})), inventory);
-    cachedAlchemy  = await matchRecipesAsync(alcRaw.map(r => ({...r, _type:'alchemy'})),  inventory);
-    cachedCulinary.forEach(r => r.type = 'culinary');
-    cachedAlchemy.forEach(r  => r.type = 'alchemy');
-
     hideLoading();
-    setStatus('done', s.statusDone(inventory.length));
-    renderGrid('culinary-grid', cachedCulinary, s.emptyCulinary);
-    renderGrid('alchemy-grid',  cachedAlchemy,  s.emptyAlchemy);
-    document.getElementById('results-section').classList.add('visible');
-    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+    // Auto-find recipes after reading
+    await findRecipes();
 
   } catch (err) {
     hideLoading();
