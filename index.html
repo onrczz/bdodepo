@@ -7,7 +7,6 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap');
 
-  /* ── DARK MODE (default) ── */
   :root {
     --gold: #c9a84c; --gold-light: #e8c97a; --gold-dark: #8a6a1e;
     --bg-deep: #0a0806; --bg-panel: #12100c; --bg-card: #1a1610; --bg-hover: #221e16;
@@ -17,7 +16,6 @@
     --shadow: rgba(0,0,0,0.4);
   }
 
-  /* ── LIGHT MODE ── */
   body.light {
     --gold: #8a5e10; --gold-light: #6b4a0e; --gold-dark: #c9a84c;
     --bg-deep: #f5f0e8; --bg-panel: #fffdf7; --bg-card: #f0ebe0; --bg-hover: #e8e0d0;
@@ -29,37 +27,7 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--bg-deep); color: var(--text); font-family: 'Crimson Pro', serif; min-height: 100vh; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
-  body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(76,138,201,0.03) 0%, transparent 50%); pointer-events: none; z-index: 0; }
   .container { max-width: 1100px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; }
 
-  /* ── HEADER ── */
   header { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--border-gold); margin-bottom: 2rem; }
-  .logo-line { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 0.4rem; }
-  h1 { font-family: 'Cinzel', serif; font-size: 2rem; color: var(--gold); letter-spacing: 0.1em; }
-  .subtitle { color: var(--text-dim); font-size: 1rem; font-style: italic; margin-bottom: 1rem; }
-
-  .header-controls { display: flex; gap: 0.5rem; justify-content: center; align-items: center; margin-top: 0.8rem; flex-wrap: wrap; }
-
-  .lang-btn, .theme-btn {
-    font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.06em;
-    padding: 0.4rem 1rem; border-radius: 2px; border: 1px solid var(--border-gold);
-    background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.2s;
-  }
-  .lang-btn:hover, .theme-btn:hover { border-color: var(--gold); color: var(--gold); }
-  .lang-btn.active { background: var(--gold-dark); border-color: var(--gold); color: var(--gold-light); }
-
-  /* ── UPLOAD ── */
-  .upload-zone { border: 2px dashed var(--border-gold); border-radius: 4px; padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--bg-panel); }
-  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--gold); background: var(--bg-card); }
-  .upload-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
-  #file-input { display: none; }
-
-  /* ── PREVIEW ── */
-  .preview-section { display: none; gap: 1.5rem; margin-top: 1.5rem; }
-  .preview-section.visible { display: grid; grid-template-columns: 300px 1fr; }
-  .preview-card { background: var(--bg-panel); border: 1px solid var(--border-gold); border-radius: 4px; overflow: hidden; }
-  .preview-card img { width: 100%; height: auto; max-height: 400px; object-fit: contain; display: block; background: var(--bg-deep); }
-  .card-footer { padding: 0.8rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.8rem; }
-
-  .btn { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.08em; padding: 0.6rem 1.2rem; border-radius: 2px; border: none; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
-  .btn-primary
+  h1 { font-family: 'Cinzel', serif; font-size: 2rem; color:
