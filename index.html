@@ -200,6 +200,7 @@
           <div style="font-size:0.8rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;" id="detected-label">Tespit Edilen Malzemeler</div>
           <div style="display:flex;gap:0.5rem;">
             <button class="btn-inline" id="edit-toggle-btn" onclick="toggleEditMode()">✏ Düzenle</button>
+            <button class="btn-inline" id="reset-btn" onclick="resetInventory()" style="display:none;">↺ Sıfırla</button>
             <button class="btn-inline btn-inline-add" id="add-item-btn" onclick="addItem()" style="display:none;">+ Ekle</button>
           </div>
         </div>
@@ -354,6 +355,7 @@ Return ONLY JSON with ONLY the items you can clearly see:
 let lang = localStorage.getItem('bdo_lang') || 'tr';
 let isDark = localStorage.getItem('bdo_theme') !== 'light';
 let inventory = [];
+let originalInventory = []; // AI'ın ilk okuduğu sonuç
 let currentBase64 = null;
 let mediaType = 'image/jpeg';
 let cachedCulinary = [];
@@ -527,53 +529,197 @@ function handleFile(file) {
   reader.readAsDataURL(file);
 }
 
+// ── ICON HASH DATABASE ───────────────────────────────────────────────────
+let ICON_HASHES = null;
+
+async function loadIconHashes() {
+  if (ICON_HASHES) return;
+  try {
+    const resp = await fetch('icon_hashes.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    ICON_HASHES = await resp.json();
+    console.log('Icon hashes loaded:', Object.keys(ICON_HASHES).length);
+  } catch(e) {
+    console.warn('icon_hashes.json not loaded:', e.message);
+    ICON_HASHES = {};
+  }
+}
+
+const _hC = document.createElement('canvas');
+_hC.width = 32; _hC.height = 32;
+const _hX = _hC.getContext('2d', { willReadFrequently: true });
+
+function getRegionData(srcCanvas, sx, sy, sw, sh) {
+  _hX.clearRect(0, 0, 32, 32);
+  _hX.drawImage(srcCanvas, sx, sy, sw, sh, 0, 0, 32, 32);
+  return _hX.getImageData(0, 0, 32, 32).data;
+}
+
+function computeRichHash(d) {
+  const SIZE = 32;
+  // 1) RGB
+  let rgb = '';
+  for (let i = 0; i < d.length; i += 4) {
+    rgb += Math.round(d[i]/17).toString(16);
+    rgb += Math.round(d[i+1]/17).toString(16);
+    rgb += Math.round(d[i+2]/17).toString(16);
+  }
+  // 2) Grayscale + Sobel edges
+  const gray = new Float32Array(SIZE*SIZE);
+  for (let i = 0; i < SIZE*SIZE; i++)
+    gray[i] = 0.299*d[i*4] + 0.587*d[i*4+1] + 0.114*d[i*4+2];
+  let edges = '';
+  for (let y = 1; y < SIZE-1; y++) {
+    for (let x = 1; x < SIZE-1; x++) {
+      const gx = -gray[(y-1)*SIZE+(x-1)] + gray[(y-1)*SIZE+(x+1)]
+                 -2*gray[y*SIZE+(x-1)]   + 2*gray[y*SIZE+(x+1)]
+                 -gray[(y+1)*SIZE+(x-1)] + gray[(y+1)*SIZE+(x+1)];
+      const gy = -gray[(y-1)*SIZE+(x-1)] - 2*gray[(y-1)*SIZE+x] - gray[(y-1)*SIZE+(x+1)]
+                 +gray[(y+1)*SIZE+(x-1)] + 2*gray[(y+1)*SIZE+x] + gray[(y+1)*SIZE+(x+1)];
+      edges += Math.sqrt(gx*gx+gy*gy) > 30 ? '1' : '0';
+    }
+  }
+  // 3) Color histogram
+  const hist = new Array(24).fill(0);
+  for (let i = 0; i < d.length; i += 4) {
+    hist[Math.floor(d[i]/32)]++;
+    hist[8+Math.floor(d[i+1]/32)]++;
+    hist[16+Math.floor(d[i+2]/32)]++;
+  }
+  const histStr = hist.map(v => Math.min(255,Math.round(v*255/(SIZE*SIZE))).toString(16).padStart(2,'0')).join('');
+  return { rgb, edges, hist: histStr };
+}
+
+function richSimilarity(q, ref) {
+  if (!ref) return 0;
+  let score = 0;
+
+  // RGB similarity (weight: 0.5)
+  if (q.rgb && ref.rgb && q.rgb.length === ref.rgb.length) {
+    let diff = 0;
+    for (let i = 0; i < q.rgb.length; i += 3) {
+      diff += Math.abs(parseInt(q.rgb[i],16)   - parseInt(ref.rgb[i],16));
+      diff += Math.abs(parseInt(q.rgb[i+1],16) - parseInt(ref.rgb[i+1],16));
+      diff += Math.abs(parseInt(q.rgb[i+2],16) - parseInt(ref.rgb[i+2],16));
+    }
+    score += 0.5 * (1 - diff / ((q.rgb.length/3) * 45));
+  }
+
+  // Edge similarity (weight: 0.35)
+  if (q.edges && ref.edges && q.edges.length === ref.edges.length) {
+    let same = 0;
+    for (let i = 0; i < q.edges.length; i++) if (q.edges[i] === ref.edges[i]) same++;
+    score += 0.35 * (same / q.edges.length);
+  }
+
+  // Histogram similarity (weight: 0.15)
+  if (q.hist && ref.hist && q.hist.length === ref.hist.length) {
+    let diff = 0;
+    for (let i = 0; i < q.hist.length; i += 2) {
+      diff += Math.abs(parseInt(q.hist.slice(i,i+2),16) - parseInt(ref.hist.slice(i,i+2),16));
+    }
+    score += 0.15 * (1 - diff / (q.hist.length/2 * 255));
+  }
+
+  return score;
+}
+
+function findBestIconMatch(queryHash) {
+  if (!ICON_HASHES || !Object.keys(ICON_HASHES).length) return null;
+  let bestId = null, bestScore = 0;
+  for (const [id, ref] of Object.entries(ICON_HASHES)) {
+    const score = richSimilarity(queryHash, ref);
+    if (score > bestScore) { bestScore = score; bestId = id; }
+  }
+  return bestScore > 0.72 ? { id: bestId, confidence: (bestScore*100).toFixed(1) } : null;
+}
+
 // ── READ INVENTORY ────────────────────────────────────────────────────────
 async function readInventory() {
-  const resp = await fetch(PROXY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const previewImg = document.getElementById('preview-img');
+  const W = previewImg.naturalWidth || previewImg.width;
+  const H = previewImg.naturalHeight || previewImg.height;
+
+  const COLS = 8;
+  const cellW = Math.floor(W / COLS);
+  const cellH = cellW;
+  const totalRows = Math.floor(H / cellH);
+  const iconH = Math.floor(cellH * 0.65);
+  const pad   = Math.floor(cellW * 0.06);
+
+  const fullCanvas = document.createElement('canvas');
+  fullCanvas.width = W; fullCanvas.height = H;
+  fullCanvas.getContext('2d').drawImage(previewImg, 0, 0);
+
+  // ── Step 1: Rich hash icon matching ──
+  document.getElementById('loading-sub').textContent =
+    lang === 'tr' ? 'İkonlar eşleştiriliyor...' : 'Matching icons...';
+
+  const iconResults = [];
+  for (let r = 0; r < totalRows; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const sx = c * cellW + pad;
+      const sy = r * cellH + pad;
+      const sw = cellW - pad * 2;
+      const sh = iconH - pad;
+      const d = getRegionData(fullCanvas, sx, sy, sw, sh);
+      const qHash = computeRichHash(d);
+      const match = findBestIconMatch(qHash);
+      if (match) {
+        const info = BDO_ITEMS?.id_to_info?.[match.id];
+        const name = info?.name_en;
+        if (name) {
+          iconResults.push({ row: r, col: c, item_id: parseInt(match.id), name, confidence: match.confidence });
+          console.log(`(${r},${c}) → ${name} [${match.confidence}%]`);
+        }
+      }
+    }
+  }
+
+  // ── Step 2: AI reads quantities only ──
+  document.getElementById('loading-sub').textContent =
+    lang === 'tr' ? 'Miktarlar okunuyor...' : 'Reading quantities...';
+
+  const numCanvas = document.createElement('canvas');
+  numCanvas.width = W; numCanvas.height = H;
+  const numCtx = numCanvas.getContext('2d');
+  numCtx.drawImage(fullCanvas, 0, 0);
+  numCtx.fillStyle = '#0a0806';
+  for (let r = 0; r < totalRows; r++)
+    for (let c = 0; c < COLS; c++)
+      numCtx.fillRect(c * cellW, r * cellH, cellW, iconH);
+
+  const numB64 = numCanvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+  const numResp = await fetch(PROXY_URL, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
+      model: 'claude-sonnet-4-20250514', max_tokens: 2000,
       messages: [{ role: 'user', content: [
-        { type: 'image', source: { type: 'base64', media_type: mediaType, data: currentBase64 } },
-        { type: 'text', text: `You are analyzing a Black Desert Online storage screenshot.
-The grid has 8 columns. Each cell contains a small item icon on top and a quantity number below it.
-
-TASK: For each non-empty cell, identify the item and read its quantity.
-- Read cells LEFT TO RIGHT, TOP TO BOTTOM (row 0 col 0 first)
-- Use EXACT BDO English names as on bdocodex.com
-- Quantity: B=thousands (415B=415000), M=millions. Full integer.
-- Only list cells you can clearly see. Do NOT invent items.
-
-ITEMS (exact names):
-Ores: Iron Ore, Copper Ore, Silver Ore, Gold Ore, Titanium Ore, Platinum Ore, Tin Ore, Zinc Ore, Lead Ore, Coal, Rough Stone
-Processed metals: Melted Iron Shard, Melted Copper Shard, Iron Ingot, Copper Ingot, Steel Ingot, Titanium Ingot, Silver Ingot, Gold Ingot, Brass Ingot, Bronze Ingot
-Timber: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber, Log, White Cedar Timber, Elder Tree Timber, Acacia Timber, Palm Timber
-Plywood: Ash Plywood, Maple Plywood, Pine Plywood, Cedar Plywood, Birch Plywood, Fir Plywood
-Cooking: Wheat, Barley, Potato, Corn, Sweet Potato, Rye, Salt, Sugar, Milk, Egg, Butter, Flour, Vinegar, Olive Oil, Cooking Honey, Leavening Agent, Dried Fish
-Vegetables: Garlic, Onion, Tomato, Pumpkin, Pepper, Paprika, Hot Pepper
-Fruit: Strawberry, Coconut, Apple, Orange, Cherry, Fig, Banana, Grape
-Meat: Red Meat, Chicken Meat, Fish, Dried Fish, Lizard Meat, Fox Meat, Wolf Meat, Bear Meat
-Blood: Deer Blood, Pig Blood, Wolf Blood, Bear Blood, Fox Blood, Sheep Blood, Weasel Blood
-Hides: Hide, Thick Hide, Hard Hide, Dragon Skin
-Herbs: Sunrise Herb, Silver Azalea, Fire Flake Flower, Monk Branch, Dragon Root, Hops, White Umbrella Mushroom, Dwarf Mushroom, Truffle Mushroom
-Alchemy: Clear Liquid Reagent, Pure Powder Reagent, Trace of Nature, Trace of Savagery, Trace of Violence, Trace of Decay, Trace of Chaos, Trace of Breath
-Cloth: Cotton, Flax, Wool, Silk
-Other: Processed Grain, Bean Sprouts, Flower, Fruit
-Crates: Ash Timber Crate, Maple Timber Crate, Pine Timber Crate, Copper Ore Crate, Iron Ore Crate
-
-Return ONLY JSON (no explanation, no markdown):
-{"cells":[{"row":ROW,"col":COL,"name":"ITEM NAME","qty":QUANTITY},...]}` }
+        { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: numB64 } },
+        { type: 'text', text: `BDO storage grid. ${COLS} columns x ${totalRows} rows. Icons blacked out, only quantity numbers visible.
+Read each number LEFT TO RIGHT, TOP TO BOTTOM. B=thousands (415B=415000), M=millions. Full integer. Skip empty cells.
+Return ONLY JSON: {"cells":[{"row":0,"col":0,"qty":415000},{"row":0,"col":1,"qty":298000}]}` }
       ]}]
     })
   });
-  const data = await resp.json();
-  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-  const text = data.content.map(b => b.text || '').join('');
-  const match = text.replace(/```json|```/g, '').trim().match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('AI returned no response');
-  return JSON.parse(match[0]);
+
+  const numData = await numResp.json();
+  if (numData.error) throw new Error(numData.error.message);
+  const numText = numData.content.map(b => b.text || '').join('');
+  const numMatch = numText.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
+  if (!numMatch) throw new Error('AI returned no quantity data');
+  const numResult = JSON.parse(numMatch[0]);
+
+  // ── Step 3: Merge ──
+  const qtyMap = {};
+  (numResult.cells || []).forEach(c => { qtyMap[`${c.row}_${c.col}`] = c.qty; });
+
+  const cells = iconResults
+    .map(c => ({ row: c.row, col: c.col, name: c.name, item_id: c.item_id, qty: qtyMap[`${c.row}_${c.col}`] || 1 }))
+    .filter(c => c.qty > 0)
+    .sort((a,b) => (a.row - b.row) || (a.col - b.col));
+
+  return { cells };
 }
 
 
@@ -674,15 +820,26 @@ async function matchRecipesAsync(recipes, inv) {
 }
 
 // ── EDIT MODE ─────────────────────────────────────────────────────────────
+function resetInventory() {
+  if (!originalInventory.length) return;
+  inventory = JSON.parse(JSON.stringify(originalInventory));
+  renderItems(inventory);
+  if (document.getElementById('results-section').classList.contains('visible')) {
+    findRecipes();
+  }
+}
+
 function toggleEditMode() {
   editMode = !editMode;
   const btn = document.getElementById('edit-toggle-btn');
   const addBtn = document.getElementById('add-item-btn');
+  const resetBtn = document.getElementById('reset-btn');
   const findRow = document.getElementById('find-recipes-row');
   btn.textContent = editMode ? S[lang].doneBtn : S[lang].editBtn;
   btn.style.borderColor = editMode ? 'var(--green)' : '';
   btn.style.color = editMode ? 'var(--green)' : '';
   addBtn.style.display = editMode ? 'inline' : 'none';
+  resetBtn.style.display = editMode ? 'inline' : 'none';
   findRow.style.display = editMode ? 'none' : (inventory.length ? 'block' : 'none');
   renderItems(inventory);
 }
@@ -906,6 +1063,7 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     showLoading(s.loadRead, s.loadReadSub);
     setStatus('reading', s.statusReading);
     await loadItemDB();
+    await loadIconHashes();
 
     document.getElementById('loading-sub').textContent = lang === 'tr' ? 'Malzemeler okunuyor...' : 'Reading materials...';
 
@@ -935,6 +1093,7 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     }
 
     inventory = items.length > 0 ? items : [];
+    originalInventory = JSON.parse(JSON.stringify(inventory)); // deep copy
     renderItems(inventory);
     hideLoading();
     await findRecipes();
