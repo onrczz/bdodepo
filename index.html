@@ -3,667 +3,176 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BDO Depo Analiz Aracı</title>
+<title>BDO Depo Analizi</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap');
 
+  /* ── DARK MODE (default) ── */
   :root {
-    --gold: #c9a84c;
-    --gold-light: #e8c97a;
-    --gold-dark: #8a6a1e;
-    --bg-deep: #0a0806;
-    --bg-panel: #12100c;
-    --bg-card: #1a1610;
-    --bg-hover: #221e16;
-    --border: #2e2618;
-    --border-gold: #3d3020;
-    --text: #d4c9a8;
-    --text-dim: #7a6e58;
-    --text-bright: #f0e6c8;
-    --green: #4caf76;
-    --red: #c95c4c;
-    --blue: #4c8ac9;
-    --purple: #9c6cc9;
+    --gold: #c9a84c; --gold-light: #e8c97a; --gold-dark: #8a6a1e;
+    --bg-deep: #0a0806; --bg-panel: #12100c; --bg-card: #1a1610; --bg-hover: #221e16;
+    --border: #2e2618; --border-gold: #3d3020;
+    --text: #d4c9a8; --text-dim: #7a6e58; --text-bright: #f0e6c8;
+    --green: #4caf76; --red: #c95c4c;
+    --shadow: rgba(0,0,0,0.4);
+  }
+
+  /* ── LIGHT MODE ── */
+  body.light {
+    --gold: #8a5e10; --gold-light: #6b4a0e; --gold-dark: #c9a84c;
+    --bg-deep: #f5f0e8; --bg-panel: #fffdf7; --bg-card: #f0ebe0; --bg-hover: #e8e0d0;
+    --border: #d8cdb8; --border-gold: #c9a84c;
+    --text: #3a2e1a; --text-dim: #8a7a5a; --text-bright: #2a1e08;
+    --green: #2d7a4f; --red: #b03020;
+    --shadow: rgba(0,0,0,0.1);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg-deep); color: var(--text); font-family: 'Crimson Pro', serif; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+  body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(76,138,201,0.03) 0%, transparent 50%); pointer-events: none; z-index: 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; }
 
-  body {
-    background: var(--bg-deep);
-    color: var(--text);
-    font-family: 'Crimson Pro', serif;
-    min-height: 100vh;
-    overflow-x: hidden;
+  /* ── HEADER ── */
+  header { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--border-gold); margin-bottom: 2rem; }
+  .logo-line { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 0.4rem; }
+  h1 { font-family: 'Cinzel', serif; font-size: 2rem; color: var(--gold); letter-spacing: 0.1em; }
+  .subtitle { color: var(--text-dim); font-size: 1rem; font-style: italic; margin-bottom: 1rem; }
+
+  .header-controls { display: flex; gap: 0.5rem; justify-content: center; align-items: center; margin-top: 0.8rem; flex-wrap: wrap; }
+
+  .lang-btn, .theme-btn {
+    font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.06em;
+    padding: 0.4rem 1rem; border-radius: 2px; border: 1px solid var(--border-gold);
+    background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.2s;
   }
-
-  /* Animated background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: 
-      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(76,138,201,0.03) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 2rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  header {
-    text-align: center;
-    padding: 2.5rem 0 2rem;
-    border-bottom: 1px solid var(--border-gold);
-    margin-bottom: 2.5rem;
-  }
-
-  .logo-line {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .logo-icon {
-    width: 36px;
-    height: 36px;
-    opacity: 0.8;
-  }
-
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 2rem;
-    color: var(--gold);
-    letter-spacing: 0.1em;
-    font-weight: 700;
-  }
-
-  .subtitle {
-    color: var(--text-dim);
-    font-size: 1.05rem;
-    font-style: italic;
-    margin-top: 0.3rem;
-  }
-
-  /* API Key Panel */
-  .apikey-panel {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-gold);
-    border-radius: 4px;
-    padding: 1.2rem 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .apikey-title {
-    font-family: 'Cinzel', serif;
-    color: var(--gold);
-    font-size: 0.9rem;
-    letter-spacing: 0.08em;
-    margin-bottom: 0.5rem;
-  }
-
-  .apikey-desc {
-    font-size: 0.88rem;
-    color: var(--text-dim);
-    margin-bottom: 0.8rem;
-    line-height: 1.6;
-  }
-
-  .apikey-desc a { color: var(--gold); text-decoration: none; }
-  .apikey-desc a:hover { color: var(--gold-light); }
-  .apikey-desc strong { color: var(--text); }
-
-  .apikey-row {
-    display: flex;
-    gap: 0.8rem;
-    align-items: center;
-  }
-
-  .apikey-row input {
-    flex: 1;
-    background: var(--bg-deep);
-    border: 1px solid var(--border-gold);
-    border-radius: 2px;
-    padding: 0.55rem 0.9rem;
-    color: var(--text-bright);
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .apikey-row input:focus { border-color: var(--gold); }
-  .apikey-row input::placeholder { color: var(--text-dim); }
-
-  .apikey-panel.locked {
-    border-color: rgba(76,175,118,0.4);
-    background: rgba(76,175,118,0.04);
-  }
-
-  /* Lang Switcher */
-  .lang-switcher {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-    margin-top: 1rem;
-  }
-
-  .lang-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    padding: 0.4rem 1rem;
-    border-radius: 2px;
-    border: 1px solid var(--border-gold);
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .lang-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .lang-btn:hover, .theme-btn:hover { border-color: var(--gold); color: var(--gold); }
   .lang-btn.active { background: var(--gold-dark); border-color: var(--gold); color: var(--gold-light); }
+  .theme-btn { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
 
-  /* Upload Zone */
-  .upload-zone {
-    border: 2px dashed var(--border-gold);
-    border-radius: 4px;
-    padding: 3rem 2rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    background: var(--bg-panel);
-    position: relative;
-    overflow: hidden;
-  }
+  .divider-btn { width: 1px; height: 20px; background: var(--border-gold); margin: 0 0.2rem; }
 
-  .upload-zone::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(201,168,76,0.03) 0%, transparent 100%);
-    transition: opacity 0.3s;
-    opacity: 0;
-  }
-
-  .upload-zone:hover::before, .upload-zone.drag-over::before { opacity: 1; }
-  .upload-zone:hover, .upload-zone.drag-over {
-    border-color: var(--gold);
-    background: var(--bg-card);
-  }
-
-  .upload-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    display: block;
-    animation: float 3s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
-
-  .upload-zone h2 {
-    font-family: 'Cinzel', serif;
-    color: var(--gold-light);
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .upload-zone p {
-    color: var(--text-dim);
-    font-size: 0.95rem;
-  }
-
+  /* ── UPLOAD ── */
+  .upload-zone { border: 2px dashed var(--border-gold); border-radius: 4px; padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--bg-panel); }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--gold); background: var(--bg-card); }
+  .upload-icon { font-size: 3rem; display: block; margin-bottom: 1rem; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  .upload-zone h2 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .upload-zone p { color: var(--text-dim); }
   #file-input { display: none; }
 
-  /* Preview */
-  .preview-section {
-    display: none;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-  }
+  /* ── PREVIEW ── */
+  .preview-section { display: none; gap: 1.5rem; margin-top: 1.5rem; }
+  .preview-section.visible { display: grid; grid-template-columns: 300px 1fr; }
+  .preview-card { background: var(--bg-panel); border: 1px solid var(--border-gold); border-radius: 4px; overflow: hidden; }
+  .preview-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
+  .card-footer { padding: 0.8rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.8rem; }
 
-  .preview-section.visible { display: grid; grid-template-columns: 320px 1fr; }
-
-  .preview-card {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-gold);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .preview-card img {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    display: block;
-  }
-
-  .preview-card .card-footer {
-    padding: 0.8rem 1rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 0.8rem;
-    align-items: center;
-  }
-
-  .btn {
-    font-family: 'Cinzel', serif;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
-    padding: 0.6rem 1.2rem;
-    border-radius: 2px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
-  }
-
-  .btn-primary {
-    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
-    color: #0a0806;
-    font-weight: 700;
-    flex: 1;
-  }
-
-  .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-  .btn-secondary {
-    background: transparent;
-    border: 1px solid var(--border-gold);
-    color: var(--text-dim);
-  }
-
+  .btn { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.08em; padding: 0.6rem 1.2rem; border-radius: 2px; border: none; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+  .btn-primary { background: linear-gradient(135deg, var(--gold-dark), var(--gold)); color: #fff; font-weight: 700; flex: 1; }
+  body.light .btn-primary { color: #0a0806; }
+  .btn-primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary { background: transparent; border: 1px solid var(--border-gold); color: var(--text-dim); }
   .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
 
-  /* AI Reading Panel */
-  .ai-panel {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-gold);
-    border-radius: 4px;
-    padding: 1.2rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
-  .ai-panel-title {
-    font-family: 'Cinzel', serif;
-    color: var(--gold);
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--text-dim);
-    flex-shrink: 0;
-  }
+  /* ── STATUS PANEL ── */
+  .ai-panel { background: var(--bg-panel); border: 1px solid var(--border-gold); border-radius: 4px; padding: 1.2rem 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .ai-panel-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; display: flex; align-items: center; gap: 0.6rem; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; transition: background 0.3s; }
   .status-dot.reading { background: var(--gold); animation: pulse 1s infinite; }
   .status-dot.done { background: var(--green); }
   .status-dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .ai-status-text { color: var(--text-dim); font-size: 0.95rem; font-style: italic; }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .ai-status-text {
-    color: var(--text-dim);
-    font-size: 0.95rem;
-    font-style: italic;
-    min-height: 1.5rem;
-  }
-
-  /* Items Grid */
-  .items-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-
-  .items-grid::-webkit-scrollbar { width: 4px; }
-  .items-grid::-webkit-scrollbar-track { background: var(--bg-deep); }
-  .items-grid::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
-
-  .item-tag {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 0.3rem 0.7rem;
-    font-size: 0.85rem;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .item-tag:hover { border-color: var(--gold); color: var(--gold-light); }
+  .items-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; max-height: 180px; overflow-y: auto; }
+  .item-tag { background: var(--bg-card); border: 1px solid var(--border); border-radius: 2px; padding: 0.3rem 0.7rem; font-size: 0.85rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem; }
   .item-tag .qty { color: var(--gold); font-weight: 600; font-size: 0.8rem; }
 
-  /* Results Section */
-  #results-section {
-    margin-top: 2.5rem;
-    display: none;
-  }
-
+  /* ── RESULTS ── */
+  #results-section { margin-top: 2.5rem; display: none; }
   #results-section.visible { display: block; }
+  .results-header { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.1rem; letter-spacing: 0.08em; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-gold); }
 
-  .results-header {
-    font-family: 'Cinzel', serif;
-    color: var(--gold);
-    font-size: 1.1rem;
-    letter-spacing: 0.08em;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 1px solid var(--border-gold);
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-  }
-
-  .results-tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 1.5rem;
-    border: 1px solid var(--border-gold);
-    border-radius: 3px;
-    overflow: hidden;
-    width: fit-content;
-  }
-
-  .tab {
-    font-family: 'Cinzel', serif;
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    padding: 0.6rem 1.2rem;
-    cursor: pointer;
-    background: var(--bg-panel);
-    color: var(--text-dim);
-    border: none;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    border-right: 1px solid var(--border-gold);
-  }
-
+  .results-tabs { display: flex; margin-bottom: 1.5rem; border: 1px solid var(--border-gold); border-radius: 3px; overflow: hidden; width: fit-content; }
+  .tab { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.08em; padding: 0.6rem 1.5rem; cursor: pointer; background: var(--bg-panel); color: var(--text-dim); border: none; text-transform: uppercase; transition: all 0.2s; border-right: 1px solid var(--border-gold); }
   .tab:last-child { border-right: none; }
   .tab.active { background: var(--gold-dark); color: var(--gold-light); }
+  body.light .tab.active { color: #fff; }
   .tab:hover:not(.active) { background: var(--bg-hover); color: var(--text); }
-
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  /* Recipe Cards */
-  .recipe-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1rem;
-  }
-
-  .recipe-card {
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    transition: all 0.25s;
-    position: relative;
-  }
-
-  .recipe-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .recipe-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+  /* ── RECIPE CARDS ── */
+  .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+  .recipe-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: all 0.25s; position: relative; box-shadow: 0 2px 8px var(--shadow); }
+  .recipe-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0; transition: opacity 0.3s; }
+  .recipe-card:hover { border-color: var(--border-gold); transform: translateY(-2px); box-shadow: 0 4px 16px var(--shadow); }
   .recipe-card:hover::before { opacity: 1; }
 
-  .recipe-card-header {
-    padding: 1rem 1.2rem 0.8rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    border-bottom: 1px solid var(--border);
-  }
+  .recipe-card-header { padding: 0.8rem 1rem; display: flex; align-items: center; gap: 0.8rem; border-bottom: 1px solid var(--border); }
+  .recipe-icon { width: 36px; height: 36px; border-radius: 3px; border: 1px solid var(--border); flex-shrink: 0; }
+  .recipe-name { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--text-bright); line-height: 1.4; flex: 1; }
+  .craft-badge { font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 2px; white-space: nowrap; flex-shrink: 0; }
+  .craft-yes { background: rgba(76,175,118,0.15); color: var(--green); border: 1px solid rgba(76,175,118,0.3); }
+  .craft-no { background: rgba(201,92,76,0.12); color: var(--red); border: 1px solid rgba(201,92,76,0.25); }
 
-  .recipe-name {
-    font-family: 'Cinzel', serif;
-    font-size: 0.9rem;
-    color: var(--text-bright);
-    line-height: 1.4;
-    flex: 1;
-  }
+  .recipe-card-body { padding: 0.8rem 1rem; }
+  .skill-level { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.5rem; }
+  .ingredient-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.87rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border); }
+  .ingredient-row:last-child { border-bottom: none; }
+  .ing-name { color: var(--text); }
+  .ing-qty { font-size: 0.8rem; white-space: nowrap; }
+  .ing-have { color: var(--green); }
+  .ing-need { color: var(--red); }
 
-  .profit-badge {
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 0.25rem 0.6rem;
-    border-radius: 2px;
-    white-space: nowrap;
-    margin-left: 0.8rem;
-  }
+  .card-footer-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1rem; border-top: 1px solid var(--border); background: var(--bg-card); }
+  .craftable-count { color: var(--gold); font-weight: 600; font-size: 0.85rem; }
+  .codex-link { font-size: 0.78rem; color: var(--gold); text-decoration: none; opacity: 0.7; }
+  .codex-link:hover { opacity: 1; text-decoration: underline; }
 
-  .profit-high { background: rgba(76,175,118,0.15); color: var(--green); border: 1px solid rgba(76,175,118,0.3); }
-  .profit-mid { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
-  .profit-low { background: rgba(201,92,76,0.15); color: var(--red); border: 1px solid rgba(201,92,76,0.3); }
+  .empty-state { text-align: center; padding: 3rem; color: var(--text-dim); font-style: italic; }
 
-  .recipe-card-body {
-    padding: 0.8rem 1.2rem;
-  }
-
-  .recipe-type {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-dim);
-    margin-bottom: 0.6rem;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .recipe-ingredients {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    margin-bottom: 0.8rem;
-  }
-
-  .ingredient-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.88rem;
-  }
-
-  .ingredient-name { color: var(--text); }
-  .ingredient-qty {
-    color: var(--text-dim);
-    font-size: 0.82rem;
-  }
-
-  .ingredient-qty.have { color: var(--green); }
-  .ingredient-qty.need { color: var(--red); }
-
-  .recipe-footer {
-    padding: 0.7rem 1.2rem;
-    border-top: 1px solid var(--border);
-    background: rgba(0,0,0,0.2);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.85rem;
-  }
-
-  .craft-count { color: var(--gold); font-weight: 600; }
-  .value-est { color: var(--text-dim); font-style: italic; }
-
-  /* Summary Panel */
-  .summary-panel {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-gold);
-    border-radius: 4px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-  }
-
-  .summary-stat {
-    text-align: center;
-    padding: 0.8rem;
-    border-radius: 3px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-  }
-
-  .stat-num {
-    font-family: 'Cinzel', serif;
-    font-size: 1.5rem;
-    color: var(--gold);
-    display: block;
-  }
-
-  .stat-label {
-    font-size: 0.8rem;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-top: 0.2rem;
-  }
-
-  /* Loading spinner */
-  .loading-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,8,6,0.85);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
+  /* ── LOADING ── */
+  .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(10,8,6,0.85); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 1.5rem; }
+  body.light .loading-overlay { background: rgba(245,240,232,0.88); }
   .loading-overlay.visible { display: flex; }
-
-  .spinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid var(--border-gold);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
+  .spinner { width: 50px; height: 50px; border: 3px solid var(--border-gold); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1rem; letter-spacing: 0.1em; text-align: center; }
+  .loading-sub { color: var(--text-dim); font-size: 0.9rem; font-style: italic; }
 
-  .loading-text {
-    font-family: 'Cinzel', serif;
-    color: var(--gold);
-    font-size: 1rem;
-    letter-spacing: 0.1em;
-    text-align: center;
-  }
-
-  .loading-sub {
-    color: var(--text-dim);
-    font-size: 0.9rem;
-    font-style: italic;
-  }
-
-  /* Empty state */
-  .empty-state {
-    text-align: center;
-    padding: 3rem;
-    color: var(--text-dim);
-    font-style: italic;
-  }
-
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg-deep); }
   ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
 
-  /* Decorative divider */
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin: 2rem 0;
-    color: var(--text-dim);
-    font-size: 0.8rem;
-  }
-  .divider::before, .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .error-msg {
-    background: rgba(201,92,76,0.1);
-    border: 1px solid rgba(201,92,76,0.3);
-    border-radius: 3px;
-    padding: 0.8rem 1rem;
-    color: #e88;
-    font-size: 0.9rem;
-  }
-
   @media (max-width: 700px) {
     .preview-section.visible { grid-template-columns: 1fr; }
-    .summary-panel { grid-template-columns: 1fr; }
     .recipe-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 1.4rem; }
   }
 </style>
 </head>
 <body>
-
 <div class="container">
   <header>
     <div class="logo-line">
-      <svg class="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
         <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
-        <polygon points="18,7 29,13 29,23 18,29 7,23 7,13" fill="none" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
         <circle cx="18" cy="18" r="5" fill="#c9a84c" opacity="0.3"/>
         <circle cx="18" cy="18" r="2" fill="#c9a84c"/>
       </svg>
       <h1 id="main-title">BDO Depo Analizi</h1>
     </div>
-    <p class="subtitle" id="main-subtitle">Malzemelerini yükle — en karlı seçeneği bul</p>
-    <div class="lang-switcher">
+    <p class="subtitle" id="main-subtitle">Depo ekran görüntüsü yükle — gerçek BDO Codex tarifleri ile analiz et</p>
+    <div class="header-controls">
       <button class="lang-btn active" id="lang-tr" onclick="setLang('tr')">🇹🇷 Türkçe</button>
       <button class="lang-btn" id="lang-en" onclick="setLang('en')">🇺🇸 English</button>
+      <div class="divider-btn"></div>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Aydınlık</button>
     </div>
   </header>
 
-  <!-- Upload Zone -->
   <div class="upload-zone" id="upload-zone">
     <span class="upload-icon">📦</span>
     <h2 id="upload-title">Depo Ekran Görüntüsü Yükle</h2>
@@ -671,291 +180,217 @@
     <input type="file" id="file-input" accept="image/*">
   </div>
 
-  <!-- Preview + AI Reading -->
   <div class="preview-section" id="preview-section">
     <div class="preview-card">
-      <img id="preview-img" src="" alt="Depo görüntüsü">
+      <img id="preview-img" src="" alt="Depo">
       <div class="card-footer">
         <button class="btn btn-secondary" id="change-btn">↩ Değiştir</button>
         <button class="btn btn-primary" id="analyze-btn">⚔ Analiz Et</button>
       </div>
     </div>
-
     <div class="ai-panel">
       <div class="ai-panel-title">
         <div class="status-dot" id="status-dot"></div>
-        AI Okuma
+        <span id="ai-panel-title-text">Durum</span>
       </div>
       <div class="ai-status-text" id="status-text">Analiz etmek için butona bas.</div>
       <div id="items-container" style="display:none;">
-        <div style="font-size:0.8rem; color:var(--text-dim); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.08em;">Tespit Edilen Malzemeler</div>
+        <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em;" id="detected-label">Tespit Edilen Malzemeler</div>
         <div class="items-grid" id="items-grid"></div>
       </div>
     </div>
   </div>
 
-  <!-- Results -->
   <div id="results-section">
-    <div class="results-header" id="results-header">
-      ⚗ Karlılık Analizi
-    </div>
-
-    <div class="summary-panel" id="summary-panel">
-      <div class="summary-stat">
-        <span class="stat-num" id="stat-items">-</span>
-        <div class="stat-label" id="stat-items-label">Malzeme Türü</div>
-      </div>
-      <div class="summary-stat">
-        <span class="stat-num" id="stat-recipes">-</span>
-        <div class="stat-label" id="stat-recipes-label">Yapılabilir Tarif</div>
-      </div>
-      <div class="summary-stat">
-        <span class="stat-num" id="stat-best">-</span>
-        <div class="stat-label" id="stat-best-label">En İyi Seçenek</div>
-      </div>
-    </div>
-
+    <div class="results-header" id="results-header">⚗ Gerçek BDO Tarifleri — BDO Codex</div>
     <div class="results-tabs">
-      <button class="tab active" id="tab-culinary-btn" onclick="switchTab('culinary')">🍲 Aşçılık</button>
-      <button class="tab" id="tab-alchemy-btn" onclick="switchTab('alchemy')">⚗ Kimya</button>
-      <button class="tab" id="tab-sell-btn" onclick="switchTab('sell')">💰 Direkt Sat</button>
-      <button class="tab" id="tab-all-btn" onclick="switchTab('all')">★ En Karlı</button>
+      <button class="tab active" id="tab-culinary-btn" onclick="switchTab('culinary',this)">🍲 Aşçılık</button>
+      <button class="tab" id="tab-alchemy-btn" onclick="switchTab('alchemy',this)">⚗ Kimya</button>
     </div>
-
-    <div id="tab-culinary" class="tab-content active">
-      <div class="recipe-grid" id="culinary-grid"></div>
-    </div>
-    <div id="tab-alchemy" class="tab-content">
-      <div class="recipe-grid" id="alchemy-grid"></div>
-    </div>
-    <div id="tab-sell" class="tab-content">
-      <div class="recipe-grid" id="sell-grid"></div>
-    </div>
-    <div id="tab-all" class="tab-content">
-      <div class="recipe-grid" id="all-grid"></div>
-    </div>
+    <div id="tab-culinary" class="tab-content active"><div class="recipe-grid" id="culinary-grid"></div></div>
+    <div id="tab-alchemy"  class="tab-content">       <div class="recipe-grid" id="alchemy-grid"></div> </div>
   </div>
 </div>
 
-<!-- Loading Overlay -->
 <div class="loading-overlay" id="loading-overlay">
   <div class="spinner"></div>
-  <div>
-    <div class="loading-text" id="loading-text">Malzemeler Okunuyor</div>
-    <div class="loading-sub" id="loading-sub">Yapay zeka deponuzu analiz ediyor...</div>
+  <div style="text-align:center;">
+    <div class="loading-text" id="loading-text">Yükleniyor</div>
+    <div class="loading-sub"  id="loading-sub">Lütfen bekleyin...</div>
   </div>
 </div>
 
 <script>
-const PROXY_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
+const PROXY_URL   = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
+const CODEX_PROXY = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/codex';
+const ICON_BASE   = 'https://bdocodex.com/items/';
 
-// =============================================
-// LANGUAGE SYSTEM
-// =============================================
-let currentLang = localStorage.getItem('bdo_lang') || 'tr';
-
-const STRINGS = {
+// ── STRINGS ───────────────────────────────────────────────────────────────
+const S = {
   tr: {
-    title: 'BDO Depo Analizi',
-    subtitle: 'Malzemelerini yükle — en karlı seçeneği bul',
-    uploadTitle: 'Depo Ekran Görüntüsü Yükle',
-    uploadDesc: 'Tıkla veya sürükle bırak · PNG, JPG desteklenir',
-    changeBtn: '↩ Değiştir',
-    analyzeBtn: '⚔ Analiz Et',
-    aiReading: 'AI Okuma',
-    statusReady: 'Analiz etmek için butona bas.',
-    statItems: 'Malzeme Türü',
-    statRecipes: 'Yapılabilir Tarif',
-    statBest: 'En İyi Seçenek',
-    tabCulinary: '🍲 Aşçılık',
-    tabAlchemy: '⚗ Kimya',
-    tabSell: '💰 Direkt Sat',
-    tabAll: '★ En Karlı',
-    resultsHeader: '⚗ Karlılık Analizi',
-    loadingRead: 'Depo Okunuyor',
-    loadingReadSub: 'Yapay zeka eşyaları tespit ediyor...',
-    loadingAnalyze: 'Karlılık Hesaplanıyor',
-    loadingAnalyzeSub: 'BDO tarifleri ve pazar değerleri analiz ediliyor...',
-    craftHow: 'Nasıl Üretilir?',
-    craftable: '× üretilebilir',
-    emptyCulinary: 'Bu malzemelerle aşçılık tarifi bulunamadı.',
-    emptyAlchemy: 'Bu malzemelerle kimya tarifi bulunamadı.',
-    emptySell: 'Direkt satış önerisi bulunamadı.',
-    profitHigh: '★ Yüksek Kar',
-    profitMid: '◆ Orta Kar',
-    profitLow: '▼ Düşük Kar',
-    detected: 'Tespit Edilen Malzemeler',
-    imagePrompt: `Bu Black Desert Online depo ekran görüntüsündeki SADECE craft ve üretim malzemelerini listele. Sadece JSON döndür, kesinlikle başka hiçbir şey yazma. Yanıtın ilk karakteri { olmalı, son karakteri } olmalı.
-Format: {"items":[{"name":"isim","qty":sayi}]}
-
-ÖNEMLİ - MİKTAR OKUMA KURALLARI:
-- "297B" veya "297b" = 297.000 (B = bin demek, tam sayıya çevir)
-- "415B" = 415.000
-- "103B" = 103.000
-- "1.2B" = 1.200
-- Sayının yanında B/b harfi varsa x1000 ile çarp ve tam sayı yaz
-- Sayının yanında M/m harfi varsa x1.000.000 ile çarp
-- Harf yoksa sayıyı olduğu gibi al
-
-SADECE say: hammaddeler, işlenmiş malzemeler, kimya/aşçılık malzemeleri, tohumlar, craft bileşenleri.
-SAYMA: silah, zırh, aksesuar, iksir, yiyecek, binek, kara taş.
-Kural: qty tam sayı olmalı.`,
-    recipePrompt: (itemList) => `Sen bir Black Desert Online uzmanısın. Aşağıdaki malzemeleri kullanarak en karlı seçenekleri analiz et.
-DEPODAKI MALZEMELER:\n${itemList}
-Şu kategorilerde analiz yap: 1. AŞÇILIK tarifleri 2. KİMYA tarifleri 3. DİREKT SATIŞ
-SADECE JSON döndür, başka bir şey yazma, açıklama ekleme:
-{"culinary":[{"name":"Tarifin adı","type":"Aşçılık","craftStation":"Aşçılık Tezgahı","ingredients":[{"name":"Malzeme","required":5,"have":297}],"steps":"1. Aşçılık Tezgahına git. 2. Malzemeleri ekle. 3. Üret.","craftable":59,"estimatedValue":"~50,000 siyah dolar/adet","profitScore":"HIGH","tip":"Kısa not"}],"alchemy":[{"name":"İksir adı","type":"Kimya","craftStation":"Kimya Tezgahı","ingredients":[{"name":"Malzeme","required":2,"have":100}],"steps":"1. Kimya Tezgahına git. 2. Malzemeleri ekle. 3. Üret.","craftable":50,"estimatedValue":"~30,000 siyah dolar/adet","profitScore":"MID","tip":"Kısa not"}],"sell":[{"name":"Direkt Sat: Malzeme","type":"Satış","craftStation":"Pazar Yeri","ingredients":[{"name":"Malzeme","required":1,"have":297}],"steps":"1. Pazar Yeri NPC'sine git. 2. Malzemeyi sat.","craftable":297,"estimatedValue":"~X siyah dolar/adet","profitScore":"MID","tip":"Neden satılmalı"}],"summary":{"totalItems":15,"totalRecipes":8,"bestOption":"En iyi tarif adı"}}`
+    title:         'BDO Depo Analizi',
+    subtitle:      'Depo ekran görüntüsü yükle — gerçek BDO Codex tarifleri ile analiz et',
+    uploadTitle:   'Depo Ekran Görüntüsü Yükle',
+    uploadDesc:    'Tıkla veya sürükle bırak · PNG, JPG desteklenir',
+    changeBtn:     '↩ Değiştir',
+    analyzeBtn:    '⚔ Analiz Et',
+    aiPanel:       'Durum',
+    detectedLabel: 'Tespit Edilen Malzemeler',
+    statusReady:   'Analiz etmek için butona bas.',
+    statusReading: 'Malzemeler okunuyor...',
+    statusSearch:  'BDO Codex\'ten gerçek tarifler aranıyor...',
+    statusDone:    n => `✓ ${n} malzeme bulundu, tarifler listeleniyor.`,
+    statusErr:     'Hata: ',
+    resultsHeader: '⚗ Gerçek BDO Tarifleri — BDO Codex',
+    tabCulinary:   '🍲 Aşçılık',
+    tabAlchemy:    '⚗ Kimya',
+    loadRead:      'Malzemeler Okunuyor',
+    loadReadSub:   'Yapay zeka deponu analiz ediyor...',
+    loadCodex:     'BDO Codex Sorgulanıyor',
+    loadCodexSub:  'Gerçek tarifler getiriliyor...',
+    emptyCulinary: 'Bu malzemelerle eşleşen aşçılık tarifi bulunamadı.',
+    emptyAlchemy:  'Bu malzemelerle eşleşen kimya tarifi bulunamadı.',
+    craftable:     n => `${n}× üretilebilir`,
+    noMats:        'Eksik malzeme var',
+    codexLink:     '→ Codex\'te Gör',
+    need:          'gerekli',
+    themeLight:    'Aydınlık',
+    themeDark:     'Karanlık',
+    imagePrompt: `Bu Black Desert Online depo ekran görüntüsündeki craft malzemelerini listele.
+DAHİL ET: hammaddeler (tahıl, et, balık, sebze, maden, odun, bitki, kan, deri), işlenmiş malzemeler, kimya/aşçılık bileşenleri, tohumlar.
+HARİÇ TUT: silah, zırh, aksesuar, iksir, hazır yemek, kara taş, binek, ekipman.
+MİKTAR KURALI: B veya b = bin (297B = 297000, 103B = 103000). M = milyon. Sadece tam sayı yaz.
+Sadece JSON döndür, başka hiçbir şey yazma:
+{"items":[{"name":"Pirinç","qty":297000},{"name":"Buğday","qty":385}]}`
   },
   en: {
-    title: 'BDO Storage Analyzer',
-    subtitle: 'Upload your storage — find the most profitable option',
-    uploadTitle: 'Upload Storage Screenshot',
-    uploadDesc: 'Click or drag & drop · PNG, JPG supported',
-    changeBtn: '↩ Change',
-    analyzeBtn: '⚔ Analyze',
-    aiReading: 'AI Reading',
-    statusReady: 'Press the button to analyze.',
-    statItems: 'Item Types',
-    statRecipes: 'Craftable Recipes',
-    statBest: 'Best Option',
-    tabCulinary: '🍲 Cooking',
-    tabAlchemy: '⚗ Alchemy',
-    tabSell: '💰 Direct Sell',
-    tabAll: '★ Most Profitable',
-    resultsHeader: '⚗ Profitability Analysis',
-    loadingRead: 'Reading Storage',
-    loadingReadSub: 'AI is detecting your items...',
-    loadingAnalyze: 'Calculating Profit',
-    loadingAnalyzeSub: 'Analyzing BDO recipes and market values...',
-    craftHow: 'How to Craft?',
-    craftable: '× craftable',
-    emptyCulinary: 'No cooking recipes found for these materials.',
-    emptyAlchemy: 'No alchemy recipes found for these materials.',
-    emptySell: 'No direct sell suggestions found.',
-    profitHigh: '★ High Profit',
-    profitMid: '◆ Mid Profit',
-    profitLow: '▼ Low Profit',
-    detected: 'Detected Items',
-    imagePrompt: `List ONLY the craft and production materials from this Black Desert Online storage screenshot. Return only JSON, absolutely nothing else. First character must be {, last must be }.
-Format: {"items":[{"name":"name","qty":number}]}
-
-IMPORTANT - QUANTITY READING RULES:
-- "297B" or "297b" = 297,000 (B = thousands, convert to full number)
-- "415B" = 415,000
-- "103B" = 103,000
-- "1.2B" = 1,200
-- If number has B/b suffix, multiply by 1,000 and write as integer
-- If number has M/m suffix, multiply by 1,000,000
-- No suffix = use number as-is
-
-ONLY include: raw materials, processed materials, cooking/alchemy ingredients, seeds, craft components.
-DO NOT include: weapons, armor, accessories, potions, food, mounts, black stones.
-Rule: qty must be an integer.`,
-    recipePrompt: (itemList) => `You are a Black Desert Online expert. Analyze the most profitable options using the following materials.
-STORAGE MATERIALS:\n${itemList}
-Analyze these categories: 1. COOKING recipes 2. ALCHEMY recipes 3. DIRECT SELL
-Return ONLY JSON, no explanations:
-{"culinary":[{"name":"Recipe name","type":"Cooking","craftStation":"Cooking Utensil","ingredients":[{"name":"Material","required":5,"have":297}],"steps":"1. Go to Cooking Utensil. 2. Add materials. 3. Craft.","craftable":59,"estimatedValue":"~50,000 silver/unit","profitScore":"HIGH","tip":"Short note"}],"alchemy":[{"name":"Elixir name","type":"Alchemy","craftStation":"Alchemy Tool","ingredients":[{"name":"Material","required":2,"have":100}],"steps":"1. Go to Alchemy Tool. 2. Add materials. 3. Craft.","craftable":50,"estimatedValue":"~30,000 silver/unit","profitScore":"MID","tip":"Short note"}],"sell":[{"name":"Direct Sell: Material","type":"Sell","craftStation":"Marketplace","ingredients":[{"name":"Material","required":1,"have":297}],"steps":"1. Go to Marketplace NPC. 2. Sell the item.","craftable":297,"estimatedValue":"~X silver/unit","profitScore":"MID","tip":"Why to sell"}],"summary":{"totalItems":15,"totalRecipes":8,"bestOption":"Best recipe name"}}`
+    title:         'BDO Storage Analyzer',
+    subtitle:      'Upload storage screenshot — analyze with real BDO Codex recipes',
+    uploadTitle:   'Upload Storage Screenshot',
+    uploadDesc:    'Click or drag & drop · PNG, JPG supported',
+    changeBtn:     '↩ Change',
+    analyzeBtn:    '⚔ Analyze',
+    aiPanel:       'Status',
+    detectedLabel: 'Detected Materials',
+    statusReady:   'Press the button to analyze.',
+    statusReading: 'Reading materials...',
+    statusSearch:  'Fetching real recipes from BDO Codex...',
+    statusDone:    n => `✓ ${n} materials found, listing recipes.`,
+    statusErr:     'Error: ',
+    resultsHeader: '⚗ Real BDO Recipes — BDO Codex',
+    tabCulinary:   '🍲 Cooking',
+    tabAlchemy:    '⚗ Alchemy',
+    loadRead:      'Reading Storage',
+    loadReadSub:   'AI is scanning your storage...',
+    loadCodex:     'Querying BDO Codex',
+    loadCodexSub:  'Fetching real recipes...',
+    emptyCulinary: 'No matching cooking recipes found for your materials.',
+    emptyAlchemy:  'No matching alchemy recipes found for your materials.',
+    craftable:     n => `${n}× craftable`,
+    noMats:        'Missing materials',
+    codexLink:     '→ View on Codex',
+    need:          'needed',
+    themeLight:    'Light Mode',
+    themeDark:     'Dark Mode',
+    imagePrompt: `List the craft materials from this Black Desert Online storage screenshot.
+INCLUDE: raw materials (grain, meat, fish, vegetables, ore, timber, plants, blood, hide), processed materials, cooking/alchemy ingredients, seeds.
+EXCLUDE: weapons, armor, accessories, potions, ready food, black stones, mounts, equipment.
+QUANTITY RULE: B or b = thousands (297B = 297000, 103B = 103000). M = millions. Write full integer only.
+Return ONLY JSON, nothing else:
+{"items":[{"name":"Wheat","qty":297000},{"name":"Corn","qty":385}]}`
   }
 };
 
-function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem('bdo_lang', lang);
-  document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
-  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+// ── STATE ─────────────────────────────────────────────────────────────────
+let lang      = localStorage.getItem('bdo_lang')  || 'tr';
+let isDark    = localStorage.getItem('bdo_theme') !== 'light';
+let inventory = [];
+let currentBase64 = null;
+let mediaType = 'image/jpeg';
+
+// ── THEME ─────────────────────────────────────────────────────────────────
+function applyTheme() {
+  document.body.classList.toggle('light', !isDark);
+  document.getElementById('theme-btn').textContent = isDark ? S[lang].themeLight : S[lang].themeDark;
+}
+
+function toggleTheme() {
+  isDark = !isDark;
+  localStorage.setItem('bdo_theme', isDark ? 'dark' : 'light');
+  applyTheme();
+}
+
+// ── LANGUAGE ──────────────────────────────────────────────────────────────
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('bdo_lang', l);
+  document.getElementById('lang-tr').classList.toggle('active', l === 'tr');
+  document.getElementById('lang-en').classList.toggle('active', l === 'en');
   applyStrings();
+  // Re-render results if visible (so cards also get translated)
+  if (document.getElementById('results-section').classList.contains('visible') && inventory.length) {
+    rerenderResults();
+  }
 }
 
 function applyStrings() {
-  const s = STRINGS[currentLang];
-  document.getElementById('main-title').textContent = s.title;
-  document.getElementById('main-subtitle').textContent = s.subtitle;
-  document.getElementById('upload-title').textContent = s.uploadTitle;
-  document.getElementById('upload-desc').textContent = s.uploadDesc;
-  document.getElementById('change-btn').textContent = s.changeBtn;
-  document.getElementById('analyze-btn').textContent = s.analyzeBtn;
-  document.getElementById('results-header').textContent = s.resultsHeader;
-  document.getElementById('stat-items-label').textContent = s.statItems;
-  document.getElementById('stat-recipes-label').textContent = s.statRecipes;
-  document.getElementById('stat-best-label').textContent = s.statBest;
-  document.getElementById('tab-culinary-btn').textContent = s.tabCulinary;
-  document.getElementById('tab-alchemy-btn').textContent = s.tabAlchemy;
-  document.getElementById('tab-sell-btn').textContent = s.tabSell;
-  document.getElementById('tab-all-btn').textContent = s.tabAll;
+  const s = S[lang];
+  document.getElementById('main-title').textContent          = s.title;
+  document.getElementById('main-subtitle').textContent       = s.subtitle;
+  document.getElementById('upload-title').textContent        = s.uploadTitle;
+  document.getElementById('upload-desc').textContent         = s.uploadDesc;
+  document.getElementById('change-btn').textContent          = s.changeBtn;
+  document.getElementById('analyze-btn').textContent         = s.analyzeBtn;
+  document.getElementById('ai-panel-title-text').textContent = s.aiPanel;
+  document.getElementById('detected-label').textContent      = s.detectedLabel;
+  document.getElementById('results-header').textContent      = s.resultsHeader;
+  document.getElementById('tab-culinary-btn').textContent    = s.tabCulinary;
+  document.getElementById('tab-alchemy-btn').textContent     = s.tabAlchemy;
+  document.getElementById('theme-btn').textContent           = isDark ? s.themeLight : s.themeDark;
   document.title = s.title;
+  if (!currentBase64) setStatus('', s.statusReady);
 }
 
-// Init lang
-applyStrings();
-
-
-
-let inventoryItems = [];
-let currentImageBase64 = null;
-let currentImageMediaType = 'image/jpeg';
-let analysisResults = null;
-
-// =============================================
-// UI HELPERS
-// =============================================
-function showLoading(text, sub) {
-  document.getElementById('loading-text').textContent = text;
-  document.getElementById('loading-sub').textContent = sub;
-  document.getElementById('loading-overlay').classList.add('visible');
-}
-
-function hideLoading() {
-  document.getElementById('loading-overlay').classList.remove('visible');
-}
-
+// ── UI HELPERS ────────────────────────────────────────────────────────────
 function setStatus(state, text) {
-  const dot = document.getElementById('status-dot');
-  dot.className = 'status-dot ' + state;
+  document.getElementById('status-dot').className    = 'status-dot ' + state;
   document.getElementById('status-text').textContent = text;
 }
+function showLoading(t, s) {
+  document.getElementById('loading-text').textContent = t;
+  document.getElementById('loading-sub').textContent  = s;
+  document.getElementById('loading-overlay').classList.add('visible');
+}
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('visible'); }
 
-function switchTab(name) {
+function switchTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
 }
 
-// =============================================
-// UPLOAD HANDLING
-// =============================================
-const uploadZone = document.getElementById('upload-zone');
-const fileInput = document.getElementById('file-input');
+// ── UPLOAD ────────────────────────────────────────────────────────────────
+const zone   = document.getElementById('upload-zone');
+const fInput = document.getElementById('file-input');
 
-uploadZone.addEventListener('click', () => fileInput.click());
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
-uploadZone.addEventListener('drop', e => {
-  e.preventDefault();
-  uploadZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) handleFile(file);
-});
-
-fileInput.addEventListener('change', e => {
-  if (e.target.files[0]) handleFile(e.target.files[0]);
-});
+zone.addEventListener('click', () => fInput.click());
+zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+fInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
 
 document.getElementById('change-btn').addEventListener('click', () => {
   document.getElementById('preview-section').classList.remove('visible');
   document.getElementById('results-section').classList.remove('visible');
-  inventoryItems = [];
-  currentImageBase64 = null;
-  fileInput.value = '';
-  setStatus('', '');
+  inventory = []; currentBase64 = null; fInput.value = '';
+  cachedCulinary = []; cachedAlchemy = [];
+  setStatus('', S[lang].statusReady);
 });
 
 function handleFile(file) {
   const reader = new FileReader();
   reader.onload = e => {
-    const dataUrl = e.target.result;
-    // Görüntüyü küçült — max 1200px genişlik
     const img = new Image();
     img.onload = () => {
       const maxW = 1200;
@@ -965,228 +400,187 @@ function handleFile(file) {
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
       const resized = canvas.toDataURL('image/jpeg', 0.85);
-      currentImageBase64 = resized.split(',')[1];
-      currentImageMediaType = 'image/jpeg';
+      currentBase64 = resized.split(',')[1];
+      mediaType = 'image/jpeg';
       document.getElementById('preview-img').src = resized;
       document.getElementById('preview-section').classList.add('visible');
       document.getElementById('items-container').style.display = 'none';
       document.getElementById('results-section').classList.remove('visible');
-      setStatus('', 'Analiz etmek için butona bas.');
+      setStatus('', S[lang].statusReady);
     };
-    img.src = dataUrl;
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-// =============================================
-// ANALYZE BUTTON
-// =============================================
-document.getElementById('analyze-btn').addEventListener('click', async () => {
-  if (!currentImageBase64) return;
-  await runAnalysis();
-});
-
-// =============================================
-// STEP 1: READ IMAGE WITH AI
-// =============================================
-
-async function readInventoryFromImage(base64) {
-  const response = await fetch(PROXY_URL, {
+// ── STEP 1: AI reads image ────────────────────────────────────────────────
+async function readInventory() {
+  const resp = await fetch(PROXY_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4000,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: currentImageMediaType, data: base64 }
-          },
-          {
-            type: 'text',
-            text: STRINGS[currentLang].imagePrompt
-          }
-        ]
-      }]
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: mediaType, data: currentBase64 } },
+        { type: 'text', text: S[lang].imagePrompt }
+      ]}]
     })
   });
-
-  const data = await response.json();
-  const text = data.content.map(b => b.text || '').join('');
-  const clean = text.replace(/```json|```/g, '').trim();
-  // Extract JSON object safely
-  const jsonMatch = clean.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('AI geçerli JSON döndürmedi');
-  return JSON.parse(jsonMatch[0]);
+  const data = await resp.json();
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+  const text  = data.content.map(b => b.text || '').join('');
+  const match = text.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
+  if (!match) throw new Error(lang === 'tr' ? 'AI malzeme listesi döndürmedi' : 'AI returned no item list');
+  return JSON.parse(match[0]);
 }
 
-// =============================================
-// STEP 2: GET RECIPES + PROFIT ANALYSIS
-// =============================================
-async function getRecipesAndProfit(items) {
-  const itemList = items.map(i => `${i.name}: ${i.qty}`).join('\n');
-
-  const response = await fetch(PROXY_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      messages: [{
-        role: 'user',
-        content: STRINGS[currentLang].recipePrompt(itemList)
-      }]
-    })
-  });
-
-  const data = await response.json();
-  const text = data.content.map(b => b.text || '').join('');
-  const clean = text.replace(/```json|```/g, '').trim();
-  const jsonMatch = clean.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('AI tarif verisi döndürmedi');
-  return JSON.parse(jsonMatch[0]);
+// ── STEP 2: Fetch real Codex recipes ─────────────────────────────────────
+async function fetchCodexRecipes(type) {
+  const l    = lang === 'tr' ? 'tr' : 'us';
+  const resp = await fetch(`${CODEX_PROXY}?type=${type}&l=${l}&o=0&s=200`);
+  if (!resp.ok) throw new Error('BDO Codex ' + resp.status);
+  const data = await resp.json();
+  return data.aaData || data.data || [];
 }
 
-// =============================================
-// RENDER
-// =============================================
-function renderItemTags(items) {
-  const grid = document.getElementById('items-grid');
-  grid.innerHTML = '';
-  items.forEach(item => {
-    const tag = document.createElement('div');
-    tag.className = 'item-tag';
-    tag.innerHTML = `${item.name} <span class="qty">×${item.qty.toLocaleString()}</span>`;
-    grid.appendChild(tag);
+// ── STEP 3: Match ─────────────────────────────────────────────────────────
+function matchRecipes(recipes, inv) {
+  const map = {};
+  inv.forEach(i => { map[i.name.toLowerCase().trim()] = i.qty; });
+
+  const out = [];
+  for (const r of recipes) {
+    const ings = r.m_aaIngredients || r.ingredients || [];
+    if (!ings.length) continue;
+    let canCraft = Infinity, hasAny = false;
+    const parsed = [];
+    for (const ing of ings) {
+      if (!ing) continue;
+      const rawName = Array.isArray(ing) ? ing[0] : (ing.name || '');
+      const reqQty  = parseInt(Array.isArray(ing) ? ing[1] : ing.qty) || 1;
+      const name    = rawName.replace(/<[^>]+>/g,'').trim();
+      const have    = map[name.toLowerCase()] || 0;
+      if (have > 0) hasAny = true;
+      const possible = have >= reqQty ? Math.floor(have / reqQty) : 0;
+      if (possible < canCraft) canCraft = possible;
+      parsed.push({ name, required: reqQty, have });
+    }
+    if (!hasAny || !parsed.length) continue;
+    out.push({
+      id:         r.item_id || r.id || '',
+      name:       r.m_outputitemname || r.name || '?',
+      icon:       r.icon || r.m_icon || '',
+      skillLevel: r.skill_level_display || r.skill_level || '',
+      ingredients: parsed,
+      craftable:  canCraft === Infinity ? 0 : canCraft,
+      hasAll:     canCraft > 0
+    });
+  }
+  return out.sort((a,b) => {
+    if (a.hasAll !== b.hasAll) return a.hasAll ? -1 : 1;
+    return b.craftable - a.craftable;
   });
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+let cachedCulinary = [];
+let cachedAlchemy  = [];
+
+function renderItems(items) {
+  document.getElementById('items-grid').innerHTML = items.map(i =>
+    `<div class="item-tag">${i.name} <span class="qty">×${i.qty.toLocaleString()}</span></div>`
+  ).join('');
   document.getElementById('items-container').style.display = 'block';
 }
 
-function renderRecipeCard(recipe) {
-  const s = STRINGS[currentLang];
-  const scoreClass = recipe.profitScore === 'HIGH' ? 'profit-high' : recipe.profitScore === 'MID' ? 'profit-mid' : 'profit-low';
-  const scoreLabel = recipe.profitScore === 'HIGH' ? s.profitHigh : recipe.profitScore === 'MID' ? s.profitMid : s.profitLow;
-  const typeIcon = recipe.type === 'Aşçılık' || recipe.type === 'Cooking' ? '🍲' : recipe.type === 'Kimya' || recipe.type === 'Alchemy' ? '⚗' : '💰';
-  const stationIcon = recipe.type === 'Aşçılık' || recipe.type === 'Cooking' ? '🏠' : recipe.type === 'Kimya' || recipe.type === 'Alchemy' ? '🧪' : '🏪';
+function renderCard(r) {
+  const s    = S[lang];
+  const cl   = lang === 'tr' ? 'tr' : 'us';
+  const href = r.id ? `https://bdocodex.com/${cl}/recipe/${r.id}/` : '#';
+  const iconHtml = r.icon ? `<img class="recipe-icon" src="${ICON_BASE}${r.icon}" alt="" onerror="this.style.display='none'">` : '';
+  const badge = r.hasAll
+    ? `<span class="craft-badge craft-yes">${s.craftable(r.craftable)}</span>`
+    : `<span class="craft-badge craft-no">${s.noMats}</span>`;
 
-  const ingredientRows = (recipe.ingredients || []).map(ing => {
-    const hasEnough = ing.have >= ing.required;
+  const rows = r.ingredients.map(i => {
+    const cls = i.have === 0 ? 'ing-need' : i.have >= i.required ? 'ing-have' : 'ing-need';
     return `<div class="ingredient-row">
-      <span class="ingredient-name">${ing.name}</span>
-      <span class="ingredient-qty ${hasEnough ? 'have' : 'need'}">${ing.have.toLocaleString()} / ${ing.required} gerekli</span>
+      <span class="ing-name">${i.name}</span>
+      <span class="ing-qty ${cls}">${i.have.toLocaleString()} / ${i.required} ${s.need}</span>
     </div>`;
   }).join('');
 
-  const stepsHtml = recipe.steps ? `
-    <div style="margin-top:0.7rem; border-top:1px solid var(--border); padding-top:0.7rem;">
-      <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:0.4rem;">${stationIcon} ${s.craftHow}</div>
-      <div style="font-size:0.85rem; color:var(--text); line-height:1.6;">${recipe.steps}</div>
-    </div>` : '';
-
-  return `
-    <div class="recipe-card">
-      <div class="recipe-card-header">
-        <div class="recipe-name">${recipe.name}</div>
-        <div class="profit-badge ${scoreClass}">${scoreLabel}</div>
-      </div>
-      <div class="recipe-card-body">
-        <div class="recipe-type">${typeIcon} ${recipe.type} ${recipe.craftStation ? `· <span style="color:var(--gold)">${recipe.craftStation}</span>` : ''}</div>
-        <div class="recipe-ingredients" style="margin-top:0.5rem;">${ingredientRows}</div>
-        ${stepsHtml}
-        ${recipe.tip ? `<div style="margin-top:0.6rem; font-size:0.82rem; color:var(--text-dim); font-style:italic; border-left:2px solid var(--border-gold); padding-left:0.6rem;">${recipe.tip}</div>` : ''}
-      </div>
-      <div class="recipe-footer">
-        <span class="craft-count">${recipe.craftable}${s.craftable}</span>
-        <span class="value-est">${recipe.estimatedValue}</span>
-      </div>
-    </div>`;
+  return `<div class="recipe-card">
+    <div class="recipe-card-header">${iconHtml}<div class="recipe-name">${r.name}</div>${badge}</div>
+    <div class="recipe-card-body">
+      ${r.skillLevel ? `<div class="skill-level">${r.skillLevel}</div>` : ''}
+      <div>${rows}</div>
+    </div>
+    <div class="card-footer-row">
+      <span class="craftable-count">${r.hasAll ? s.craftable(r.craftable) : s.noMats}</span>
+      <a class="codex-link" href="${href}" target="_blank">${s.codexLink}</a>
+    </div>
+  </div>`;
 }
 
-function renderResults(data) {
-  // Summary
-  document.getElementById('stat-items').textContent = data.summary?.totalItems || inventoryItems.length;
-  document.getElementById('stat-recipes').textContent = data.summary?.totalRecipes || ((data.culinary?.length || 0) + (data.alchemy?.length || 0));
-  document.getElementById('stat-best').textContent = data.summary?.bestOption || '-';
-
-  // Grids
-  const grids = {
-    culinary: document.getElementById('culinary-grid'),
-    alchemy: document.getElementById('alchemy-grid'),
-    sell: document.getElementById('sell-grid'),
-  };
-
-  const allRecipes = [
-    ...(data.culinary || []),
-    ...(data.alchemy || []),
-    ...(data.sell || [])
-  ].sort((a, b) => {
-    const order = { HIGH: 0, MID: 1, LOW: 2 };
-    return (order[a.profitScore] || 1) - (order[b.profitScore] || 1);
-  });
-
-  if (data.culinary?.length) {
-    grids.culinary.innerHTML = data.culinary.map(renderRecipeCard).join('');
-  } else {
-    grids.culinary.innerHTML = `<div class="empty-state">${STRINGS[currentLang].emptyCulinary}</div>`;
-  }
-
-  if (data.alchemy?.length) {
-    grids.alchemy.innerHTML = data.alchemy.map(renderRecipeCard).join('');
-  } else {
-    grids.alchemy.innerHTML = `<div class="empty-state">${STRINGS[currentLang].emptyAlchemy}</div>`;
-  }
-
-  if (data.sell?.length) {
-    grids.sell.innerHTML = data.sell.map(renderRecipeCard).join('');
-  } else {
-    grids.sell.innerHTML = `<div class="empty-state">${STRINGS[currentLang].emptySell}</div>`;
-  }
-
-  document.getElementById('all-grid').innerHTML = allRecipes.slice(0, 8).map(renderRecipeCard).join('');
-
-  document.getElementById('results-section').classList.add('visible');
+function renderGrid(id, recipes, emptyMsg) {
+  document.getElementById(id).innerHTML = recipes.length
+    ? recipes.map(renderCard).join('')
+    : `<div class="empty-state">${emptyMsg}</div>`;
 }
 
-// =============================================
-// MAIN FLOW
-// =============================================
-async function runAnalysis() {
+function rerenderResults() {
+  const s = S[lang];
+  renderGrid('culinary-grid', cachedCulinary, s.emptyCulinary);
+  renderGrid('alchemy-grid',  cachedAlchemy,  s.emptyAlchemy);
+  // Update header & tabs
+  document.getElementById('results-header').textContent     = s.resultsHeader;
+  document.getElementById('tab-culinary-btn').textContent   = s.tabCulinary;
+  document.getElementById('tab-alchemy-btn').textContent    = s.tabAlchemy;
+}
+
+// ── MAIN ──────────────────────────────────────────────────────────────────
+document.getElementById('analyze-btn').addEventListener('click', async () => {
+  if (!currentBase64) return;
+  const s = S[lang];
   try {
-    const s = STRINGS[currentLang];
-    // Step 1: Read image
-    showLoading(s.loadingRead, s.loadingReadSub);
-    setStatus('reading', s.loadingReadSub);
+    showLoading(s.loadRead, s.loadReadSub);
+    setStatus('reading', s.statusReading);
 
-    const imageData = await readInventoryFromImage(currentImageBase64);
-    inventoryItems = imageData.items || [];
+    const res = await readInventory();
+    inventory = res.items || [];
+    renderItems(inventory);
+    setStatus('reading', s.statusSearch);
 
-    renderItemTags(inventoryItems);
-    setStatus('done', `${inventoryItems.length} malzeme tespit edildi. Karlılık hesaplanıyor...`);
+    showLoading(s.loadCodex, s.loadCodexSub);
+    const [culRaw, alcRaw] = await Promise.all([
+      fetchCodexRecipes('culinary'),
+      fetchCodexRecipes('alchemy')
+    ]);
 
-    // Step 2: Get recipes
-    document.getElementById('loading-text').textContent = s.loadingAnalyze;
-    document.getElementById('loading-sub').textContent = s.loadingAnalyzeSub;
-
-    const results = await getRecipesAndProfit(inventoryItems);
-    analysisResults = results;
+    cachedCulinary = matchRecipes(culRaw, inventory);
+    cachedAlchemy  = matchRecipes(alcRaw, inventory);
 
     hideLoading();
-    setStatus('done', `✓ Analiz tamamlandı — ${inventoryItems.length} malzeme, ${(results.culinary?.length || 0) + (results.alchemy?.length || 0)} tarif bulundu.`);
-
-    renderResults(results);
+    setStatus('done', s.statusDone(inventory.length));
+    renderGrid('culinary-grid', cachedCulinary, s.emptyCulinary);
+    renderGrid('alchemy-grid',  cachedAlchemy,  s.emptyAlchemy);
+    document.getElementById('results-section').classList.add('visible');
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
 
   } catch (err) {
     hideLoading();
-    setStatus('error', 'Hata: ' + err.message);
+    setStatus('error', s.statusErr + err.message);
     console.error(err);
   }
-}
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+applyTheme();
+applyStrings();
+document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+document.getElementById('lang-en').classList.toggle('active', lang === 'en');
 </script>
 </body>
 </html>
