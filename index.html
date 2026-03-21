@@ -147,6 +147,30 @@
     background: rgba(76,175,118,0.04);
   }
 
+  /* Lang Switcher */
+  .lang-switcher {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .lang-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    padding: 0.4rem 1rem;
+    border-radius: 2px;
+    border: 1px solid var(--border-gold);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .lang-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .lang-btn.active { background: var(--gold-dark); border-color: var(--gold); color: var(--gold-light); }
+
   /* Upload Zone */
   .upload-zone {
     border: 2px dashed var(--border-gold);
@@ -630,16 +654,20 @@
         <circle cx="18" cy="18" r="5" fill="#c9a84c" opacity="0.3"/>
         <circle cx="18" cy="18" r="2" fill="#c9a84c"/>
       </svg>
-      <h1>BDO Depo Analizi</h1>
+      <h1 id="main-title">BDO Depo Analizi</h1>
     </div>
-    <p class="subtitle">Malzemelerini yükle — en karlı seçeneği bul</p>
+    <p class="subtitle" id="main-subtitle">Malzemelerini yükle — en karlı seçeneği bul</p>
+    <div class="lang-switcher">
+      <button class="lang-btn active" id="lang-tr" onclick="setLang('tr')">🇹🇷 Türkçe</button>
+      <button class="lang-btn" id="lang-en" onclick="setLang('en')">🇺🇸 English</button>
+    </div>
   </header>
 
   <!-- Upload Zone -->
   <div class="upload-zone" id="upload-zone">
     <span class="upload-icon">📦</span>
-    <h2>Depo Ekran Görüntüsü Yükle</h2>
-    <p>Tıkla veya sürükle bırak · PNG, JPG desteklenir</p>
+    <h2 id="upload-title">Depo Ekran Görüntüsü Yükle</h2>
+    <p id="upload-desc">Tıkla veya sürükle bırak · PNG, JPG desteklenir</p>
     <input type="file" id="file-input" accept="image/*">
   </div>
 
@@ -668,30 +696,30 @@
 
   <!-- Results -->
   <div id="results-section">
-    <div class="results-header">
+    <div class="results-header" id="results-header">
       ⚗ Karlılık Analizi
     </div>
 
     <div class="summary-panel" id="summary-panel">
       <div class="summary-stat">
         <span class="stat-num" id="stat-items">-</span>
-        <div class="stat-label">Malzeme Türü</div>
+        <div class="stat-label" id="stat-items-label">Malzeme Türü</div>
       </div>
       <div class="summary-stat">
         <span class="stat-num" id="stat-recipes">-</span>
-        <div class="stat-label">Yapılabilir Tarif</div>
+        <div class="stat-label" id="stat-recipes-label">Yapılabilir Tarif</div>
       </div>
       <div class="summary-stat">
         <span class="stat-num" id="stat-best">-</span>
-        <div class="stat-label">En İyi Seçenek</div>
+        <div class="stat-label" id="stat-best-label">En İyi Seçenek</div>
       </div>
     </div>
 
     <div class="results-tabs">
-      <button class="tab active" onclick="switchTab('culinary')">🍲 Aşçılık</button>
-      <button class="tab" onclick="switchTab('alchemy')">⚗ Kimya</button>
-      <button class="tab" onclick="switchTab('sell')">💰 Direkt Sat</button>
-      <button class="tab" onclick="switchTab('all')">★ En Karlı</button>
+      <button class="tab active" id="tab-culinary-btn" onclick="switchTab('culinary')">🍲 Aşçılık</button>
+      <button class="tab" id="tab-alchemy-btn" onclick="switchTab('alchemy')">⚗ Kimya</button>
+      <button class="tab" id="tab-sell-btn" onclick="switchTab('sell')">💰 Direkt Sat</button>
+      <button class="tab" id="tab-all-btn" onclick="switchTab('all')">★ En Karlı</button>
     </div>
 
     <div id="tab-culinary" class="tab-content active">
@@ -720,6 +748,148 @@
 
 <script>
 const PROXY_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
+
+// =============================================
+// LANGUAGE SYSTEM
+// =============================================
+let currentLang = localStorage.getItem('bdo_lang') || 'tr';
+
+const STRINGS = {
+  tr: {
+    title: 'BDO Depo Analizi',
+    subtitle: 'Malzemelerini yükle — en karlı seçeneği bul',
+    uploadTitle: 'Depo Ekran Görüntüsü Yükle',
+    uploadDesc: 'Tıkla veya sürükle bırak · PNG, JPG desteklenir',
+    changeBtn: '↩ Değiştir',
+    analyzeBtn: '⚔ Analiz Et',
+    aiReading: 'AI Okuma',
+    statusReady: 'Analiz etmek için butona bas.',
+    statItems: 'Malzeme Türü',
+    statRecipes: 'Yapılabilir Tarif',
+    statBest: 'En İyi Seçenek',
+    tabCulinary: '🍲 Aşçılık',
+    tabAlchemy: '⚗ Kimya',
+    tabSell: '💰 Direkt Sat',
+    tabAll: '★ En Karlı',
+    resultsHeader: '⚗ Karlılık Analizi',
+    loadingRead: 'Depo Okunuyor',
+    loadingReadSub: 'Yapay zeka eşyaları tespit ediyor...',
+    loadingAnalyze: 'Karlılık Hesaplanıyor',
+    loadingAnalyzeSub: 'BDO tarifleri ve pazar değerleri analiz ediliyor...',
+    craftHow: 'Nasıl Üretilir?',
+    craftable: '× üretilebilir',
+    emptyCulinary: 'Bu malzemelerle aşçılık tarifi bulunamadı.',
+    emptyAlchemy: 'Bu malzemelerle kimya tarifi bulunamadı.',
+    emptySell: 'Direkt satış önerisi bulunamadı.',
+    profitHigh: '★ Yüksek Kar',
+    profitMid: '◆ Orta Kar',
+    profitLow: '▼ Düşük Kar',
+    detected: 'Tespit Edilen Malzemeler',
+    imagePrompt: `Bu Black Desert Online depo ekran görüntüsündeki SADECE craft ve üretim malzemelerini listele. Sadece JSON döndür, kesinlikle başka hiçbir şey yazma. Yanıtın ilk karakteri { olmalı, son karakteri } olmalı.
+Format: {"items":[{"name":"isim","qty":sayi}]}
+
+ÖNEMLİ - MİKTAR OKUMA KURALLARI:
+- "297B" veya "297b" = 297.000 (B = bin demek, tam sayıya çevir)
+- "415B" = 415.000
+- "103B" = 103.000
+- "1.2B" = 1.200
+- Sayının yanında B/b harfi varsa x1000 ile çarp ve tam sayı yaz
+- Sayının yanında M/m harfi varsa x1.000.000 ile çarp
+- Harf yoksa sayıyı olduğu gibi al
+
+SADECE say: hammaddeler, işlenmiş malzemeler, kimya/aşçılık malzemeleri, tohumlar, craft bileşenleri.
+SAYMA: silah, zırh, aksesuar, iksir, yiyecek, binek, kara taş.
+Kural: qty tam sayı olmalı.`,
+    recipePrompt: (itemList) => `Sen bir Black Desert Online uzmanısın. Aşağıdaki malzemeleri kullanarak en karlı seçenekleri analiz et.
+DEPODAKI MALZEMELER:\n${itemList}
+Şu kategorilerde analiz yap: 1. AŞÇILIK tarifleri 2. KİMYA tarifleri 3. DİREKT SATIŞ
+SADECE JSON döndür, başka bir şey yazma, açıklama ekleme:
+{"culinary":[{"name":"Tarifin adı","type":"Aşçılık","craftStation":"Aşçılık Tezgahı","ingredients":[{"name":"Malzeme","required":5,"have":297}],"steps":"1. Aşçılık Tezgahına git. 2. Malzemeleri ekle. 3. Üret.","craftable":59,"estimatedValue":"~50,000 siyah dolar/adet","profitScore":"HIGH","tip":"Kısa not"}],"alchemy":[{"name":"İksir adı","type":"Kimya","craftStation":"Kimya Tezgahı","ingredients":[{"name":"Malzeme","required":2,"have":100}],"steps":"1. Kimya Tezgahına git. 2. Malzemeleri ekle. 3. Üret.","craftable":50,"estimatedValue":"~30,000 siyah dolar/adet","profitScore":"MID","tip":"Kısa not"}],"sell":[{"name":"Direkt Sat: Malzeme","type":"Satış","craftStation":"Pazar Yeri","ingredients":[{"name":"Malzeme","required":1,"have":297}],"steps":"1. Pazar Yeri NPC'sine git. 2. Malzemeyi sat.","craftable":297,"estimatedValue":"~X siyah dolar/adet","profitScore":"MID","tip":"Neden satılmalı"}],"summary":{"totalItems":15,"totalRecipes":8,"bestOption":"En iyi tarif adı"}}`
+  },
+  en: {
+    title: 'BDO Storage Analyzer',
+    subtitle: 'Upload your storage — find the most profitable option',
+    uploadTitle: 'Upload Storage Screenshot',
+    uploadDesc: 'Click or drag & drop · PNG, JPG supported',
+    changeBtn: '↩ Change',
+    analyzeBtn: '⚔ Analyze',
+    aiReading: 'AI Reading',
+    statusReady: 'Press the button to analyze.',
+    statItems: 'Item Types',
+    statRecipes: 'Craftable Recipes',
+    statBest: 'Best Option',
+    tabCulinary: '🍲 Cooking',
+    tabAlchemy: '⚗ Alchemy',
+    tabSell: '💰 Direct Sell',
+    tabAll: '★ Most Profitable',
+    resultsHeader: '⚗ Profitability Analysis',
+    loadingRead: 'Reading Storage',
+    loadingReadSub: 'AI is detecting your items...',
+    loadingAnalyze: 'Calculating Profit',
+    loadingAnalyzeSub: 'Analyzing BDO recipes and market values...',
+    craftHow: 'How to Craft?',
+    craftable: '× craftable',
+    emptyCulinary: 'No cooking recipes found for these materials.',
+    emptyAlchemy: 'No alchemy recipes found for these materials.',
+    emptySell: 'No direct sell suggestions found.',
+    profitHigh: '★ High Profit',
+    profitMid: '◆ Mid Profit',
+    profitLow: '▼ Low Profit',
+    detected: 'Detected Items',
+    imagePrompt: `List ONLY the craft and production materials from this Black Desert Online storage screenshot. Return only JSON, absolutely nothing else. First character must be {, last must be }.
+Format: {"items":[{"name":"name","qty":number}]}
+
+IMPORTANT - QUANTITY READING RULES:
+- "297B" or "297b" = 297,000 (B = thousands, convert to full number)
+- "415B" = 415,000
+- "103B" = 103,000
+- "1.2B" = 1,200
+- If number has B/b suffix, multiply by 1,000 and write as integer
+- If number has M/m suffix, multiply by 1,000,000
+- No suffix = use number as-is
+
+ONLY include: raw materials, processed materials, cooking/alchemy ingredients, seeds, craft components.
+DO NOT include: weapons, armor, accessories, potions, food, mounts, black stones.
+Rule: qty must be an integer.`,
+    recipePrompt: (itemList) => `You are a Black Desert Online expert. Analyze the most profitable options using the following materials.
+STORAGE MATERIALS:\n${itemList}
+Analyze these categories: 1. COOKING recipes 2. ALCHEMY recipes 3. DIRECT SELL
+Return ONLY JSON, no explanations:
+{"culinary":[{"name":"Recipe name","type":"Cooking","craftStation":"Cooking Utensil","ingredients":[{"name":"Material","required":5,"have":297}],"steps":"1. Go to Cooking Utensil. 2. Add materials. 3. Craft.","craftable":59,"estimatedValue":"~50,000 silver/unit","profitScore":"HIGH","tip":"Short note"}],"alchemy":[{"name":"Elixir name","type":"Alchemy","craftStation":"Alchemy Tool","ingredients":[{"name":"Material","required":2,"have":100}],"steps":"1. Go to Alchemy Tool. 2. Add materials. 3. Craft.","craftable":50,"estimatedValue":"~30,000 silver/unit","profitScore":"MID","tip":"Short note"}],"sell":[{"name":"Direct Sell: Material","type":"Sell","craftStation":"Marketplace","ingredients":[{"name":"Material","required":1,"have":297}],"steps":"1. Go to Marketplace NPC. 2. Sell the item.","craftable":297,"estimatedValue":"~X silver/unit","profitScore":"MID","tip":"Why to sell"}],"summary":{"totalItems":15,"totalRecipes":8,"bestOption":"Best recipe name"}}`
+  }
+};
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('bdo_lang', lang);
+  document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  applyStrings();
+}
+
+function applyStrings() {
+  const s = STRINGS[currentLang];
+  document.getElementById('main-title').textContent = s.title;
+  document.getElementById('main-subtitle').textContent = s.subtitle;
+  document.getElementById('upload-title').textContent = s.uploadTitle;
+  document.getElementById('upload-desc').textContent = s.uploadDesc;
+  document.getElementById('change-btn').textContent = s.changeBtn;
+  document.getElementById('analyze-btn').textContent = s.analyzeBtn;
+  document.getElementById('results-header').textContent = s.resultsHeader;
+  document.getElementById('stat-items-label').textContent = s.statItems;
+  document.getElementById('stat-recipes-label').textContent = s.statRecipes;
+  document.getElementById('stat-best-label').textContent = s.statBest;
+  document.getElementById('tab-culinary-btn').textContent = s.tabCulinary;
+  document.getElementById('tab-alchemy-btn').textContent = s.tabAlchemy;
+  document.getElementById('tab-sell-btn').textContent = s.tabSell;
+  document.getElementById('tab-all-btn').textContent = s.tabAll;
+  document.title = s.title;
+}
+
+// Init lang
+applyStrings();
+
+
 
 let inventoryItems = [];
 let currentImageBase64 = null;
@@ -838,24 +1008,7 @@ async function readInventoryFromImage(base64) {
           },
           {
             type: 'text',
-            text: `Bu Black Desert Online depo ekran görüntüsündeki SADECE craft ve üretim malzemelerini listele. Sadece JSON döndür, kesinlikle başka hiçbir şey yazma, açıklama yapma. Yanıtın ilk karakteri { olmalı, son karakteri } olmalı.
-Format: {"items":[{"name":"isim","qty":sayi}]}
-
-SADECE şunları say:
-- Hammaddeler (tahıl, et, balık, sebze, maden cevheri, odun, bitki, kan, deri vb.)
-- İşlenmiş malzemeler (kereste, metal parçası, kumaş, ip vb.)
-- Kimya/aşçılık malzemeleri (baharlar, yağ, şeker, tuz vb.)
-- Tohumlar, fideler
-- Craft bileşenleri
-
-SAYMA:
-- Silah, zırh, aksesuar, kostüm
-- Tüketim iksiri, yiyecek (hazır)
-- Evcil hayvan, binek
-- Kara taş, yükseltme taşları
-- Para, jeton
-
-Kural: qty her zaman tam sayı olmalı.`
+            text: STRINGS[currentLang].imagePrompt
           }
         ]
       }]
@@ -887,63 +1040,7 @@ async function getRecipesAndProfit(items) {
       max_tokens: 4000,
       messages: [{
         role: 'user',
-        content: `Sen bir Black Desert Online uzmanısın. Aşağıdaki malzemeleri kullanarak en karlı seçenekleri analiz et.
-
-DEPODAKI MALZEMELER:
-${itemList}
-
-Şu kategorilerde analiz yap:
-1. AŞÇILIK tarifleri - bu malzemelerle yapılabilecek yemekler
-2. KİMYA tarifleri - bu malzemelerle yapılabilecek iksirler
-3. DİREKT SATIŞ - hangi malzemeleri direkt satmak karlı
-
-SADECE JSON döndür, başka bir şey yazma, açıklama ekleme:
-{
-  "culinary": [
-    {
-      "name": "Tarifin adı",
-      "type": "Aşçılık",
-      "craftStation": "Aşçılık Tezgahı",
-      "ingredients": [{"name": "Malzeme", "required": 5, "have": 297}],
-      "steps": "1. Aşçılık Tezgahına git. 2. Malzemeleri ekle. 3. Üret.",
-      "craftable": 59,
-      "estimatedValue": "~50,000 siyah dolar/adet",
-      "profitScore": "HIGH",
-      "tip": "Kısa not"
-    }
-  ],
-  "alchemy": [
-    {
-      "name": "İksir adı",
-      "type": "Kimya",
-      "craftStation": "Kimya Tezgahı",
-      "ingredients": [{"name": "Malzeme", "required": 2, "have": 100}],
-      "steps": "1. Kimya Tezgahına git. 2. Malzemeleri ekle. 3. Üret.",
-      "craftable": 50,
-      "estimatedValue": "~30,000 siyah dolar/adet",
-      "profitScore": "MID",
-      "tip": "Kısa not"
-    }
-  ],
-  "sell": [
-    {
-      "name": "Direkt Sat: Malzeme Adı",
-      "type": "Satış",
-      "craftStation": "Pazar Yeri",
-      "ingredients": [{"name": "Malzeme", "required": 1, "have": 297}],
-      "steps": "1. Pazar Yeri NPC'sine git. 2. Malzemeyi sat.",
-      "craftable": 297,
-      "estimatedValue": "~X siyah dolar/adet",
-      "profitScore": "MID",
-      "tip": "Neden satılmalı"
-    }
-  ],
-  "summary": {
-    "totalItems": 15,
-    "totalRecipes": 8,
-    "bestOption": "Balina Eti Çorbası"
-  }
-}`
+        content: STRINGS[currentLang].recipePrompt(itemList)
       }]
     })
   });
@@ -972,10 +1069,11 @@ function renderItemTags(items) {
 }
 
 function renderRecipeCard(recipe) {
+  const s = STRINGS[currentLang];
   const scoreClass = recipe.profitScore === 'HIGH' ? 'profit-high' : recipe.profitScore === 'MID' ? 'profit-mid' : 'profit-low';
-  const scoreLabel = recipe.profitScore === 'HIGH' ? '★ Yüksek Kar' : recipe.profitScore === 'MID' ? '◆ Orta Kar' : '▼ Düşük Kar';
-  const typeIcon = recipe.type === 'Aşçılık' ? '🍲' : recipe.type === 'Kimya' ? '⚗' : '💰';
-  const stationIcon = recipe.type === 'Aşçılık' ? '🏠' : recipe.type === 'Kimya' ? '🧪' : '🏪';
+  const scoreLabel = recipe.profitScore === 'HIGH' ? s.profitHigh : recipe.profitScore === 'MID' ? s.profitMid : s.profitLow;
+  const typeIcon = recipe.type === 'Aşçılık' || recipe.type === 'Cooking' ? '🍲' : recipe.type === 'Kimya' || recipe.type === 'Alchemy' ? '⚗' : '💰';
+  const stationIcon = recipe.type === 'Aşçılık' || recipe.type === 'Cooking' ? '🏠' : recipe.type === 'Kimya' || recipe.type === 'Alchemy' ? '🧪' : '🏪';
 
   const ingredientRows = (recipe.ingredients || []).map(ing => {
     const hasEnough = ing.have >= ing.required;
@@ -987,7 +1085,7 @@ function renderRecipeCard(recipe) {
 
   const stepsHtml = recipe.steps ? `
     <div style="margin-top:0.7rem; border-top:1px solid var(--border); padding-top:0.7rem;">
-      <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:0.4rem;">${stationIcon} Nasıl Üretilir?</div>
+      <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:0.4rem;">${stationIcon} ${s.craftHow}</div>
       <div style="font-size:0.85rem; color:var(--text); line-height:1.6;">${recipe.steps}</div>
     </div>` : '';
 
@@ -1004,7 +1102,7 @@ function renderRecipeCard(recipe) {
         ${recipe.tip ? `<div style="margin-top:0.6rem; font-size:0.82rem; color:var(--text-dim); font-style:italic; border-left:2px solid var(--border-gold); padding-left:0.6rem;">${recipe.tip}</div>` : ''}
       </div>
       <div class="recipe-footer">
-        <span class="craft-count">${recipe.craftable}× üretilebilir</span>
+        <span class="craft-count">${recipe.craftable}${s.craftable}</span>
         <span class="value-est">${recipe.estimatedValue}</span>
       </div>
     </div>`;
@@ -1035,19 +1133,19 @@ function renderResults(data) {
   if (data.culinary?.length) {
     grids.culinary.innerHTML = data.culinary.map(renderRecipeCard).join('');
   } else {
-    grids.culinary.innerHTML = '<div class="empty-state">Bu malzemelerle aşçılık tarifi bulunamadı.</div>';
+    grids.culinary.innerHTML = `<div class="empty-state">${STRINGS[currentLang].emptyCulinary}</div>`;
   }
 
   if (data.alchemy?.length) {
     grids.alchemy.innerHTML = data.alchemy.map(renderRecipeCard).join('');
   } else {
-    grids.alchemy.innerHTML = '<div class="empty-state">Bu malzemelerle kimya tarifi bulunamadı.</div>';
+    grids.alchemy.innerHTML = `<div class="empty-state">${STRINGS[currentLang].emptyAlchemy}</div>`;
   }
 
   if (data.sell?.length) {
     grids.sell.innerHTML = data.sell.map(renderRecipeCard).join('');
   } else {
-    grids.sell.innerHTML = '<div class="empty-state">Direkt satış önerisi bulunamadı.</div>';
+    grids.sell.innerHTML = `<div class="empty-state">${STRINGS[currentLang].emptySell}</div>`;
   }
 
   document.getElementById('all-grid').innerHTML = allRecipes.slice(0, 8).map(renderRecipeCard).join('');
@@ -1060,9 +1158,10 @@ function renderResults(data) {
 // =============================================
 async function runAnalysis() {
   try {
+    const s = STRINGS[currentLang];
     // Step 1: Read image
-    showLoading('Depo Okunuyor', 'Yapay zeka eşyaları tespit ediyor...');
-    setStatus('reading', 'Ekran görüntüsü analiz ediliyor...');
+    showLoading(s.loadingRead, s.loadingReadSub);
+    setStatus('reading', s.loadingReadSub);
 
     const imageData = await readInventoryFromImage(currentImageBase64);
     inventoryItems = imageData.items || [];
@@ -1071,8 +1170,8 @@ async function runAnalysis() {
     setStatus('done', `${inventoryItems.length} malzeme tespit edildi. Karlılık hesaplanıyor...`);
 
     // Step 2: Get recipes
-    document.getElementById('loading-text').textContent = 'Karlılık Hesaplanıyor';
-    document.getElementById('loading-sub').textContent = 'BDO tarifleri ve pazar değerleri analiz ediliyor...';
+    document.getElementById('loading-text').textContent = s.loadingAnalyze;
+    document.getElementById('loading-sub').textContent = s.loadingAnalyzeSub;
 
     const results = await getRecipesAndProfit(inventoryItems);
     analysisResults = results;
