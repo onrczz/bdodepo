@@ -635,20 +635,6 @@
     <p class="subtitle">Malzemelerini yükle — en karlı seçeneği bul</p>
   </header>
 
-  <!-- API Key Input -->
-  <div class="apikey-panel" id="apikey-panel">
-    <div class="apikey-title">🔑 Anthropic API Anahtarı</div>
-    <div class="apikey-desc">
-      Bu araç yapay zeka için Anthropic API'si kullanır. Anahtarın <strong>sadece tarayıcında</strong> saklanır, hiçbir yere gönderilmez.<br>
-      <a href="https://console.anthropic.com/keys" target="_blank">→ Buradan ücretsiz API anahtarı al</a>
-    </div>
-    <div class="apikey-row">
-      <input type="password" id="api-key-input" placeholder="sk-ant-..." spellcheck="false">
-      <button class="btn btn-primary" id="save-key-btn" onclick="saveApiKey()">Kaydet</button>
-    </div>
-    <div id="apikey-status" style="font-size:0.85rem; margin-top:0.5rem;"></div>
-  </div>
-
   <!-- Upload Zone -->
   <div class="upload-zone" id="upload-zone">
     <span class="upload-icon">📦</span>
@@ -733,33 +719,7 @@
 </div>
 
 <script>
-// =============================================
-// API KEY
-// =============================================
-let apiKey = localStorage.getItem('bdo_api_key') || '';
-
-function saveApiKey() {
-  const val = document.getElementById('api-key-input').value.trim();
-  if (!val.startsWith('sk-ant-')) {
-    document.getElementById('apikey-status').innerHTML = '<span style="color:var(--red)">⚠ Geçersiz anahtar — "sk-ant-" ile başlamalı</span>';
-    return;
-  }
-  apiKey = val;
-  localStorage.setItem('bdo_api_key', val);
-  document.getElementById('apikey-status').innerHTML = '<span style="color:var(--green)">✓ Kaydedildi</span>';
-  document.getElementById('apikey-panel').classList.add('locked');
-  document.getElementById('api-key-input').value = '••••••••••••••••••••';
-  document.getElementById('save-key-btn').textContent = '✓ Kayıtlı';
-}
-
-// Init key display
-if (apiKey) {
-  document.getElementById('api-key-input').value = '••••••••••••••••••••';
-  document.getElementById('save-key-btn').textContent = '✓ Kayıtlı';
-  document.getElementById('apikey-panel').classList.add('locked');
-  document.getElementById('apikey-status').innerHTML = '<span style="color:var(--green)">✓ API anahtarı kayıtlı</span>';
-}
-
+const PROXY_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
 
 let inventoryItems = [];
 let currentImageBase64 = null;
@@ -839,25 +799,19 @@ function handleFile(file) {
 // =============================================
 document.getElementById('analyze-btn').addEventListener('click', async () => {
   if (!currentImageBase64) return;
-  if (!apiKey) {
-    setStatus('error', '⚠ Önce API anahtarını gir ve kaydet!');
-    document.getElementById('api-key-input').focus();
-    return;
-  }
   await runAnalysis();
 });
 
 // =============================================
 // STEP 1: READ IMAGE WITH AI
 // =============================================
+const PROXY_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
+
 async function readInventoryFromImage(base64) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch(PROXY_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
@@ -895,13 +849,10 @@ Türkçe isimler kullan.`
 async function getRecipesAndProfit(items) {
   const itemList = items.map(i => `${i.name}: ${i.qty}`).join('\n');
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch(PROXY_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
