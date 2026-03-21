@@ -723,6 +723,7 @@ const PROXY_URL = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
 
 let inventoryItems = [];
 let currentImageBase64 = null;
+let currentImageMediaType = 'image/jpeg';
 let analysisResults = null;
 
 // =============================================
@@ -784,12 +785,25 @@ function handleFile(file) {
   const reader = new FileReader();
   reader.onload = e => {
     const dataUrl = e.target.result;
-    currentImageBase64 = dataUrl.split(',')[1];
-    document.getElementById('preview-img').src = dataUrl;
-    document.getElementById('preview-section').classList.add('visible');
-    document.getElementById('items-container').style.display = 'none';
-    document.getElementById('results-section').classList.remove('visible');
-    setStatus('', 'Analiz etmek için butona bas.');
+    // Görüntüyü küçült — max 1200px genişlik
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 1200;
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const resized = canvas.toDataURL('image/jpeg', 0.85);
+      currentImageBase64 = resized.split(',')[1];
+      currentImageMediaType = 'image/jpeg';
+      document.getElementById('preview-img').src = resized;
+      document.getElementById('preview-section').classList.add('visible');
+      document.getElementById('items-container').style.display = 'none';
+      document.getElementById('results-section').classList.remove('visible');
+      setStatus('', 'Analiz etmek için butona bas.');
+    };
+    img.src = dataUrl;
   };
   reader.readAsDataURL(file);
 }
@@ -820,7 +834,7 @@ async function readInventoryFromImage(base64) {
         content: [
           {
             type: 'image',
-            source: { type: 'base64', media_type: 'image/png', data: base64 }
+            source: { type: 'base64', media_type: currentImageMediaType, data: base64 }
           },
           {
             type: 'text',
@@ -883,30 +897,41 @@ ${itemList}
 2. KİMYA tarifleri - bu malzemelerle yapılabilecek iksirler
 3. DİREKT SATIŞ - hangi malzemeleri direkt satmak karlı
 
-Her tarif/öneri için:
-- Kaç kez yapılabilir (mevcut miktarlara göre)
-- Beklenen pazar değeri
-- Tavsiye skoru (HIGH/MID/LOW)
-
-SADECE JSON döndür, başka bir şey yazma:
+SADECE JSON döndür, başka bir şey yazma, açıklama ekleme:
 {
   "culinary": [
     {
       "name": "Tarifin adı",
       "type": "Aşçılık",
+      "craftStation": "Aşçılık Tezgahı",
       "ingredients": [{"name": "Malzeme", "required": 5, "have": 297}],
+      "steps": "1. Aşçılık Tezgahına git. 2. Malzemeleri ekle. 3. Üret.",
       "craftable": 59,
       "estimatedValue": "~50,000 siyah dolar/adet",
       "profitScore": "HIGH",
       "tip": "Kısa not"
     }
   ],
-  "alchemy": [...],
+  "alchemy": [
+    {
+      "name": "İksir adı",
+      "type": "Kimya",
+      "craftStation": "Kimya Tezgahı",
+      "ingredients": [{"name": "Malzeme", "required": 2, "have": 100}],
+      "steps": "1. Kimya Tezgahına git. 2. Malzemeleri ekle. 3. Üret.",
+      "craftable": 50,
+      "estimatedValue": "~30,000 siyah dolar/adet",
+      "profitScore": "MID",
+      "tip": "Kısa not"
+    }
+  ],
   "sell": [
     {
       "name": "Direkt Sat: Malzeme Adı",
       "type": "Satış",
+      "craftStation": "Pazar Yeri",
       "ingredients": [{"name": "Malzeme", "required": 1, "have": 297}],
+      "steps": "1. Pazar Yeri NPC'sine git. 2. Malzemeyi sat.",
       "craftable": 297,
       "estimatedValue": "~X siyah dolar/adet",
       "profitScore": "MID",
@@ -950,6 +975,7 @@ function renderRecipeCard(recipe) {
   const scoreClass = recipe.profitScore === 'HIGH' ? 'profit-high' : recipe.profitScore === 'MID' ? 'profit-mid' : 'profit-low';
   const scoreLabel = recipe.profitScore === 'HIGH' ? '★ Yüksek Kar' : recipe.profitScore === 'MID' ? '◆ Orta Kar' : '▼ Düşük Kar';
   const typeIcon = recipe.type === 'Aşçılık' ? '🍲' : recipe.type === 'Kimya' ? '⚗' : '💰';
+  const stationIcon = recipe.type === 'Aşçılık' ? '🏠' : recipe.type === 'Kimya' ? '🧪' : '🏪';
 
   const ingredientRows = (recipe.ingredients || []).map(ing => {
     const hasEnough = ing.have >= ing.required;
@@ -959,6 +985,12 @@ function renderRecipeCard(recipe) {
     </div>`;
   }).join('');
 
+  const stepsHtml = recipe.steps ? `
+    <div style="margin-top:0.7rem; border-top:1px solid var(--border); padding-top:0.7rem;">
+      <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:0.4rem;">${stationIcon} Nasıl Üretilir?</div>
+      <div style="font-size:0.85rem; color:var(--text); line-height:1.6;">${recipe.steps}</div>
+    </div>` : '';
+
   return `
     <div class="recipe-card">
       <div class="recipe-card-header">
@@ -966,9 +998,10 @@ function renderRecipeCard(recipe) {
         <div class="profit-badge ${scoreClass}">${scoreLabel}</div>
       </div>
       <div class="recipe-card-body">
-        <div class="recipe-type">${typeIcon} ${recipe.type}</div>
-        <div class="recipe-ingredients">${ingredientRows}</div>
-        ${recipe.tip ? `<div style="font-size:0.82rem; color:var(--text-dim); font-style:italic; border-left:2px solid var(--border-gold); padding-left:0.6rem;">${recipe.tip}</div>` : ''}
+        <div class="recipe-type">${typeIcon} ${recipe.type} ${recipe.craftStation ? `· <span style="color:var(--gold)">${recipe.craftStation}</span>` : ''}</div>
+        <div class="recipe-ingredients" style="margin-top:0.5rem;">${ingredientRows}</div>
+        ${stepsHtml}
+        ${recipe.tip ? `<div style="margin-top:0.6rem; font-size:0.82rem; color:var(--text-dim); font-style:italic; border-left:2px solid var(--border-gold); padding-left:0.6rem;">${recipe.tip}</div>` : ''}
       </div>
       <div class="recipe-footer">
         <span class="craft-count">${recipe.craftable}× üretilebilir</span>
