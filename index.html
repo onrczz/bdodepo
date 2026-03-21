@@ -273,19 +273,22 @@ const S = {
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
 Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
 
-Grid: 8 columns, left to right, top to bottom.
-QUANTITY: B=thousands (415B=415000, 297B=297000), M=millions. Write full integer.
+CRITICAL RULES:
+- ONLY list items you can clearly see — do NOT invent or guess items not visible
+- If a cell is empty or unclear, skip it entirely
+- Grid: 8 columns, left to right, top to bottom
+- QUANTITY: B=thousands (415B=415000, 297B=297000), M=millions. Write full integer
 
 Common items: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber,
-Ash Plywood, Maple Plywood, Pine Plywood, Iron Ore, Copper Ore, Silver Ore, Titanium Ore,
-Iron Ingot, Copper Ingot, Coal, Rough Stone, Wheat, Barley, Potato, Corn, Sweet Potato, Rye,
+Ash Plywood, Maple Plywood, Iron Ore, Copper Ore, Silver Ore, Titanium Ore, Coal, Rough Stone,
+Iron Ingot, Copper Ingot, Melted Iron Shard, Wheat, Barley, Potato, Corn, Sweet Potato, Rye,
 Salt, Sugar, Milk, Egg, Butter, Flour, Vinegar, Olive Oil, Garlic, Onion, Tomato, Pumpkin,
 Red Meat, Chicken Meat, Fish, Bone, Hide, Blood, Deer Blood, Pig Blood, Wolf Blood, Bear Blood,
 Cotton, Flax, Wool, Hops, Sunrise Herb, Fire Flake Flower, Silver Azalea, Monk's Branch,
-Clear Liquid Reagent, Pure Powder Reagent, Melted Iron Shard, Processed Grain, Log,
-Strawberry, Coconut, Orange, Apple, Bean Sprouts, Flower, Fruit.
+Clear Liquid Reagent, Pure Powder Reagent, Processed Grain, Log,
+Strawberry, Coconut, Orange, Apple, Bean Sprouts, Flower, Fruit, Cooking Honey, Leavening Agent.
 
-Return ONLY JSON:
+Return ONLY JSON with ONLY the items you can clearly see:
 {"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000}]}`
   },
   en: {
@@ -317,19 +320,22 @@ Return ONLY JSON:
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
 Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
 
-Grid: 8 columns, left to right, top to bottom.
-QUANTITY: B=thousands (415B=415000, 297B=297000), M=millions. Write full integer.
+CRITICAL RULES:
+- ONLY list items you can clearly see — do NOT invent or guess items not visible
+- If a cell is empty or unclear, skip it entirely
+- Grid: 8 columns, left to right, top to bottom
+- QUANTITY: B=thousands (415B=415000, 297B=297000), M=millions. Write full integer
 
 Common items: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber,
-Ash Plywood, Maple Plywood, Pine Plywood, Iron Ore, Copper Ore, Silver Ore, Titanium Ore,
-Iron Ingot, Copper Ingot, Coal, Rough Stone, Wheat, Barley, Potato, Corn, Sweet Potato, Rye,
+Ash Plywood, Maple Plywood, Iron Ore, Copper Ore, Silver Ore, Titanium Ore, Coal, Rough Stone,
+Iron Ingot, Copper Ingot, Melted Iron Shard, Wheat, Barley, Potato, Corn, Sweet Potato, Rye,
 Salt, Sugar, Milk, Egg, Butter, Flour, Vinegar, Olive Oil, Garlic, Onion, Tomato, Pumpkin,
 Red Meat, Chicken Meat, Fish, Bone, Hide, Blood, Deer Blood, Pig Blood, Wolf Blood, Bear Blood,
 Cotton, Flax, Wool, Hops, Sunrise Herb, Fire Flake Flower, Silver Azalea, Monk's Branch,
-Clear Liquid Reagent, Pure Powder Reagent, Melted Iron Shard, Processed Grain, Log,
-Strawberry, Coconut, Orange, Apple, Bean Sprouts, Flower, Fruit.
+Clear Liquid Reagent, Pure Powder Reagent, Processed Grain, Log,
+Strawberry, Coconut, Orange, Apple, Bean Sprouts, Flower, Fruit, Cooking Honey, Leavening Agent.
 
-Return ONLY JSON:
+Return ONLY JSON with ONLY the items you can clearly see:
 {"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000}]}`
   }
 };
@@ -521,12 +527,17 @@ async function readInventory() {
 
 // ── CODEX RECIPES ─────────────────────────────────────────────────────────
 async function fetchCodexRecipes(type) {
-  const resp = await fetch(`${CODEX_PROXY}?a=recipes&type=${type}&l=us&o=0&s=500`);
-  if (!resp.ok) throw new Error('BDO Codex ' + resp.status);
-  const text = await resp.text();
-  if (text.trim().startsWith('<')) throw new Error('Codex returned HTML — Worker may be down');
-  const data = JSON.parse(text);
-  return data.aaData || data.data || [];
+  for (const s of [200, 100, 50]) {
+    try {
+      const resp = await fetch(`${CODEX_PROXY}?a=recipes&type=${type}&l=us&o=0&s=${s}`);
+      if (!resp.ok) continue;
+      const text = await resp.text();
+      if (text.trim().startsWith('<')) continue;
+      const data = JSON.parse(text);
+      return data.aaData || data.data || [];
+    } catch(e) { continue; }
+  }
+  throw new Error(lang === 'tr' ? 'BDO Codex\'e ulaşılamadı' : 'Could not reach BDO Codex');
 }
 
 function parseCodexRow(row) {
