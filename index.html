@@ -151,8 +151,7 @@
   .loading-text { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1rem; letter-spacing: 0.1em; text-align: center; }
   .loading-sub { color: var(--text-dim); font-size: 0.9rem; font-style: italic; }
   ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-deep); } ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
-  .preview-section.saved-mode { grid-template-columns: 1fr; }
-  .preview-section.saved-mode .preview-card { display: none; } .preview-section.visible { grid-template-columns: 1fr; } .recipe-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
+  @media (max-width: 700px) { .preview-section.visible { grid-template-columns: 1fr; } .recipe-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
 </style>
 </head>
 <body>
@@ -585,15 +584,12 @@ zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('
 fInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
 
 document.getElementById('change-btn').addEventListener('click', () => {
-  document.getElementById('preview-section').classList.remove('visible', 'saved-mode');
+  document.getElementById('preview-section').classList.remove('visible');
   document.getElementById('results-section').classList.remove('visible');
   inventory = []; currentBase64 = null; fInput.value = '';
   cachedCulinary = []; cachedAlchemy = [];
   editMode = false;
   try { localStorage.removeItem('bdo_inventory'); } catch(e) {}
-  // Restore preview card visibility
-  const pc = document.querySelector('.preview-card');
-  if (pc) pc.style.display = '';
   setStatus('', S[lang].statusReady);
 });
 
@@ -796,9 +792,11 @@ function toggleEditMode() {
 }
 
 function addNewItem() {
+  // Open a picker to add a new item
   document.getElementById('quick-picker-overlay')?.remove();
   document.getElementById('quick-picker')?.remove();
 
+  const s = S[lang];
   const overlay = document.createElement('div');
   overlay.id = 'quick-picker-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;';
@@ -809,58 +807,36 @@ function addNewItem() {
   picker.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-panel);border:1px solid var(--gold);border-radius:4px;z-index:201;width:380px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.7);';
   picker.innerHTML = `
     <div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.85rem;" id="picker-title">${lang==='tr'?'Yeni Malzeme Ekle':'Add New Material'}</div>
-      <button onclick="document.getElementById('quick-picker-overlay').click()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.1rem;">✕</button>
+      <div style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.85rem;">${lang==='tr'?'Yeni Malzeme Ekle':'Add New Material'}</div>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input id="qty-input" type="number" value="1" min="1" style="width:90px;background:var(--bg-deep);border:1px solid var(--border-gold);border-radius:2px;padding:0.3rem 0.5rem;color:var(--text-bright);font-size:0.85rem;outline:none;" placeholder="${lang==='tr'?'Miktar':'Qty'}">
+        <button onclick="document.getElementById('quick-picker-overlay').click()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.1rem;">✕</button>
+      </div>
     </div>
     <div style="padding:0.5rem;">
       <input id="picker-search" type="text" placeholder="${lang==='tr'?'Item ara...':'Search item...'}"
         style="width:100%;background:var(--bg-deep);border:1px solid var(--border-gold);border-radius:2px;padding:0.5rem 0.8rem;color:var(--text-bright);font-size:0.85rem;outline:none;"
         oninput="filterPickerList(this.value)" autofocus>
     </div>
-    <div id="picker-list" style="overflow-y:auto;max-height:40vh;"></div>
-    <div id="picker-qty-row" style="display:none;padding:0.7rem 1rem;border-top:1px solid var(--border);gap:0.5rem;align-items:center;">
-      <div id="picker-selected-name" style="flex:1;font-size:0.85rem;color:var(--text-bright);"></div>
-      <input id="qty-input" type="number" value="1" min="1" 
-        style="width:80px;background:var(--bg-deep);border:1px solid var(--gold);border-radius:2px;padding:0.3rem 0.5rem;color:var(--text-bright);font-size:0.85rem;outline:none;"
-        onkeydown="if(event.key==='Enter') confirmAddItem()">
-      <button onclick="confirmAddItem()" 
-        style="background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:#fff;border:none;border-radius:2px;padding:0.35rem 0.8rem;cursor:pointer;font-family:'Cinzel',serif;font-size:0.75rem;">
-        ${lang==='tr'?'Ekle':'Add'}
-      </button>
-    </div>`;
+    <div id="picker-list" style="overflow-y:auto;max-height:50vh;"></div>`;
 
   document.body.appendChild(overlay);
   document.body.appendChild(picker);
   filterPickerList('');
 
-  let selectedId = null, selectedName = null;
-
   picker.addEventListener('click', e => {
     const row = e.target.closest('[data-picker-id]');
     if (!row) return;
-    selectedId = parseInt(row.dataset.pickerId);
-    selectedName = row.dataset.pickerName;
-    // Show qty row
-    document.getElementById('picker-qty-row').style.display = 'flex';
-    document.getElementById('picker-selected-name').textContent = selectedName;
-    document.getElementById('qty-input').value = 1;
-    document.getElementById('qty-input').focus();
-    document.getElementById('qty-input').select();
-    // Highlight selected
-    picker.querySelectorAll('[data-picker-id]').forEach(r => r.style.background = '');
-    row.style.background = 'var(--bg-hover)';
-  });
-
-  window.confirmAddItem = () => {
-    if (!selectedId || !selectedName) return;
+    const newId = parseInt(row.dataset.pickerId);
+    const newName = row.dataset.pickerName;
     const qty = parseInt(document.getElementById('qty-input').value) || 1;
-    inventory.push({ name: selectedName, item_id: selectedId, qty });
+    inventory.push({ name: newName, item_id: newId, qty });
     overlay.click();
     renderItems(inventory);
     if (document.getElementById('results-section').classList.contains('visible')) {
       findRecipes();
     }
-  };
+  });
 }
 
 
@@ -1356,7 +1332,7 @@ applyStrings();
 document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
 document.getElementById('lang-en').classList.toggle('active', lang === 'en');
 
-// Restore saved inventory from localStorage — only show items panel, not upload/preview area
+// Restore saved inventory from localStorage
 (async () => {
   try {
     const saved = localStorage.getItem('bdo_inventory');
@@ -1366,11 +1342,9 @@ document.getElementById('lang-en').classList.toggle('active', lang === 'en');
         await loadItemDB();
         inventory = parsed;
         originalInventory = JSON.parse(JSON.stringify(inventory));
-        const ps = document.getElementById('preview-section');
-        ps.classList.add('visible', 'saved-mode');
+        document.getElementById('preview-section').classList.add('visible');
         renderItems(inventory);
         setStatus('done', S[lang].statusDone(inventory.length));
-        document.getElementById('reset-btn').style.display = 'inline';
       }
     }
   } catch(e) {}
