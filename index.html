@@ -358,29 +358,46 @@ const S = {
     highDemandTip: 'Yüksek demand, iyi XP',
     // Image prompt — always asks for English item names (original Codex names)
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
-Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
+Examine each icon CAREFULLY — look at shape, color, texture — then identify the item. Read the quantity below it.
 
-CRITICAL RULES:
-- ONLY list items you can clearly see — do NOT invent or guess items not visible
-- If a cell is empty or unclear, skip it entirely
+RULES:
 - Grid: 8 columns, left to right, top to bottom
 - QUANTITY: B=thousands (415B=415000, 297B=297000), M=millions. Write full integer
+- Skip empty cells. Use EXACT names from the list below only.
 
-Common items: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber,
-Ash Plywood, Maple Plywood, Pine Plywood, Cedar Plywood, Birch Plywood, Fir Plywood,
-Iron Ore, Copper Ore, Silver Ore, Titanium Ore, Coal, Rough Stone, Zinc Ore, Lead Ore, Tin Ore,
-Iron Ingot, Copper Ingot, Steel Ingot, Titanium Ingot, Melted Iron Shard, Melted Copper Shard,
-Wheat, Barley, Potato, Corn, Sweet Potato, Rye, Salt, Sugar, Milk, Egg, Butter, Flour,
-Vinegar, Olive Oil, Garlic, Onion, Tomato, Pumpkin, Pepper, Strawberry, Coconut, Apple,
-Red Meat, Chicken Meat, Fish, Bone, Hide, Thick Hide, Blood, Deer Blood, Pig Blood, Wolf Blood, Bear Blood,
-Cotton, Flax, Wool, Hops, Sunrise Herb, Fire Flake Flower, Silver Azalea, Monk's Branch, Dragon Root,
-Clear Liquid Reagent, Pure Powder Reagent, Processed Grain, Log, Bean Sprouts, Flower, Fruit,
-Cooking Honey, Leavening Agent, Mushroom, Truffle Mushroom, Dried Fish,
-Trade crates (brown box icon): Ash Timber Crate, Maple Timber Crate, Pine Timber Crate,
-Cedar Timber Crate, Birch Timber Crate, Fir Timber Crate, Copper Ore Crate, Iron Ore Crate,
-Steel Ingot Crate, Titanium Ingot Crate, Zinc Ore Crate, Lead Ore Crate.
+VISUAL TIPS:
+- Ore = small rough stone. Copper Ore=reddish-brown, Iron Ore=dark grey, Silver Ore=light grey, Zinc Ore=bluish-grey, Gold Ore=yellow, Coal=black chunk, Lead Ore=dark blue-grey, Titanium Ore=bright white, Noc Ore=green-tinted ore
+- CRATES = brown WOODEN BOX with rope — very different from raw materials! e.g. Copper Ore Crate, Maple Timber Crate
+- Timber = cut log. Ash=light brown, Maple=medium brown, Pine=darker with rings, Cedar=reddish
+- Plywood = flat stacked planks
+- Mushrooms: Fortune Teller Mushroom=colorful spotted cap, Arrow Mushroom=arrow-shaped, Emperor Mushroom=large imperial, Dwarf Mushroom=small
+- Alchemy powders: Powder of Flame=red/orange powder, Powder of Rifts=purple/dark powder, Powder of Time=blue/teal powder, Black Stone Powder=black powder
+- Special drops: Cracked Fang=broken tooth/fang, Withered Leaf=dried brown leaf, Spirit's Leaf=glowing leaf, Bag of Muddy Water=brown bag/bottle, Rough Ruby=red rough gem
+- Herbs: Sunrise Herb=orange flower, Fire Flake Flower=red flower, Silver Azalea=purple flower, Monk Branch=branch, Dragon Root=root/ginger shape
+- Vegetables: Potato=beige oval, Corn=yellow cob, Pumpkin=orange round, Onion=purple bulb, Garlic=white bulb
+- Cooking: Salt=white crystals, Sugar=white bag, Milk=white bottle, Egg=brown egg, Butter=yellow block, Cooking Oil=oil bottle
 
-Return ONLY JSON with ONLY the items you can clearly see:
+FULL ITEM LIST (use ONLY these exact names):
+Ores: Iron Ore, Copper Ore, Silver Ore, Gold Ore, Titanium Ore, Zinc Ore, Lead Ore, Tin Ore, Coal, Rough Stone, Nickel Ore, Platinum Ore, Noc Ore
+Ingots: Iron Ingot, Copper Ingot, Steel Ingot, Titanium Ingot, Silver Ingot, Gold Ingot, Brass Ingot, Bronze Ingot, Tin Ingot, Zinc Ingot, Lead Ingot, Noc Ingot
+Processed: Melted Iron Shard, Melted Copper Shard, Melted Silver Shard, Melted Titanium Shard, Melted Gold Shard
+Timber: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber, Log, Elder Tree Timber, Acacia Timber, Palm Timber, White Cedar Timber, Loopy Tree Timber, Moss Tree Timber
+Plywood: Ash Plywood, Maple Plywood, Pine Plywood, Cedar Plywood, Birch Plywood, Fir Plywood, Acacia Plywood, Palm Plywood, Elder Tree Plywood
+Crates (wooden box): Ash Timber Crate, Maple Timber Crate, Pine Timber Crate, Cedar Timber Crate, Birch Timber Crate, Copper Ore Crate, Iron Ore Crate, Zinc Ore Crate, Lead Ore Crate, Steel Ingot Crate, Silver Ore Crate, Gold Ore Crate
+Cooking: Wheat, Barley, Potato, Corn, Sweet Potato, Rye, Salt, Sugar, Milk, Egg, Butter, Flour, Vinegar, Olive Oil, Cooking Honey, Leavening Agent, Cooking Oil, Cooking Wine, Cheese, Cream, Pork, Chicken Meat, Red Meat, Fish, Dried Fish, Mineral Water
+Vegetables: Garlic, Onion, Tomato, Pumpkin, Pepper, Paprika, Hot Pepper, Cabbage, Cucumber, Carrot
+Fruit: Strawberry, Coconut, Apple, Orange, Cherry, Fig, Grape, Banana, Citron, Olive, Pear, Date Palm, Pistachio, Star Anise, Cinnamon, Nutmeg
+Blood: Deer Blood, Pig Blood, Wolf Blood, Bear Blood, Fox Blood, Sheep Blood, Weasel Blood, Lion Blood, Rhino Blood, Waragon Blood
+Hide: Hide, Thick Hide, Hard Hide, Dragon Skin, Lizard Skin
+Herbs: Sunrise Herb, Silver Azalea, Fire Flake Flower, Monk Branch, Dragon Root, Hops, White Umbrella Mushroom, Dwarf Mushroom, Truffle Mushroom, Everlasting Herb, Dry Mane Grass, Silk Honey Grass, Aloe, Desert Herb
+Mushrooms: Fortune Teller Mushroom, Arrow Mushroom, Emperor Mushroom, Amanita Mushroom, Cloud Mushroom, Sky Mushroom, Tiger Mushroom, Ghost Mushroom, Fog Mushroom, Bluffer Mushroom, Hump Mushroom, Pie Mushroom, Bouquet Mushroom, Purple Mushroom, Leccinum
+Alchemy powders: Powder of Flame, Powder of Rifts, Powder of Time, Black Stone Powder
+Special drops: Cracked Fang, Withered Leaf, Spirit's Leaf, Bag of Muddy Water, Rough Ruby, Rough Emerald, Rough Sapphire, Rough Diamond, Rough Topaz, Rough Jade, Rough Obsidian Ore, Glossy Bone Piece, Broken Shell, Old Tree Branch
+Alchemy: Clear Liquid Reagent, Pure Powder Reagent, Trace of Nature, Trace of Savagery, Trace of Violence, Trace of Decay, Trace of Chaos, Trace of Breath, Trace of Memory
+Cloth: Cotton, Flax, Wool, Silk
+Other: Processed Grain, Bean Sprouts, Flower, Fruit, Olucas, Soybean, Freekeh, Mungbean
+
+Return ONLY JSON:
 {"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000}]}`
   },
   en: {
@@ -417,29 +434,46 @@ Return ONLY JSON with ONLY the items you can clearly see:
     workerTip: 'Essential for worker stamina',
     highDemandTip: 'High demand, good XP',
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
-Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
+Examine each icon CAREFULLY — look at shape, color, texture — then identify the item. Read the quantity below it.
 
-CRITICAL RULES:
-- ONLY list items you can clearly see — do NOT invent or guess items not visible
-- If a cell is empty or unclear, skip it entirely
+RULES:
 - Grid: 8 columns, left to right, top to bottom
 - QUANTITY: B=thousands (415B=415000, 297B=297000), M=millions. Write full integer
+- Skip empty cells. Use EXACT names from the list below only.
 
-Common items: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber,
-Ash Plywood, Maple Plywood, Pine Plywood, Cedar Plywood, Birch Plywood, Fir Plywood,
-Iron Ore, Copper Ore, Silver Ore, Titanium Ore, Coal, Rough Stone, Zinc Ore, Lead Ore, Tin Ore,
-Iron Ingot, Copper Ingot, Steel Ingot, Titanium Ingot, Melted Iron Shard, Melted Copper Shard,
-Wheat, Barley, Potato, Corn, Sweet Potato, Rye, Salt, Sugar, Milk, Egg, Butter, Flour,
-Vinegar, Olive Oil, Garlic, Onion, Tomato, Pumpkin, Pepper, Strawberry, Coconut, Apple,
-Red Meat, Chicken Meat, Fish, Bone, Hide, Thick Hide, Blood, Deer Blood, Pig Blood, Wolf Blood, Bear Blood,
-Cotton, Flax, Wool, Hops, Sunrise Herb, Fire Flake Flower, Silver Azalea, Monk's Branch, Dragon Root,
-Clear Liquid Reagent, Pure Powder Reagent, Processed Grain, Log, Bean Sprouts, Flower, Fruit,
-Cooking Honey, Leavening Agent, Mushroom, Truffle Mushroom, Dried Fish,
-Trade crates (brown box icon): Ash Timber Crate, Maple Timber Crate, Pine Timber Crate,
-Cedar Timber Crate, Birch Timber Crate, Fir Timber Crate, Copper Ore Crate, Iron Ore Crate,
-Steel Ingot Crate, Titanium Ingot Crate, Zinc Ore Crate, Lead Ore Crate.
+VISUAL TIPS:
+- Ore = small rough stone. Copper Ore=reddish-brown, Iron Ore=dark grey, Silver Ore=light grey, Zinc Ore=bluish-grey, Gold Ore=yellow, Coal=black chunk, Lead Ore=dark blue-grey, Titanium Ore=bright white, Noc Ore=green-tinted ore
+- CRATES = brown WOODEN BOX with rope — very different from raw materials! e.g. Copper Ore Crate, Maple Timber Crate
+- Timber = cut log. Ash=light brown, Maple=medium brown, Pine=darker with rings, Cedar=reddish
+- Plywood = flat stacked planks
+- Mushrooms: Fortune Teller Mushroom=colorful spotted cap, Arrow Mushroom=arrow-shaped, Emperor Mushroom=large imperial, Dwarf Mushroom=small
+- Alchemy powders: Powder of Flame=red/orange powder, Powder of Rifts=purple/dark powder, Powder of Time=blue/teal powder, Black Stone Powder=black powder
+- Special drops: Cracked Fang=broken tooth/fang, Withered Leaf=dried brown leaf, Spirit's Leaf=glowing leaf, Bag of Muddy Water=brown bag/bottle, Rough Ruby=red rough gem
+- Herbs: Sunrise Herb=orange flower, Fire Flake Flower=red flower, Silver Azalea=purple flower, Monk Branch=branch, Dragon Root=root/ginger shape
+- Vegetables: Potato=beige oval, Corn=yellow cob, Pumpkin=orange round, Onion=purple bulb, Garlic=white bulb
+- Cooking: Salt=white crystals, Sugar=white bag, Milk=white bottle, Egg=brown egg, Butter=yellow block, Cooking Oil=oil bottle
 
-Return ONLY JSON with ONLY the items you can clearly see:
+FULL ITEM LIST (use ONLY these exact names):
+Ores: Iron Ore, Copper Ore, Silver Ore, Gold Ore, Titanium Ore, Zinc Ore, Lead Ore, Tin Ore, Coal, Rough Stone, Nickel Ore, Platinum Ore, Noc Ore
+Ingots: Iron Ingot, Copper Ingot, Steel Ingot, Titanium Ingot, Silver Ingot, Gold Ingot, Brass Ingot, Bronze Ingot, Tin Ingot, Zinc Ingot, Lead Ingot, Noc Ingot
+Processed: Melted Iron Shard, Melted Copper Shard, Melted Silver Shard, Melted Titanium Shard, Melted Gold Shard
+Timber: Ash Timber, Maple Timber, Pine Timber, Cedar Timber, Birch Timber, Fir Timber, Log, Elder Tree Timber, Acacia Timber, Palm Timber, White Cedar Timber, Loopy Tree Timber, Moss Tree Timber
+Plywood: Ash Plywood, Maple Plywood, Pine Plywood, Cedar Plywood, Birch Plywood, Fir Plywood, Acacia Plywood, Palm Plywood, Elder Tree Plywood
+Crates (wooden box): Ash Timber Crate, Maple Timber Crate, Pine Timber Crate, Cedar Timber Crate, Birch Timber Crate, Copper Ore Crate, Iron Ore Crate, Zinc Ore Crate, Lead Ore Crate, Steel Ingot Crate, Silver Ore Crate, Gold Ore Crate
+Cooking: Wheat, Barley, Potato, Corn, Sweet Potato, Rye, Salt, Sugar, Milk, Egg, Butter, Flour, Vinegar, Olive Oil, Cooking Honey, Leavening Agent, Cooking Oil, Cooking Wine, Cheese, Cream, Pork, Chicken Meat, Red Meat, Fish, Dried Fish, Mineral Water
+Vegetables: Garlic, Onion, Tomato, Pumpkin, Pepper, Paprika, Hot Pepper, Cabbage, Cucumber, Carrot
+Fruit: Strawberry, Coconut, Apple, Orange, Cherry, Fig, Grape, Banana, Citron, Olive, Pear, Date Palm, Pistachio, Star Anise, Cinnamon, Nutmeg
+Blood: Deer Blood, Pig Blood, Wolf Blood, Bear Blood, Fox Blood, Sheep Blood, Weasel Blood, Lion Blood, Rhino Blood, Waragon Blood
+Hide: Hide, Thick Hide, Hard Hide, Dragon Skin, Lizard Skin
+Herbs: Sunrise Herb, Silver Azalea, Fire Flake Flower, Monk Branch, Dragon Root, Hops, White Umbrella Mushroom, Dwarf Mushroom, Truffle Mushroom, Everlasting Herb, Dry Mane Grass, Silk Honey Grass, Aloe, Desert Herb
+Mushrooms: Fortune Teller Mushroom, Arrow Mushroom, Emperor Mushroom, Amanita Mushroom, Cloud Mushroom, Sky Mushroom, Tiger Mushroom, Ghost Mushroom, Fog Mushroom, Bluffer Mushroom, Hump Mushroom, Pie Mushroom, Bouquet Mushroom, Purple Mushroom, Leccinum
+Alchemy powders: Powder of Flame, Powder of Rifts, Powder of Time, Black Stone Powder
+Special drops: Cracked Fang, Withered Leaf, Spirit's Leaf, Bag of Muddy Water, Rough Ruby, Rough Emerald, Rough Sapphire, Rough Diamond, Rough Topaz, Rough Jade, Rough Obsidian Ore, Glossy Bone Piece, Broken Shell, Old Tree Branch
+Alchemy: Clear Liquid Reagent, Pure Powder Reagent, Trace of Nature, Trace of Savagery, Trace of Violence, Trace of Decay, Trace of Chaos, Trace of Breath, Trace of Memory
+Cloth: Cotton, Flax, Wool, Silk
+Other: Processed Grain, Bean Sprouts, Flower, Fruit, Olucas, Soybean, Freekeh, Mungbean
+
+Return ONLY JSON:
 {"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000}]}`
   }
 };
