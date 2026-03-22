@@ -55,6 +55,8 @@
   /* Preview */
   .preview-section { display: none; gap: 1.5rem; margin-top: 1.5rem; }
   .preview-section.visible { display: grid; grid-template-columns: 300px 1fr; }
+  .preview-section.saved-mode { grid-template-columns: 1fr !important; }
+  .preview-section.saved-mode .preview-card { display: none !important; }
   .preview-card { background: var(--bg-panel); border: 1px solid var(--border-gold); border-radius: 4px; overflow: hidden; }
   .preview-card img { width: 100%; height: auto; max-height: 300px; object-fit: contain; display: block; background: var(--bg-deep); }
   .card-footer { padding: 0.8rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.8rem; }
@@ -506,7 +508,7 @@ zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('
 fInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
 
 document.getElementById('change-btn').addEventListener('click', () => {
-  document.getElementById('preview-section').classList.remove('visible');
+  document.getElementById('preview-section').classList.remove('visible', 'saved-mode');
   document.getElementById('results-section').classList.remove('visible');
   document.getElementById('preview-card').style.display = '';
   inventory = []; currentBase64 = null; fInput.value = '';
@@ -986,8 +988,7 @@ document.getElementById('lang-en').classList.toggle('active', lang === 'en');
         inventory = parsed;
         originalInventory = JSON.parse(JSON.stringify(inventory));
         const ps = document.getElementById('preview-section');
-        ps.classList.add('visible');
-        document.getElementById('preview-card').style.display = 'none';
+        ps.classList.add('visible', 'saved-mode');
         renderItems(inventory);
         setStatus('done', S[lang].statusDone(inventory.length));
         document.getElementById('reset-btn').style.display = 'inline';
