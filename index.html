@@ -590,9 +590,6 @@ document.getElementById('change-btn').addEventListener('click', () => {
   cachedCulinary = []; cachedAlchemy = [];
   editMode = false;
   try { localStorage.removeItem('bdo_inventory'); } catch(e) {}
-  // Restore preview card visibility
-  const pc = document.querySelector('.preview-card');
-  if (pc) pc.style.display = '';
   setStatus('', S[lang].statusReady);
 });
 
@@ -1355,7 +1352,7 @@ applyStrings();
 document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
 document.getElementById('lang-en').classList.toggle('active', lang === 'en');
 
-// Restore saved inventory from localStorage — show items panel only, not preview section
+// Restore saved inventory from localStorage
 (async () => {
   try {
     const saved = localStorage.getItem('bdo_inventory');
@@ -1365,13 +1362,9 @@ document.getElementById('lang-en').classList.toggle('active', lang === 'en');
         await loadItemDB();
         inventory = parsed;
         originalInventory = JSON.parse(JSON.stringify(inventory));
-        // Show items-container inside ai-panel WITHOUT showing preview-section
-        // We need preview-section visible to show ai-panel, but hide the preview card
         document.getElementById('preview-section').classList.add('visible');
-        document.querySelector('.preview-card').style.display = 'none';
         renderItems(inventory);
         setStatus('done', S[lang].statusDone(inventory.length));
-        document.getElementById('reset-btn').style.display = 'inline';
       }
     }
   } catch(e) {}
