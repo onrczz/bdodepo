@@ -229,9 +229,8 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
           <div style="font-size:0.8rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;" id="detected-label">Tespit Edilen Malzemeler</div>
           <div style="display:flex;gap:0.5rem;">
-            <button class="btn-inline" id="edit-toggle-btn" onclick="toggleEditMode()">✏ Düzenle</button>
+            <button class="btn-inline btn-inline-add" id="add-item-btn" onclick="addNewItem()">+ <span id="add-item-label">Ekle</span></button>
             <button class="btn-inline" id="reset-btn" onclick="resetInventory()" style="display:none;">↺ Sıfırla</button>
-            <button class="btn-inline btn-inline-add" id="add-item-btn" onclick="addItem()" style="display:none;">+ Ekle</button>
           </div>
         </div>
         <div class="items-grid" id="items-grid"></div>
@@ -552,6 +551,8 @@ function applyStrings() {
   if (banner) banner.textContent = s.devBanner;
   const feedback = document.getElementById('feedback-text');
   if (feedback) feedback.textContent = s.feedbackText;
+  const addLabel = document.getElementById('add-item-label');
+  if (addLabel) addLabel.textContent = lang === 'tr' ? 'Ekle' : 'Add';
   if (!currentBase64) setStatus('', s.statusReady);
 }
 
@@ -777,7 +778,6 @@ async function matchRecipesAsync(recipes, inv) {
   });
 }
 
-// ── EDIT MODE ─────────────────────────────────────────────────────────────
 function resetInventory() {
   if (!originalInventory.length) return;
   inventory = JSON.parse(JSON.stringify(originalInventory));
@@ -788,21 +788,57 @@ function resetInventory() {
 }
 
 function toggleEditMode() {
-  editMode = !editMode;
-  const btn = document.getElementById('edit-toggle-btn');
-  const addBtn = document.getElementById('add-item-btn');
-  const resetBtn = document.getElementById('reset-btn');
-  const findRow = document.getElementById('find-recipes-row');
-  btn.textContent = editMode ? S[lang].doneBtn : S[lang].editBtn;
-  btn.style.borderColor = editMode ? 'var(--green)' : '';
-  btn.style.color = editMode ? 'var(--green)' : '';
-  addBtn.style.display = editMode ? 'inline' : 'none';
-  resetBtn.style.display = editMode ? 'inline' : 'none';
-  findRow.style.display = editMode ? 'none' : (inventory.length ? 'block' : 'none');
-  renderItems(inventory);
+  // No longer needed - kept for compatibility
 }
 
-function addItem() { openEditPopup(null, -1); }
+function addNewItem() {
+  // Open a picker to add a new item
+  document.getElementById('quick-picker-overlay')?.remove();
+  document.getElementById('quick-picker')?.remove();
+
+  const s = S[lang];
+  const overlay = document.createElement('div');
+  overlay.id = 'quick-picker-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;';
+  overlay.onclick = () => { overlay.remove(); picker.remove(); };
+
+  const picker = document.createElement('div');
+  picker.id = 'quick-picker';
+  picker.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-panel);border:1px solid var(--gold);border-radius:4px;z-index:201;width:380px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.7);';
+  picker.innerHTML = `
+    <div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.85rem;">${lang==='tr'?'Yeni Malzeme Ekle':'Add New Material'}</div>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input id="qty-input" type="number" value="1" min="1" style="width:90px;background:var(--bg-deep);border:1px solid var(--border-gold);border-radius:2px;padding:0.3rem 0.5rem;color:var(--text-bright);font-size:0.85rem;outline:none;" placeholder="${lang==='tr'?'Miktar':'Qty'}">
+        <button onclick="document.getElementById('quick-picker-overlay').click()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.1rem;">✕</button>
+      </div>
+    </div>
+    <div style="padding:0.5rem;">
+      <input id="picker-search" type="text" placeholder="${lang==='tr'?'Item ara...':'Search item...'}"
+        style="width:100%;background:var(--bg-deep);border:1px solid var(--border-gold);border-radius:2px;padding:0.5rem 0.8rem;color:var(--text-bright);font-size:0.85rem;outline:none;"
+        oninput="filterPickerList(this.value)" autofocus>
+    </div>
+    <div id="picker-list" style="overflow-y:auto;max-height:50vh;"></div>`;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(picker);
+  filterPickerList('');
+
+  picker.addEventListener('click', e => {
+    const row = e.target.closest('[data-picker-id]');
+    if (!row) return;
+    const newId = parseInt(row.dataset.pickerId);
+    const newName = row.dataset.pickerName;
+    const qty = parseInt(document.getElementById('qty-input').value) || 1;
+    inventory.push({ name: newName, item_id: newId, qty });
+    overlay.click();
+    renderItems(inventory);
+    if (document.getElementById('results-section').classList.contains('visible')) {
+      findRecipes();
+    }
+  });
+}
+
 
 function openEditPopup(item, idx) {
   document.getElementById('edit-overlay')?.remove();
@@ -846,8 +882,7 @@ function searchItems(query) {
   if (BDO_ITEMS) {
     for (const [id, info] of Object.entries(BDO_ITEMS.id_to_info)) {
       if (!info.name_en) continue;
-      if (!info.icon || !info.icon.includes('productmaterial')) continue; // materials only
-      if (info.name_en.toLowerCase().includes(q)) {
+        if (info.name_en.toLowerCase().includes(q)) {
         matches.push({ id, name: info.name_en, icon: info.icon });
         if (matches.length >= 12) break;
       }
@@ -914,7 +949,13 @@ function getItemIcon(item) {
 function renderItems(items) {
   const grid = document.getElementById('items-grid');
   grid.innerHTML = items.map((i, idx) =>
-    `<div class="item-tag editable" onclick="openQuickPicker(${idx})">
+    `<div class="item-tag editable" draggable="true" 
+      data-idx="${idx}"
+      ondragstart="dragStart(event,${idx})" 
+      ondragover="dragOver(event)" 
+      ondrop="dragDrop(event,${idx})"
+      ondragend="dragEnd(event)"
+      onclick="openQuickPicker(${idx})">
       ${getItemIcon(i)}${i.name} <span class="qty">×${i.qty.toLocaleString()}</span>
       <span class="delete-btn" onclick="event.stopPropagation();deleteItem(${idx})">✕</span>
     </div>`
@@ -922,8 +963,38 @@ function renderItems(items) {
   document.getElementById('items-container').style.display = 'block';
   const findRow = document.getElementById('find-recipes-row');
   if (findRow) findRow.style.display = items.length ? 'block' : 'none';
-  // Save to localStorage
   try { localStorage.setItem('bdo_inventory', JSON.stringify(inventory)); } catch(e) {}
+}
+
+// ── DRAG & DROP SORTING ───────────────────────────────────────────────────
+let dragSrcIdx = null;
+
+function dragStart(e, idx) {
+  dragSrcIdx = idx;
+  e.currentTarget.style.opacity = '0.4';
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.style.borderColor = 'var(--gold)';
+}
+
+function dragDrop(e, toIdx) {
+  e.preventDefault();
+  if (dragSrcIdx === null || dragSrcIdx === toIdx) return;
+  const moved = inventory.splice(dragSrcIdx, 1)[0];
+  inventory.splice(toIdx, 0, moved);
+  renderItems(inventory);
+}
+
+function dragEnd(e) {
+  dragSrcIdx = null;
+  document.querySelectorAll('.item-tag').forEach(t => {
+    t.style.opacity = '';
+    t.style.borderColor = '';
+  });
 }
 
 // ── QUICK ITEM PICKER ─────────────────────────────────────────────────────
@@ -986,7 +1057,6 @@ function filterPickerList(query) {
   const matches = [];
   for (const [id, info] of Object.entries(BDO_ITEMS.id_to_info)) {
     if (!info.name_en) continue;
-    if (!info.icon || !info.icon.includes('productmaterial')) continue;
     if (!q || info.name_en.toLowerCase().includes(q)) {
       matches.push({ id, name: info.name_en, icon: info.icon });
       if (matches.length >= 80) break;
@@ -996,7 +1066,7 @@ function filterPickerList(query) {
     <div data-picker-id="${m.id}" data-picker-name="${m.name}"
       style="display:flex;align-items:center;gap:0.6rem;padding:0.35rem 0.8rem;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--border);"
       onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
-      <img src="https://bdocodex.com${m.icon}" style="width:24px;height:24px;border-radius:2px;flex-shrink:0;" onerror="this.style.display='none'">
+      ${m.icon ? `<img src="https://bdocodex.com${m.icon}" style="width:24px;height:24px;border-radius:2px;flex-shrink:0;" onerror="this.style.display='none'">` : '<div style="width:24px;height:24px;flex-shrink:0;"></div>'}
       <span style="color:var(--text-bright);">${m.name}</span>
       <span style="color:var(--text-dim);font-size:0.72rem;margin-left:auto;">#${m.id}</span>
     </div>`).join('');
@@ -1201,8 +1271,11 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     }
 
     inventory = items.length > 0 ? items : [];
-    originalInventory = JSON.parse(JSON.stringify(inventory)); // deep copy
+    originalInventory = JSON.parse(JSON.stringify(inventory));
     renderItems(inventory);
+    // Show reset button
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) resetBtn.style.display = 'inline';
     hideLoading();
     await findRecipes();
 
