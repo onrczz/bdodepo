@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -587,35 +587,25 @@ function parseCodexRow(row) {
   const id = row[0];
   const nameHtml = typeof row[2] === 'string' ? row[2] : (typeof row[1] === 'string' ? row[1] : '');
   const name = (nameHtml.match(/<b>(.*?)<\/b>/) || [])[1] || `Recipe ${id}`;
+  const idStr = row[9] || '[]';
   const ingHtml = row[5] || '';
   const outHtml = row[7] || '';
   const skillObj = row[3] || {};
   const skillLevel = typeof skillObj === 'object' ? (skillObj.display || '') : String(skillObj);
 
-  // Parse ingredients from HTML — each ingredient block has data-id AND quantity
-  // This handles repeated ingredients correctly (e.g. Chicken Meat appearing twice)
-  const ingredientIds = [];
-  const quantities = [];
+  // Parse ingredient IDs — row[9] contains the unique IDs but misses duplicates
+  // ingHtml contains all ingredient entries including duplicates
+  // We extract IDs from ingHtml to preserve duplicates
+  const ingredientIds = [...ingHtml.matchAll(/data-id="item--(\d+)"/g)].map(m => parseInt(m[1]));
+  const quantities = [...ingHtml.matchAll(/quantity_small nowrap[^>]*>(\d+)/g)].map(m => parseInt(m[1]));
 
-  // Try parsing paired data-id + quantity from ingHtml
-  // Each ingredient wrapper typically has: data-id="item--XXXX" ... quantity_small nowrap>N
-  const ingBlocks = ingHtml.split(/(?=<td[^>]*data-id)/);
-  for (const block of ingBlocks) {
-    const idMatch = block.match(/data-id="item--(\d+)"/);
-    const qtyMatch = block.match(/quantity_small nowrap[^>]*>(\d+)/);
-    if (idMatch && qtyMatch) {
-      ingredientIds.push(parseInt(idMatch[1]));
-      quantities.push(parseInt(qtyMatch[1]));
-    }
-  }
-
-  // Fallback to row[9] if HTML parsing fails
+  // Fallback to row[9] if HTML parsing yields nothing
   if (!ingredientIds.length) {
-    const idStr = row[9] || '[]';
     try {
       const ids = JSON.parse(idStr);
+      ids.forEach(id => ingredientIds.push(id));
       const qtys = [...ingHtml.matchAll(/quantity_small nowrap[^>]*>(\d+)/g)].map(m => parseInt(m[1]));
-      ids.forEach((id, i) => { ingredientIds.push(id); quantities.push(qtys[i] || 1); });
+      qtys.forEach((q, i) => quantities[i] = q);
     } catch(e) {}
   }
 
