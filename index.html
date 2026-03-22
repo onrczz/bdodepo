@@ -674,15 +674,14 @@ Return ONLY JSON:
 
 // ── CODEX RECIPES ─────────────────────────────────────────────────────────
 async function fetchCodexRecipes(type) {
-  for (const s of [500, 300, 100]) {
+  for (const s of [200, 100, 50]) {
     try {
       const resp = await fetch(`${CODEX_PROXY}?a=recipes&type=${type}&l=us&o=0&s=${s}`);
       if (!resp.ok) continue;
       const text = await resp.text();
-      if (text.trim().startsWith('<') || text.trim().startsWith('<!')) continue;
+      if (text.trim().startsWith('<')) continue;
       const data = JSON.parse(text);
-      const rows = data.aaData || data.data || [];
-      if (rows.length > 0) return rows;
+      return data.aaData || data.data || [];
     } catch(e) { continue; }
   }
   throw new Error(lang === 'tr' ? 'BDO Codex\'e ulaşılamadı' : 'Could not reach BDO Codex');
@@ -700,14 +699,10 @@ function parseCodexRow(row) {
   const skillLevel = typeof skillObj === 'object' ? (skillObj.display || '') : String(skillObj);
   let ingredientIds = [];
   try { ingredientIds = JSON.parse(idStr); } catch(e) {}
-  // If row[9] didn't give IDs, extract from ingredient HTML
-  if (!ingredientIds.length && ingHtml) {
-    const htmlIds = [...ingHtml.matchAll(/data-id="item--(\d+)"/g)].map(m => parseInt(m[1]));
-    if (htmlIds.length) ingredientIds = htmlIds;
-  }
   const quantities = [...ingHtml.matchAll(/quantity_small nowrap[^>]*>(\d+)/g)].map(m => parseInt(m[1]));
   const iconMatch = outHtml.match(/src="\/items\/([^"]+)"/);
   const icon = iconMatch ? iconMatch[1] : '';
+  // Extract output item ID from output HTML
   const outputIdMatch = outHtml.match(/href="\/us\/item\/(\d+)\//);
   const outputItemId = outputIdMatch ? parseInt(outputIdMatch[1]) : null;
   return { id, name, icon, skillLevel, ingredientIds, quantities, outputItemId };
