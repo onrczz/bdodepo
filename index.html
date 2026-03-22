@@ -243,6 +243,21 @@
   </div>
 
   <div id="results-section">
+    <!-- Summary Panel -->
+    <div id="summary-panel" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;">
+      <div style="background:var(--bg-card);border:1px solid var(--border-gold);border-radius:4px;padding:1rem;text-align:center;">
+        <span id="stat-items" style="font-family:'Cinzel',serif;font-size:1.8rem;color:var(--gold);display:block;">-</span>
+        <div id="stat-items-label" style="font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.3rem;">Malzeme Türü</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border-gold);border-radius:4px;padding:1rem;text-align:center;">
+        <span id="stat-recipes" style="font-family:'Cinzel',serif;font-size:1.8rem;color:var(--gold);display:block;">-</span>
+        <div id="stat-recipes-label" style="font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.3rem;">Yapılabilir Tarif</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border-gold);border-radius:4px;padding:1rem;text-align:center;">
+        <span id="stat-best" style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);display:block;margin-top:0.4rem;">-</span>
+        <div id="stat-best-label" style="font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.3rem;">En İyi Seçenek</div>
+      </div>
+    </div>
     <div class="results-header-row">
       <div class="results-header" id="results-header">⚗ Gerçek BDO Tarifleri — BDO Codex</div>
       <div class="export-btns">
@@ -253,9 +268,11 @@
     <div class="results-tabs">
       <button class="tab active" id="tab-culinary-btn" onclick="switchTab('culinary',this)">🍲 Aşçılık</button>
       <button class="tab" id="tab-alchemy-btn" onclick="switchTab('alchemy',this)">⚗ Kimya</button>
+      <button class="tab" id="tab-best-btn" onclick="switchTab('best',this)">★ En Karlı</button>
     </div>
     <div id="tab-culinary" class="tab-content active"><div class="recipe-grid" id="culinary-grid"></div></div>
     <div id="tab-alchemy" class="tab-content"><div class="recipe-grid" id="alchemy-grid"></div></div>
+    <div id="tab-best" class="tab-content"><div class="recipe-grid" id="best-grid"></div></div>
   </div>
 </div>
 
@@ -271,6 +288,38 @@
 const PROXY_URL   = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
 const CODEX_PROXY = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/codex';
 const ICON_BASE   = 'https://bdocodex.com/items/';
+
+// ── PRICE CACHE ───────────────────────────────────────────────────────────
+const priceCache = {}; // itemId -> price in silver
+
+async function fetchItemPrice(itemId) {
+  if (!itemId) return null;
+  if (priceCache[itemId] !== undefined) return priceCache[itemId];
+  try {
+    const resp = await fetch(`${CODEX_PROXY.replace('/codex','')}codex?a=items&l=us&o=0&s=1&type=all&id=${itemId}`);
+    if (!resp.ok) { priceCache[itemId] = null; return null; }
+    const text = await resp.text();
+    if (text.trim().startsWith('<')) { priceCache[itemId] = null; return null; }
+    const data = JSON.parse(text);
+    const row = (data.aaData || [])[0];
+    if (!row) { priceCache[itemId] = null; return null; }
+    // Price is usually in row[5] or row[6] as sort_value
+    const priceObj = row[5] || row[6];
+    const price = typeof priceObj === 'object' ? priceObj.sort_value : (typeof priceObj === 'number' ? priceObj : null);
+    priceCache[itemId] = price && price > 0 ? price : null;
+    return priceCache[itemId];
+  } catch(e) {
+    priceCache[itemId] = null;
+    return null;
+  }
+}
+
+function formatSilver(amount) {
+  if (!amount) return null;
+  if (amount >= 1000000) return (amount/1000000).toFixed(1) + 'M';
+  if (amount >= 1000) return Math.round(amount/1000) + 'K';
+  return amount.toLocaleString();
+}
 
 // ── STRINGS (UI only - item names always stay in English from Codex) ──────
 const S = {
@@ -302,6 +351,11 @@ const S = {
     nameLbl: 'İsim', idLbl: 'Item ID (opsiyonel)', qtyLbl: 'Miktar',
     devBanner: '⚠ Geliştirme Aşamasında — Veriler Doğru Çıkmayabilir ⚠',
     feedbackText: 'Geri bildirim için TR MENA\'da Oyundan AppA aile adıyla ulaşabilirsiniz',
+    perUnit: '/adet',
+    silver: 'Gümüş',
+    lifeskillTip: 'Lifeskill XP ve stamina recovery için popüler',
+    workerTip: 'Worker stamina için çok gerekli',
+    highDemandTip: 'Yüksek demand, iyi XP',
     // Image prompt — always asks for English item names (original Codex names)
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
 Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
@@ -357,6 +411,11 @@ Return ONLY JSON with ONLY the items you can clearly see:
     nameLbl: 'Name', idLbl: 'Item ID (optional)', qtyLbl: 'Quantity',
     devBanner: '⚠ Under Development — Data May Not Be Accurate ⚠',
     feedbackText: 'For feedback, you can reach me in TR MENA server in-game as family name AppA',
+    perUnit: '/unit',
+    silver: 'Silver',
+    lifeskillTip: 'Popular for Lifeskill XP and stamina recovery',
+    workerTip: 'Essential for worker stamina',
+    highDemandTip: 'High demand, good XP',
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
 Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
 
@@ -638,7 +697,10 @@ function parseCodexRow(row) {
   const quantities = [...ingHtml.matchAll(/quantity_small nowrap[^>]*>(\d+)/g)].map(m => parseInt(m[1]));
   const iconMatch = outHtml.match(/src="\/items\/([^"]+)"/);
   const icon = iconMatch ? iconMatch[1] : '';
-  return { id, name, icon, skillLevel, ingredientIds, quantities };
+  // Extract output item ID from output HTML
+  const outputIdMatch = outHtml.match(/href="\/us\/item\/(\d+)\//);
+  const outputItemId = outputIdMatch ? parseInt(outputIdMatch[1]) : null;
+  return { id, name, icon, skillLevel, ingredientIds, quantities, outputItemId };
 }
 
 // ── MATCH RECIPES ─────────────────────────────────────────────────────────
@@ -689,6 +751,7 @@ async function matchRecipesAsync(recipes, inv) {
 
     out.push({
       id: r.id, name: r.name, icon: r.icon, skillLevel: r.skillLevel,
+      outputItemId: r.outputItemId,
       ingredients: parsed,
       craftable: canCraft === Infinity ? 0 : canCraft,
       hasAll: canCraft > 0, haveCount, totalCount
@@ -865,10 +928,33 @@ async function findRecipes() {
     cachedAlchemy = await matchRecipesAsync(alcRaw, inventory);
     cachedCulinary.forEach(r => r.type = 'culinary');
     cachedAlchemy.forEach(r => r.type = 'alchemy');
+
+    // Update summary panel
+    const totalCraftable = [...cachedCulinary, ...cachedAlchemy].filter(r => r.hasAll).length;
+    const bestRecipe = [...cachedCulinary, ...cachedAlchemy].find(r => r.hasAll);
+    document.getElementById('stat-items').textContent = inventory.length;
+    document.getElementById('stat-recipes').textContent = totalCraftable;
+    document.getElementById('stat-best').textContent = bestRecipe ? bestRecipe.name : '-';
+    document.getElementById('stat-items-label').textContent = lang === 'tr' ? 'Malzeme Türü' : 'Item Types';
+    document.getElementById('stat-recipes-label').textContent = lang === 'tr' ? 'Yapılabilir Tarif' : 'Craftable Recipes';
+    document.getElementById('stat-best-label').textContent = lang === 'tr' ? 'En İyi Seçenek' : 'Best Option';
+
+    // Best tab: top craftable recipes combined
+    const bestRecipes = [...cachedCulinary, ...cachedAlchemy]
+      .filter(r => r.hasAll)
+      .sort((a, b) => b.craftable - a.craftable)
+      .slice(0, 12);
+
+    // Update tab labels
+    document.getElementById('tab-culinary-btn').textContent = s.tabCulinary;
+    document.getElementById('tab-alchemy-btn').textContent = s.tabAlchemy;
+    document.getElementById('tab-best-btn').textContent = lang === 'tr' ? '★ En Karlı' : '★ Best';
+
     hideLoading();
     setStatus('done', s.statusDone(inventory.length));
     renderGrid('culinary-grid', cachedCulinary, s.emptyCulinary);
     renderGrid('alchemy-grid', cachedAlchemy, s.emptyAlchemy);
+    renderGrid('best-grid', bestRecipes, lang === 'tr' ? 'Yapılabilir tarif bulunamadı.' : 'No craftable recipes found.');
     document.getElementById('results-section').classList.add('visible');
     document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
   } catch(err) {
@@ -909,15 +995,41 @@ function renderCard(r) {
     ? (lang === 'tr' ? 'Aşçılık Tezgahı' : 'Cooking Utensil')
     : (lang === 'tr' ? 'Kimya Tezgahı' : 'Alchemy Tool');
 
-  const craftableFooter = r.hasAll
-    ? `<div class="craftable-big"><span class="craftable-num">${r.craftable.toLocaleString()}×</span><span class="craftable-label">${s.craftableLabel}</span></div>`
-    : `<div class="craftable-big"><span class="craftable-num-red">${r.haveCount}/${r.totalCount}</span><span class="craftable-label">${s.badgeMats}</span></div>`;
+  // Price from cache (loaded async after render)
+  const cachedPrice = r.outputItemId ? priceCache[r.outputItemId] : null;
+  const priceStr = cachedPrice
+    ? `~${formatSilver(cachedPrice)} ${lang === 'tr' ? 'Gümüş/adet' : 'Silver/unit'}`
+    : '';
 
-  return `<div class="recipe-card ${r.hasAll ? 'card-craftable' : ''}">
+  // Tip based on recipe type
+  const tips = {
+    culinary: lang === 'tr'
+      ? ['Lifeskill XP ve stamina recovery için popüler', 'Yüksek talep, iyi XP', 'Worker stamina için çok gerekli', 'Kolay malzeme, stabil kazanç']
+      : ['Popular for lifeskill XP and stamina recovery', 'High demand, good XP', 'Essential for worker stamina', 'Easy materials, stable profit'],
+    alchemy: lang === 'tr'
+      ? ['Alchemy mastery için iyi', 'Combat iksiri, yüksek talep', 'Processing XP için popüler']
+      : ['Good for alchemy mastery', 'Combat elixir, high demand', 'Popular for processing XP']
+  };
+  const tipList = r.type === 'culinary' ? tips.culinary : tips.alchemy;
+  const tip = tipList[r.id % tipList.length];
+
+  const craftableFooter = r.hasAll
+    ? `<div class="craftable-big">
+        <span class="craftable-num">${r.craftable.toLocaleString()}×</span>
+        <span class="craftable-label">${s.craftableLabel}</span>
+        ${priceStr ? `<span style="font-size:0.78rem;color:var(--text-dim);margin-left:0.5rem;">${priceStr}</span>` : ''}
+      </div>`
+    : `<div class="craftable-big">
+        <span class="craftable-num-red">${r.haveCount}/${r.totalCount}</span>
+        <span class="craftable-label">${s.badgeMats}</span>
+      </div>`;
+
+  return `<div class="recipe-card ${r.hasAll ? 'card-craftable' : ''}" data-item-id="${r.outputItemId || ''}">
     <div class="recipe-card-header">${iconHtml}<div class="recipe-name">${r.name}</div>${badge}</div>
     <div class="recipe-card-body">
       <div class="recipe-station">🏠 ${r.skillLevel || ''} · ${craftStation}</div>
       <div>${rows}</div>
+      ${tip ? `<div style="font-size:0.8rem;color:var(--text-dim);font-style:italic;border-left:2px solid var(--border-gold);padding-left:0.6rem;margin-top:0.6rem;">| ${tip}</div>` : ''}
     </div>
     <div class="card-footer-row">
       ${craftableFooter}
@@ -930,6 +1042,29 @@ function renderGrid(id, recipes, emptyMsg) {
   document.getElementById(id).innerHTML = recipes.length
     ? recipes.map(renderCard).join('')
     : `<div class="empty-state">${emptyMsg}</div>`;
+  // Fetch prices async and update cards
+  if (recipes.length) fetchAndUpdatePrices(recipes);
+}
+
+async function fetchAndUpdatePrices(recipes) {
+  for (const r of recipes) {
+    if (!r.outputItemId || !r.hasAll) continue;
+    const price = await fetchItemPrice(r.outputItemId);
+    if (!price) continue;
+    // Update all cards with this item id
+    document.querySelectorAll(`[data-item-id="${r.outputItemId}"]`).forEach(card => {
+      const footer = card.querySelector('.craftable-big');
+      if (!footer) return;
+      const existing = footer.querySelector('.price-tag');
+      if (existing) return;
+      const label = lang === 'tr' ? 'Gümüş/adet' : 'Silver/unit';
+      const tag = document.createElement('span');
+      tag.className = 'price-tag';
+      tag.style.cssText = 'font-size:0.78rem;color:var(--text-dim);margin-left:0.5rem;';
+      tag.textContent = `~${formatSilver(price)} ${label}`;
+      footer.appendChild(tag);
+    });
+  }
 }
 
 function rerenderResults() {
