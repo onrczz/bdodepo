@@ -758,6 +758,7 @@ function openPicker(editIdx) {
 
   document.body.appendChild(overlay);
   document.body.appendChild(popup);
+  popup.addEventListener('click', e => e.stopPropagation());  // prevent overlay close on popup click
 
   let selectedId = isNew ? null : item.item_id;
   let selectedName = isNew ? null : item.name;
