@@ -567,6 +567,7 @@ Return ONLY JSON:
 
 // ── CODEX RECIPES ─────────────────────────────────────────────────────────
 async function fetchCodexRecipes(type) {
+  // Always fetch English (us) for ingredient name matching
   for (const s of [500, 300, 100]) {
     try {
       const resp = await fetch(`${CODEX_PROXY}?a=recipes&type=${type}&l=us&o=0&s=${s}`);
@@ -586,18 +587,38 @@ function parseCodexRow(row) {
   const id = row[0];
   const nameHtml = typeof row[2] === 'string' ? row[2] : (typeof row[1] === 'string' ? row[1] : '');
   const name = (nameHtml.match(/<b>(.*?)<\/b>/) || [])[1] || `Recipe ${id}`;
-  const idStr = row[9] || '[]';
   const ingHtml = row[5] || '';
   const outHtml = row[7] || '';
   const skillObj = row[3] || {};
   const skillLevel = typeof skillObj === 'object' ? (skillObj.display || '') : String(skillObj);
-  let ingredientIds = [];
-  try { ingredientIds = JSON.parse(idStr); } catch(e) {}
-  if (!ingredientIds.length && ingHtml) {
-    const htmlIds = [...ingHtml.matchAll(/data-id="item--(\d+)"/g)].map(m => parseInt(m[1]));
-    if (htmlIds.length) ingredientIds = htmlIds;
+
+  // Parse ingredients from HTML — each ingredient block has data-id AND quantity
+  // This handles repeated ingredients correctly (e.g. Chicken Meat appearing twice)
+  const ingredientIds = [];
+  const quantities = [];
+
+  // Try parsing paired data-id + quantity from ingHtml
+  // Each ingredient wrapper typically has: data-id="item--XXXX" ... quantity_small nowrap>N
+  const ingBlocks = ingHtml.split(/(?=<td[^>]*data-id)/);
+  for (const block of ingBlocks) {
+    const idMatch = block.match(/data-id="item--(\d+)"/);
+    const qtyMatch = block.match(/quantity_small nowrap[^>]*>(\d+)/);
+    if (idMatch && qtyMatch) {
+      ingredientIds.push(parseInt(idMatch[1]));
+      quantities.push(parseInt(qtyMatch[1]));
+    }
   }
-  const quantities = [...ingHtml.matchAll(/quantity_small nowrap[^>]*>(\d+)/g)].map(m => parseInt(m[1]));
+
+  // Fallback to row[9] if HTML parsing fails
+  if (!ingredientIds.length) {
+    const idStr = row[9] || '[]';
+    try {
+      const ids = JSON.parse(idStr);
+      const qtys = [...ingHtml.matchAll(/quantity_small nowrap[^>]*>(\d+)/g)].map(m => parseInt(m[1]));
+      ids.forEach((id, i) => { ingredientIds.push(id); quantities.push(qtys[i] || 1); });
+    } catch(e) {}
+  }
+
   const iconMatch = outHtml.match(/src="\/items\/([^"]+)"/);
   const icon = iconMatch ? iconMatch[1] : '';
   const outputIdMatch = outHtml.match(/href="\/us\/item\/(\d+)\//);
