@@ -15,6 +15,7 @@
     --green: #4caf76; --red: #c95c4c;
     --shadow: rgba(0,0,0,0.4);
   }
+
   body.light {
     --gold: #8a5e10; --gold-light: #6b4a0e; --gold-dark: #c9a84c;
     --bg-deep: #f5f0e8; --bg-panel: #fffdf7; --bg-card: #f0ebe0; --bg-hover: #e8e0d0;
@@ -23,12 +24,12 @@
     --green: #2d7a4f; --red: #b03020;
     --shadow: rgba(0,0,0,0.1);
   }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--bg-deep); color: var(--text); font-family: 'Crimson Pro', serif; min-height: 100vh; transition: background 0.3s, color 0.3s; }
   body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(76,138,201,0.03) 0%, transparent 50%); pointer-events: none; z-index: 0; }
   .container { max-width: 1100px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; }
 
-  /* Header */
   header { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--border-gold); margin-bottom: 2rem; }
   .logo-line { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 0.4rem; }
   h1 { font-family: 'Cinzel', serif; font-size: 2rem; color: var(--gold); letter-spacing: 0.1em; }
@@ -40,10 +41,6 @@
   .theme-btn { padding: 0.4rem 0.8rem; }
   .divider-btn { width: 1px; height: 20px; background: var(--border-gold); margin: 0 0.2rem; }
 
-  /* Dev banner */
-  @keyframes devpulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
-
-  /* Upload */
   .upload-zone { border: 2px dashed var(--border-gold); border-radius: 4px; padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--bg-panel); }
   .upload-zone:hover, .upload-zone.drag-over { border-color: var(--gold); background: var(--bg-card); }
   .upload-icon { font-size: 3rem; display: block; margin-bottom: 1rem; animation: float 3s ease-in-out infinite; }
@@ -52,11 +49,8 @@
   .upload-zone p { color: var(--text-dim); }
   #file-input { display: none; }
 
-  /* Preview */
   .preview-section { display: none; gap: 1.5rem; margin-top: 1.5rem; }
   .preview-section.visible { display: grid; grid-template-columns: 300px 1fr; }
-  .preview-section.saved-mode { grid-template-columns: 1fr !important; }
-  .preview-section.saved-mode .preview-card { display: none !important; }
   .preview-card { background: var(--bg-panel); border: 1px solid var(--border-gold); border-radius: 4px; overflow: hidden; }
   .preview-card img { width: 100%; height: auto; max-height: 300px; object-fit: contain; display: block; background: var(--bg-deep); }
   .card-footer { padding: 0.8rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.8rem; }
@@ -69,7 +63,6 @@
   .btn-secondary { background: transparent; border: 1px solid var(--border-gold); color: var(--text-dim); }
   .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
 
-  /* AI Panel */
   .ai-panel { background: var(--bg-panel); border: 1px solid var(--border-gold); border-radius: 4px; padding: 1.2rem 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
   .ai-panel-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; display: flex; align-items: center; gap: 0.6rem; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; transition: background 0.3s; }
@@ -80,21 +73,25 @@
   .ai-status-text { color: var(--text-dim); font-size: 0.95rem; font-style: italic; }
 
   .items-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; max-height: 220px; overflow-y: auto; }
-  .item-tag { background: var(--bg-card); border: 1px solid var(--border); border-radius: 2px; padding: 0.3rem 0.7rem; font-size: 0.85rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; cursor: pointer; border-color: var(--border-gold); }
-  .item-tag:hover { border-color: var(--gold); background: var(--bg-hover); }
-  .item-tag[draggable="true"] { cursor: grab; }
-  .item-tag[draggable="true"]:active { cursor: grabbing; }
+  .item-tag { background: var(--bg-card); border: 1px solid var(--border); border-radius: 2px; padding: 0.3rem 0.7rem; font-size: 0.85rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
   .item-tag .qty { color: var(--gold); font-weight: 600; font-size: 0.8rem; }
-  .item-tag .delete-btn { color: var(--red); font-size: 0.75rem; cursor: pointer; opacity: 0.6; margin-left: 0.2rem; }
+  .item-tag.editable { cursor: pointer; border-color: var(--border-gold); }
+  .item-tag.editable:hover { border-color: var(--gold); background: var(--bg-hover); }
+  .item-tag .delete-btn { color: var(--red); font-size: 0.75rem; cursor: pointer; opacity: 0.6; margin-left: 0.2rem; display: none; }
+  .item-tag.editable .delete-btn { display: inline; }
   .item-tag .delete-btn:hover { opacity: 1; }
-
-  /* Buttons */
+  .edit-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg-panel); border: 1px solid var(--gold); border-radius: 4px; padding: 1.5rem; z-index: 200; width: 320px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); }
+  .edit-popup h3 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 0.9rem; margin-bottom: 1rem; }
+  .edit-popup label { font-size: 0.82rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.3rem; }
+  .edit-popup input { width: 100%; background: var(--bg-deep); border: 1px solid var(--border-gold); border-radius: 2px; padding: 0.5rem 0.8rem; color: var(--text-bright); font-family: 'Crimson Pro', serif; font-size: 0.95rem; outline: none; margin-bottom: 0.8rem; }
+  .edit-popup input:focus { border-color: var(--gold); }
+  .edit-popup-btns { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+  .edit-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
   .btn-inline { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em; padding: 0.25rem 0.7rem; border-radius: 2px; border: 1px solid var(--border-gold); background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
   .btn-inline:hover { border-color: var(--gold); color: var(--gold); }
   .btn-inline-add { border-color: var(--green); color: var(--green); }
   .btn-inline-add:hover { background: rgba(76,175,118,0.1); }
 
-  /* Results */
   .results-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-gold); flex-wrap: wrap; gap: 0.8rem; }
   .results-header { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.1rem; letter-spacing: 0.08em; margin: 0; padding: 0; border: none; }
   .export-btns { display: flex; gap: 0.5rem; }
@@ -112,7 +109,6 @@
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  /* Recipe Cards */
   .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
   .recipe-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: all 0.25s; position: relative; box-shadow: 0 2px 8px var(--shadow); }
   .recipe-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0; transition: opacity 0.3s; }
@@ -136,8 +132,9 @@
   .ing-req  { color: var(--text-dim); font-size: 0.78rem; }
   .ing-name-missing { color: var(--red); }
   .card-craftable { border-color: rgba(76,175,118,0.35) !important; }
+  .card-craftable::after { content: ''; position: absolute; inset: 0; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(76,175,118,0.2); pointer-events: none; }
   .recipe-station { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.6rem; opacity: 0.8; }
-  .craftable-big { display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap; }
+  .craftable-big { display: flex; align-items: baseline; gap: 0.4rem; }
   .craftable-num { font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--green); font-weight: 700; }
   .craftable-num-red { font-family: 'Cinzel', serif; font-size: 1rem; color: #e8943a; font-weight: 700; }
   .craftable-label { font-size: 0.8rem; color: var(--text-dim); }
@@ -146,32 +143,6 @@
   .codex-link:hover { opacity: 1; text-decoration: underline; }
   .empty-state { text-align: center; padding: 3rem; color: var(--text-dim); font-style: italic; }
 
-  /* Edit popup */
-  .edit-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg-panel); border: 1px solid var(--gold); border-radius: 4px; padding: 1.5rem; z-index: 200; width: 320px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); }
-  .edit-popup h3 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 0.9rem; margin-bottom: 1rem; }
-  .edit-popup label { font-size: 0.82rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.3rem; }
-  .edit-popup input { width: 100%; background: var(--bg-deep); border: 1px solid var(--border-gold); border-radius: 2px; padding: 0.5rem 0.8rem; color: var(--text-bright); font-family: 'Crimson Pro', serif; font-size: 0.95rem; outline: none; margin-bottom: 0.8rem; }
-  .edit-popup input:focus { border-color: var(--gold); }
-  .edit-popup-btns { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-  .edit-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
-
-  /* Quick picker */
-  .picker-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; }
-  .picker-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg-panel); border: 1px solid var(--gold); border-radius: 4px; z-index: 201; width: 380px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,0.7); }
-  .picker-header { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .picker-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 0.85rem; }
-  .picker-search-wrap { padding: 0.5rem; }
-  .picker-search { width: 100%; background: var(--bg-deep); border: 1px solid var(--border-gold); border-radius: 2px; padding: 0.5rem 0.8rem; color: var(--text-bright); font-family: 'Crimson Pro', serif; font-size: 0.85rem; outline: none; }
-  .picker-search:focus { border-color: var(--gold); }
-  .picker-list { overflow-y: auto; max-height: 40vh; }
-  .picker-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0.8rem; cursor: pointer; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
-  .picker-row:hover { background: var(--bg-hover); }
-  .picker-row.selected { background: var(--bg-hover); border-left: 2px solid var(--gold); }
-  .picker-qty-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; border-top: 1px solid var(--border); }
-  .picker-qty-input { width: 80px; background: var(--bg-deep); border: 1px solid var(--gold); border-radius: 2px; padding: 0.3rem 0.5rem; color: var(--text-bright); font-size: 0.85rem; outline: none; }
-  .picker-confirm { background: linear-gradient(135deg, var(--gold-dark), var(--gold)); color: #fff; border: none; border-radius: 2px; padding: 0.35rem 0.8rem; cursor: pointer; font-family: 'Cinzel', serif; font-size: 0.75rem; }
-
-  /* Loading */
   .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(10,8,6,0.85); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 1.5rem; }
   body.light .loading-overlay { background: rgba(245,240,232,0.88); }
   .loading-overlay.visible { display: flex; }
@@ -180,19 +151,42 @@
   .loading-text { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1rem; letter-spacing: 0.1em; text-align: center; }
   .loading-sub { color: var(--text-dim); font-size: 0.9rem; font-style: italic; }
   ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-deep); } ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
-  @media (max-width: 700px) { .preview-section.visible { grid-template-columns: 1fr; } .recipe-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
+  .preview-section.saved-mode { grid-template-columns: 1fr; }
+  .preview-section.saved-mode .preview-card { display: none; } .preview-section.visible { grid-template-columns: 1fr; } .recipe-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
 </style>
 </head>
 <body>
 <div class="container">
-
-  <div id="dev-banner" style="background:rgba(0,255,100,0.08);border:1px solid #00ff64;border-radius:4px;padding:0.5rem 1rem;text-align:center;margin-bottom:0.5rem;font-family:'Cinzel',serif;font-size:0.8rem;letter-spacing:0.08em;color:#00ff64;text-shadow:0 0 8px #00ff6480;animation:devpulse 2s ease-in-out infinite;">
+  <div id="dev-banner" style="
+    background: rgba(0,255,100,0.08);
+    border: 1px solid #00ff64;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    color: #00ff64;
+    text-shadow: 0 0 8px #00ff6480;
+    animation: devpulse 2s ease-in-out infinite;
+  ">
     ⚠ <span id="dev-banner-text">Geliştirme Aşamasında — Veriler Doğru Çıkmayabilir</span> ⚠
   </div>
-  <div id="feedback-banner" style="text-align:center;margin-bottom:1.5rem;font-family:'Crimson Pro',serif;font-size:0.78rem;color:#00cc50;letter-spacing:0.04em;opacity:0.8;">
+  <div id="feedback-banner" style="
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.78rem;
+    color: #00cc50;
+    letter-spacing: 0.04em;
+    opacity: 0.8;
+  ">
     <span id="feedback-text">Geri bildirim için TR MENA'da Oyundan AppA aile adıyla ulaşabilirsiniz</span>
   </div>
-
+  <style>
+    @keyframes devpulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  </style>
   <header>
     <div class="logo-line">
       <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
@@ -219,7 +213,7 @@
   </div>
 
   <div class="preview-section" id="preview-section">
-    <div class="preview-card" id="preview-card">
+    <div class="preview-card">
       <img id="preview-img" src="" alt="Depo">
       <div class="card-footer">
         <button class="btn btn-secondary" id="change-btn">↩ Değiştir</button>
@@ -236,9 +230,8 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
           <div style="font-size:0.8rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;" id="detected-label">Tespit Edilen Malzemeler</div>
           <div style="display:flex;gap:0.5rem;">
-            <button class="btn-inline btn-inline-add" id="add-item-btn" onclick="openPicker(-1)">+ <span id="add-label">Ekle</span></button>
+            <button class="btn-inline btn-inline-add" id="add-item-btn" onclick="addNewItem()">+ <span id="add-item-label">Ekle</span></button>
             <button class="btn-inline" id="reset-btn" onclick="resetInventory()" style="display:none;">↺ Sıfırla</button>
-            <button class="btn-inline" id="edit-toggle-btn" onclick="toggleEditMode()">✏ Düzenle</button>
           </div>
         </div>
         <div class="items-grid" id="items-grid"></div>
@@ -250,6 +243,7 @@
   </div>
 
   <div id="results-section">
+    <!-- Summary Panel -->
     <div id="summary-panel" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;">
       <div style="background:var(--bg-card);border:1px solid var(--border-gold);border-radius:4px;padding:1rem;text-align:center;">
         <span id="stat-items" style="font-family:'Cinzel',serif;font-size:1.8rem;color:var(--gold);display:block;">-</span>
@@ -294,99 +288,163 @@
 const PROXY_URL   = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/';
 const CODEX_PROXY = 'https://bdo-api-proxy.onurcilhoroz.workers.dev/codex';
 const ICON_BASE   = 'https://bdocodex.com/items/';
-const MATERIALS_LIST = "Abalone, Acacia Plank, Acacia Plywood, Acacia Timber, Agar, Aloe, Amanita Mushroom, Amanita Mushroom Crate, Ancient Kutum's Fragment, Ancient Mushroom, Ancient Mushroom Crate, Apple, Arrow Mushroom, Arrow Mushroom Crate, Ash Plank, Ash Plywood, Ash Timber, Bag of Muddy Water, Banana, Barley, Barley Crate, Barley Dough, Barley Flour, Bat Blood, Bean Sprouts, Bear Blood, Big Amanita Mushroom, Big Ancient Mushroom, Big Arrow Mushroom, Big Bluffer Mushroom, Big Cloud Mushroom, Big Dwarf Mushroom, Big Emperor Mushroom, Big Fog Mushroom, Big Fortune Teller Mushroom, Big Ghost Mushroom, Big Hump Mushroom, Big Sky Mushroom, Big Tiger Mushroom, Birch Plank, Birch Plywood, Birch Timber, Black Crystal, Black Gold Ingot, Black Stone Powder, Blood Ruby, Blue Coral, Blue Crystal, Bluffer Mushroom, Bluffer Mushroom Crate, Bottle of Clean Water, Bottle of River Water, Bottle of Sea Water, Bottle of Turbid Water, Bouquet Mushroom, Bouquet Mushroom Crate, Brass Ingot, Breezy White Coral, Broken Shell, Bronze Ingot, Bunch of Dry Mane Grass, Bunch of Fire Flake Flowers, Bunch of Silk Honey Grass, Bunch of Silver Azaleas, Butter, Cabbage, Cactus Rind, Cactus Thorn, Caphras Tree Plank, Caphras Tree Plywood, Caphras Tree Timber, Carrot Crate, Cedar Plank, Cedar Plywood, Cedar Timber, Chanterelle Box, Cheese, Cheetah Dragon Blood, Cherry, Chicken Feed, Chicken Meat, Chowder, Cinnamon, Citron, Clear Liquid Reagent, Cloud Mushroom, Cloud Mushroom Crate, Clown's Blood, Coal, Cobra Blood, Coconut, Cone Snail, Cooking Honey, Cooking Oil, Cooking Wine, Copper Ingot, Copper Ore, Coral Crystal, Coral Piece, Corn, Corn Crate, Corn Dough, Corn Flour, Cotton, Cracked Fang, Cream, Cucumber, Dalvenia Alrea, Dalvenia Alrea Crate, Date Palm, Daybreak Blue Coral, Deer Blood, Desert Herb, Diamond, Diamond Starfish, Dictyophora Box, Dinosaur Blood, Distilled Water, Dressing, Dried Abalone, Dried Diamond Starfish, Dried Filefish, Dried Fish, Dried Lobster, Dried Pearl Oyster Flesh, Dry Mane Grass, Dry Mane Grass Crate, Dwarf Mushroom, Dwarf Mushroom Crate, Egg, Elder Tree Plank, Elder Tree Plywood, Elder Tree Timber, Elixir of Regeneration, Elkarr, Emerald, Emperor Mushroom, Emperor Mushroom Crate, Essence of Liquor, Everlasting Herb, Everlasting Herb Crate, Eyelash Cup, Fertile Oil-Rich Soil, Fig, Fir Plank, Fir Plywood, Fir Timber, Fire Flake Flower, Fire Flake Flower Crate, Fish, Five-Star Starfish, Flamingo Blood, Flawless Spirit Stone, Flax, Fog Mushroom, Fog Mushroom Crate, Forest Emerald, Fortune Teller Mushroom, Fortune Teller Mushroom Crate, Fox Blood, Freekeh, Freekeh Flour, Freekeh Flour Dough, Garlic, Garlic Crate, Gem Polisher, Ghost Mushroom, Ghost Mushroom Crate, Giant Pearl Clam, Giant Sea Anemone, Glossy Bone Piece, Glue, Goat Blood, Gold Ingot, Gold Ore, Gold Topaz, Golden Coral, Golden Pearl, Golden Sun Coral, Grape, Grape Crate, Green Coral, Green Crystal, Hard Pillar, Haystack, High-quality Amanita Mushroom, High-quality Ancient Mushroom, High-quality Arrow Mushroom, High-quality Barley, High-quality Barley Crate, High-quality Bluffer Mushroom, High-quality Bouquet Mushroom, High-quality Carrot Crate, High-quality Citron, High-quality Cloud Mushroom, High-quality Corn, High-quality Corn Crate, High-quality Dalvenia Alrea, High-quality Dry Mane Grass, High-quality Dwarf Mushroom, High-quality Emperor Mushroom, High-quality Everlasting Herb, High-quality Fire Flake Flower, High-quality Fog Mushroom, High-quality Fortune Teller Mushroom, High-quality Garlic, High-quality Garlic Crate, High-quality Ghost Mushroom, High-quality Grape, High-quality Grape Crate, High-quality Haystack, High-quality Hot Pepper, High-quality Hot Pepper Crate, High-quality Hump Mushroom, High-quality Leccinum, High-quality Nolina, High-quality Olive, High-quality Olive Crate, High-quality Onion, High-quality Onion Crate, High-quality Paprika, High-quality Paprika Crate, High-quality Penestraria, High-quality Pepper, High-quality Pepper Crate, High-quality Potato, High-quality Potato Crate, High-quality Pumpkin, High-quality Pumpkin Crate, High-quality Silk Honey Grass, High-quality Silver Azalea, High-quality Sky Mushroom, High-quality Strawberry, High-quality Strawberry Crate, High-quality Sunflower, High-quality Sunflower Crate, High-quality Sunrise Herb, High-quality Sweet Potato, High-quality Sweet Potato Crate, High-quality Tiger Mushroom, High-quality Tomato, High-quality Tomato Crate, High-quality Truffle Mushroom, High-quality Wheat, High-quality Wheat Crate, Hops, Hot Pepper, Hot Pepper Crate, Hump Mushroom, Hump Mushroom Crate, Indigo Lapis Lazuli, Insectivore Plant Flower, Insectivore Plant Leaf, Insectivore Plant Root, Insectivore Plant Stalk, Iron Ingot, Iron Ore, Jade, Jade Coral Ingot, Kelp, Keplan Horn Cocoon, Kuku Bird Blood, Kuku Bird Meat, Lapis Lazuli, Lead Ingot, Lead Ore, Leavening Agent, Leccinum, Leccinum Crate, Legendary Beast's Blood, Lemoria Plywood, Lion Blood, Lizard Blood, Llama Blood, Lobster, Log, Loopy Tree Plank, Loopy Tree Plywood, Loopy Tree Timber, Mandragora Essence, Maple Plank, Maple Plywood, Maple Timber, Margoria Dark Iron, Marmot Blood, Meju, Melted Copper Shard, Melted Gold Shard, Melted Iron Shard, Melted Lead Shard, Melted Mythril Shard, Melted Nickel Shard, Melted Noc Shard, Melted Platinum Shard, Melted Silver Shard, Melted Tin Shard, Melted Titanium Shard, Melted Vanadium Shard, Melted Zinc Shard, Mesima Box, Metal Solvent, Milk, Mineral Water, Monkey Blood, Moonlight Opal, Moss Tree Plank, Moss Tree Plywood, Moss Tree Timber, Mud Crystal, Mungbean, Mythril, Mythril Ingot, Nickel Ingot, Nickel Ore, Noc Ingot, Noc Ore, Nolina, Nolina Crate, Nouver's Hide, Nutmeg, Obsidian Ore, Ocean Hermit Crab, Ocean Horizon Key, Ocean Sapphire, Ogre Blood, Oil of Corruption, Oil of Fortitude, Oil of Regeneration, Oil of Storms, Oil of Tranquility, Oil of the Abyss, Old Tree Branch, Olive, Olive Crate, Olive Oil, Olucas, Onion, Onion Crate, Ouk Pill of Time and Tide, Ox Blood, Oyster, Palm Plank, Palm Plywood, Palm Timber, Paprika, Paprika Crate, Pear, Penestraria, Penestraria Crate, Pepper, Pepper Crate, Perilla Oil, Pie Mushroom, Pie Mushroom Crate, Pig Blood, Pile of Sunrise Herbs, Pine Coated Plywood, Pine Plank, Pine Plywood, Pine Timber, Pineapple, Pink Tentacle, Pistachio, Platinum Ingot, Platinum Ore, Plywood Hardener, Polished Opal, Polished Stone, Pork, Potato, Potato Crate, Potato Dough, Potato Flour, Powder of Flame, Powder of Rifts, Powder of Time, Prairie Green Coral, Precious Black Crystal, Precious Blue Crystal, Precious Green Crystal, Precious Mud Crystal, Precious Red Crystal, Precious Translucent Crystal, Precious Violet Crystal, Processed Coal, Pumpkin, Pumpkin Crate, Pure Copper Crystal, Pure Gold Crystal, Pure Iron Crystal, Pure Lead Crystal, Pure Mythril Crystal, Pure Nickel Crystal, Pure Noc Crystal, Pure Platinum Crystal, Pure Powder Reagent, Pure Silver Crystal, Pure Tin Crystal, Pure Titanium Crystal, Pure Vanadium Crystal, Pure Zinc Crystal, Purple Mushroom, Purple Mushroom Crate, Quartz, Raccoon Blood, Raisin Bread, Reagent of Harmonious Spirits, Red Bean, Red Coral, Red Crystal, Red Pepper Powder, Red Sauce, Red Shellfish, Red-spotted Amanita Box, Remnants of Burnt Spirits, Rhino Blood, Rock Elephant Blood, Roe, Rose, Rough Black Crystal, Rough Blue Crystal, Rough Diamond, Rough Emerald, Rough Green Crystal, Rough Jade, Rough Lapis Lazuli, Rough Mud Crystal, Rough Obsidian Ore, Rough Opal, Rough Opulent Crystal, Rough Red Crystal, Rough Ruby, Rough Sapphire, Rough Stone, Rough Stone Plus, Rough Topaz, Rough Translucent Crystal, Rough Violet Crystal, Round Head Corals, Ruby, Rye, Salt, Sapphire, Scorpion Blood, Sea Anemone, Seaweed, Sheep Blood, Shrimp, Silk Honey Grass, Silk Honey Grass Crate, Silver Azalea, Silver Azalea Crate, Silver Ingot, Silver Ore, Sinner's Blood, Sky Mushroom, Sky Mushroom Crate, Small Tree Plywood, Snowfield Cedar Plank, Snowfield Cedar Plywood, Snowfield Cedar Timber, Some Miner's Sack, Soy Sauce, Soybean, Soybean Paste, Special Acacia Seed, Special Amanita Mushroom, Special Ancient Mushroom, Special Arrow Mushroom, Special Barley, Special Bluffer Mushroom, Special Chicken Feed, Special Citron, Special Cloud Mushroom, Special Corn, Special Dry Mane Grass, Special Dwarf Mushroom, Special Emperor Mushroom, Special Everlasting Herb, Special Fire Flake Flower, Special Fog Mushroom, Special Fortune Teller Mushroom, Special Garlic, Special Ghost Mushroom, Special Grape, Special Haystack, Special Hot Pepper, Special Hump Mushroom, Special Olive, Special Onion, Special Paprika, Special Pepper, Special Potato, Special Pumpkin, Special Silk Honey Grass, Special Silver Azalea, Special Sky Mushroom, Special Strawberry, Special Strawberry Crate, Special Sunflower, Special Sunrise Herb, Special Sweet Potato, Special Tiger Mushroom, Special Tomato, Special Truffle Mushroom, Special Wheat, Spirit's Leaf, Standardized Timber Square, Star Anise, Star Anise Mushroom, Star Diamond, Steel, Stone of Malice, Strawberry, Strawberry Crate, Sturdy Acacia Plywood, Sturdy Ash Plywood, Sturdy Birch Plywood, Sturdy Caphras Tree Plywood, Sturdy Cedar Plywood, Sturdy Elder Tree Plywood, Sturdy Fir Plywood, Sturdy Loopy Tree Plywood, Sturdy Maple Plywood, Sturdy Moss Tree Plywood, Sturdy Palm Plywood, Sturdy Pine Plywood, Sturdy Snowfield Cedar Plywood, Sturdy Thornwood Plywood, Sturdy Thuja Plywood, Sturdy Timber Square, Sturdy White Cedar Plywood, Sugar, Sulfur, Sunflower, Sunflower Crate, Sunrise Herb, Sunrise Herb Crate, Sweet Potato, Sweet Potato Crate, Sweet Potato Dough, Sweet Potato Flour, Tangleweed, Teff, Teff Flour, Teff Flour Dough, Tenacious Origin of Life, Thornwood Plank, Thornwood Plywood, Thornwood Timber, Thuja Plank, Thuja Plywood, Thuja Timber, Tiger Blood, Tiger Mushroom, Tiger Mushroom Crate, Tin Ingot, Tin Ore, Titanium Ingot, Titanium Ore, Tomato, Tomato Crate, Topaz, Toxic Watermelon, Trace of Death, Trace of Memory, Trace of Nature, Trace of Violence, Translucent Crystal, Translucent Ice, Tridana Giant Clam Shell, Tridana Giant Clam Shellfish, Troll Blood, Truffle Mushroom, Truffle Mushroom Crate, Tulip, Tulip Seed, Turban Shell, Twilight Red Coral, Tyrant's Blood, Usable Scantling, Vanadium Ingot, Vanadium Ore, Vine Noc Ingot, Vinegar, Violet Crystal, Waragon Blood, Water, Water Thyme, Weasel Blood, Wheat, Wheat Crate, Wheat Dough, Wheat Flour, White Cedar Plank, White Cedar Plywood, White Cedar Timber, White Coral, White Sauce, Wild Grass, Wise Man's Blood, Withered Leaf, Wolf Blood, Worm Blood, Yak Blood, Zinc Ingot, Zinc Ore";
 
 // ── PRICE CACHE ───────────────────────────────────────────────────────────
-const priceCache = {};
+const priceCache = {}; // itemId -> price in silver
+
 async function fetchItemPrice(itemId) {
   if (!itemId) return null;
   if (priceCache[itemId] !== undefined) return priceCache[itemId];
   try {
-    const resp = await fetch(`${CODEX_PROXY}?a=items&l=us&o=0&s=1&type=all&id=${itemId}`);
+    const resp = await fetch(`${CODEX_PROXY.replace('/codex','')}codex?a=items&l=us&o=0&s=1&type=all&id=${itemId}`);
     if (!resp.ok) { priceCache[itemId] = null; return null; }
     const text = await resp.text();
     if (text.trim().startsWith('<')) { priceCache[itemId] = null; return null; }
     const data = JSON.parse(text);
     const row = (data.aaData || [])[0];
     if (!row) { priceCache[itemId] = null; return null; }
+    // Price is usually in row[5] or row[6] as sort_value
     const priceObj = row[5] || row[6];
     const price = typeof priceObj === 'object' ? priceObj.sort_value : (typeof priceObj === 'number' ? priceObj : null);
     priceCache[itemId] = price && price > 0 ? price : null;
     return priceCache[itemId];
-  } catch(e) { priceCache[itemId] = null; return null; }
-}
-function formatSilver(v) {
-  if (!v) return null;
-  if (v >= 1000000) return (v/1000000).toFixed(1) + 'M';
-  if (v >= 1000) return Math.round(v/1000) + 'K';
-  return v.toLocaleString();
+  } catch(e) {
+    priceCache[itemId] = null;
+    return null;
+  }
 }
 
-// ── STRINGS ───────────────────────────────────────────────────────────────
+function formatSilver(amount) {
+  if (!amount) return null;
+  if (amount >= 1000000) return (amount/1000000).toFixed(1) + 'M';
+  if (amount >= 1000) return Math.round(amount/1000) + 'K';
+  return amount.toLocaleString();
+}
+
+// ── STRINGS (UI only - item names always stay in English from Codex) ──────
 const S = {
   tr: {
-    title: 'BDO Depo Analizi', subtitle: 'Depo ekran görüntüsü yükle — gerçek BDO Codex tarifleri ile analiz et',
-    uploadTitle: 'Depo Ekran Görüntüsü Yükle', uploadDesc: 'Tıkla veya sürükle bırak · PNG, JPG desteklenir',
-    changeBtn: '↩ Değiştir', analyzeBtn: '⚔ Analiz Et', aiPanel: 'Durum', detectedLabel: 'Tespit Edilen Malzemeler',
-    statusReady: 'Analiz etmek için butona bas.', statusReading: 'Malzemeler okunuyor...',
-    statusDone: n => `✓ ${n} malzeme bulundu, tarifler listeleniyor.`, statusErr: 'Hata: ',
+    title: 'BDO Depo Analizi',
+    subtitle: 'Depo ekran görüntüsü yükle — gerçek BDO Codex tarifleri ile analiz et',
+    uploadTitle: 'Depo Ekran Görüntüsü Yükle',
+    uploadDesc: 'Tıkla veya sürükle bırak · PNG, JPG desteklenir',
+    changeBtn: '↩ Değiştir', analyzeBtn: '⚔ Analiz Et',
+    aiPanel: 'Durum', detectedLabel: 'Tespit Edilen Malzemeler',
+    statusReady: 'Analiz etmek için butona bas.',
+    statusReading: 'Malzemeler okunuyor...',
+    statusDone: n => `✓ ${n} malzeme bulundu, tarifler listeleniyor.`,
+    statusErr: 'Hata: ',
     resultsHeader: '⚗ Gerçek BDO Tarifleri — BDO Codex',
-    tabCulinary: '🍲 Aşçılık', tabAlchemy: '⚗ Kimya', tabBest: '★ En Karlı',
+    tabCulinary: '🍲 Aşçılık', tabAlchemy: '⚗ Kimya',
     loadRead: 'Malzemeler Okunuyor', loadReadSub: 'Yapay zeka deponu analiz ediyor...',
     loadCodex: 'BDO Codex Sorgulanıyor', loadCodexSub: 'Gerçek tarifler getiriliyor...',
     emptyCulinary: 'Bu malzemelerle eşleşen aşçılık tarifi bulunamadı.',
     emptyAlchemy: 'Bu malzemelerle eşleşen kimya tarifi bulunamadı.',
-    emptyBest: 'Yapılabilir tarif bulunamadı.',
     craftable: n => `${n}× üretilebilir`, craftableLabel: 'üretilebilir',
     badgeMats: 'malzeme mevcut', missingLabel: 'Eksik',
-    codexLink: "→ Codex'te Gör", need: 'gerekli',
+    codexLink: '→ Codex\'te Gör', need: 'gerekli',
     themeLight: 'Aydınlık', themeDark: 'Karanlık',
     exportCSV: '⬇ CSV', exportSheets: '📊 Google Sheets',
-    addBtn: '+ Ekle', resetBtn: '↺ Sıfırla', editBtn: '✏ Düzenle', doneBtn: '✓ Tamam',
-    saveBtn: 'Kaydet', deleteBtn: 'Sil', cancelBtn: 'İptal',
-    editTitle: 'Malzeme Düzenle', addTitle: 'Yeni Malzeme Ekle',
-    nameLbl: 'İsim', qtyLbl: 'Miktar',
+    editBtn: '✏ Düzenle', doneBtn: '✓ Tamam',
+    addBtn: '+ Ekle', saveBtn: 'Kaydet', deleteBtn: 'Sil', cancelBtn: 'İptal',
+    editTitle: 'Malzeme Düzenle', addTitle: 'Malzeme Ekle',
+    nameLbl: 'İsim', idLbl: 'Item ID (opsiyonel)', qtyLbl: 'Miktar',
     devBanner: '⚠ Geliştirme Aşamasında — Veriler Doğru Çıkmayabilir ⚠',
-    feedbackText: "Geri bildirim için TR MENA'da Oyundan AppA aile adıyla ulaşabilirsiniz",
-    pickerSearch: 'Item ara...', pickerAddConfirm: 'Ekle',
-    statItems: 'Malzeme Türü', statRecipes: 'Yapılabilir Tarif', statBest: 'En İyi Seçenek',
-    findRecipes: '🔍 Tarifleri Bul', silver: 'Gümüş', perUnit: '/adet',
-    tips: {
-      culinary: ['Lifeskill XP ve stamina recovery için popüler','Yüksek talep, iyi XP','Worker stamina için çok gerekli','Kolay malzeme, stabil kazanç'],
-      alchemy:  ['Alchemy mastery için iyi','Combat iksiri, yüksek talep','Processing XP için popüler']
-    }
+    feedbackText: 'Geri bildirim için TR MENA\'da Oyundan AppA aile adıyla ulaşabilirsiniz',
+    perUnit: '/adet',
+    silver: 'Gümüş',
+    lifeskillTip: 'Lifeskill XP ve stamina recovery için popüler',
+    workerTip: 'Worker stamina için çok gerekli',
+    highDemandTip: 'Yüksek demand, iyi XP',
+    // Image prompt — always asks for English item names (original Codex names)
+    imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
+Examine each icon CAREFULLY — shape, color, texture — then identify the item. Read the quantity number below.
+
+RULES:
+- Grid: 8 columns, left to right, top to bottom
+- QUANTITY: B=thousands (415B=415000, 297B=297000), M=millions. Write full integer
+- Skip empty cells. Use EXACT names from COMPLETE ITEM LIST below.
+
+VISUAL IDENTIFICATION GUIDE:
+- Raw Ores = rough stone chunks: Copper Ore=reddish-brown, Iron Ore=dark grey, Silver Ore=light grey, Zinc Ore=bluish-grey, Gold Ore=yellow, Coal=black, Lead Ore=dark blue-grey, Titanium Ore=bright white, Noc Ore=green-tinted
+- CRATES = brown WOODEN BOX with rope binding — completely different shape from raw materials!
+- Timber = cut log/wood pieces. Ash=light brown, Maple=medium brown, Pine=darker with rings
+- Plywood = flat stacked planks; Plank = single flat board
+- Mushrooms: Fortune Teller=colorful spotted, Arrow=pointy cap, Emperor=large crown, Big versions = larger glowing version of same mushroom
+- Alchemy Powders: Powder of Flame=red/orange, Powder of Rifts=purple/dark, Powder of Time=blue/teal, Black Stone Powder=black
+- Special drops: Cracked Fang=broken tooth, Withered Leaf=dried brown leaf, Spirit's Leaf=glowing green leaf, Bag of Muddy Water=muddy brown bottle, Some Miner's Sack=cloth bag
+- Rough gems: Ruby=red, Emerald=green, Sapphire=blue, Diamond=clear, Topaz=yellow, Translucent Crystal=clear/white crystal
+- Dried fish: flat dried fish icon — Dried Filefish, Dried Fish etc.
+- Herbs: Sunrise Herb=orange flower, Fire Flake Flower=red, Silver Azalea=purple, Monk Branch=branch, Dragon Root=root
+- Vegetables: Potato=beige oval, Corn=yellow cob, Pumpkin=orange round, Onion=purple bulb, Garlic=white bulb
+- Blood = colored liquid vials/bottles; Cloth: Flax=brown fibres, Cotton=white fluffy, Wool=grey fluffy
+
+COMPLETE ITEM LIST (use ONLY these exact names):
+Aal's Sanctuary Candle Stand, Abalone, Abyssal Gem, Acacia Plank, Acacia Plywood, Acacia Plywood Hardener, Acacia Sap, Acacia Timber, Acacia Tree, Agar, Alchemist's Lamp, Alchemist's Small Lamp, Aloe, Aloe Cookie, Aloe Yogurt, Amanita Mushroom, Amanita Mushroom Crate, Amanita Mushroom Crop, Amanita Mushroom Hypha, An Anthology of the Ancient Kingdom, Ancient Kutum's Fragment, Ancient Mushroom, Ancient Mushroom Crate, Ancient Mushroom Crop, Ancient Mushroom Hypha, Angel's Pedestal, Antidote Elixir, Apple, Apple Tree, Arrow Mushroom, Arrow Mushroom Crate, Arrow Mushroom Crop, Arrow Mushroom Hypha, Ash Plank, Ash Plywood, Ash Sap, Ash Timber, Ash Tree, Assorted Side Dishes, Audria, Bag of Muddy Water, Balenos Meal, Banana, Barley, Barley Crate, Barley Dough, Barley Flour, Bat Blood, Bath of Origins, Bean Sprouts, Bear Blood, Beer, Beeswax, Beryl, Big Amanita Mushroom, Big Ancient Mushroom, Big Arrow Mushroom, Big Bluffer Mushroom, Big Bouquet Mushroom, Big Cloud Mushroom, Big Dwarf Mushroom, Big Emperor Mushroom, Big Fog Mushroom, Big Fortune Teller Mushroom, Big Ghost Mushroom, Big Hump Mushroom, Big Shrub, Big Sky Mushroom, Big Tiger Mushroom, Biotite, Birch, Birch Plank, Birch Plywood, Birch Sap, Birch Timber, Black Crystal, Black Gem, Black Gold Ingot, Black Quartz, Black Stone Powder, Blood Ruby, Bloodstone, Bloody Tree Knot, Blossoming Red Tulip, Blue Coral, Blue Crystal, Blue Flower, Blue Rose, Blue Umbrella Mushroom, Blueprint: Epheria Carrack, Bluffer Mushroom, Bluffer Mushroom Crate, Bluffer Mushroom Crop, Bluffer Mushroom Hypha, Boiled Bird Eggs, Bonfire of Dreams, Borscht, Bottle of Clean Water, Bottle of River Water, Bottle of Sea Water, Bottle of Turbid Water, Bouquet Mushroom, Bouquet Mushroom Crate, Bracken, Brass Ingot, Breezy White Coral, Bright Reef Piece, Broadleaf Tree, Broken Shell, Bronze Ingot, Bryophyte, Budding Red Tulip, Bunch of Dalvenia Alrea, Bunch of Dry Mane Grass, Bunch of Fire Flake Flowers, Bunch of Nolina, Bunch of Penestraria, Bunch of Silk Honey Grass, Bunch of Silver Azaleas, Bush, Butter, Byproduct Fertilizer, Cabbage, Cabbage Sack, Cactus Rind, Cactus Sap, Cactus Thorn, Calpheon Meal, Caphras Tree Plank, Caphras Tree Plywood, Caphras Tree Sap, Caphras Tree Timber, Carrot, Carrot Crate, Carrot Seed, Caterpillar, Cedar Plank, Cedar Plywood, Cedar Sap, Cedar Timber, Cedar Tree, Chanterelle, Chanterelle Box, Charred Stone, Cheese, Cheese Gratin, Cheese Pie, Cheetah Dragon Blood, Cherry, Chicken Feed, Chicken Meat, Chowder, Cinnamon, Circular Turf Frame (Large), Circular Turf Frame (Small), Citron, Citron Seed, Clear Liquid Reagent, Clear Quartz, Clip-clop Stonetail Mobile, Cloud Mushroom, Cloud Mushroom Crate, Cloud Mushroom Crop, Cloud Mushroom Hypha, Clown's Blood, Coal, Cobalt Ingot, Cobra Blood, Coconut, Colorful Envelope, Cone Snail, Cooking Honey, Cooking Oil, Cooking Wine, Copper, Copper Ingot, Copper Ore, Coral Crystal, Coral Piece, Corn, Corn Crate, Corn Dough, Corn Flour, Cotton, Cotton Fabric, Cotton Wool, Cotton Yarn, Cox Pirates' Artifact (Combat), Cox Pirates' Artifact (Parley Beginner), Cox Pirates' Artifact (Parley Expert), Cracked Fang, Cream, Crescent Turf Frame, Crimson Echo Flower, Crown of Honor, Cucumber, Dalvenia Alrea, Dalvenia Alrea Crate, Dark Pudding, Date Palm, Dawn Fallen Silk, Daybreak Blue Coral, Dead Tree Essence, Deep Sea Fruit, Deep Sea Memory Filled Glue, Deep Tide-Dyed Standardized Timber Square, Deer Blood, Defense Elixir, Delotia, Delotia Essence, Delotia Powder, Delotia Seed, Delotia-scented Candle, Desert Dumpling, Desert Herb, Design: Ahon Kirus's Armor - Dark Knight, Design: Ahon Kirus's Armor - Kunoichi, Design: Ahon Kirus's Armor - Lahn, Design: Ahon Kirus's Armor - Maehwa, Design: Ahon Kirus's Armor - Mystic, Design: Ahon Kirus's Armor - Ranger, Design: Ahon Kirus's Armor - Sorceress, Design: Ahon Kirus's Armor - Tamer, Design: Ahon Kirus's Armor - Valkyrie, Design: Ahon Kirus's Armor - Witch, Design: Black Leopard Armor - Dark Knight, Design: Black Leopard Armor - Kunoichi, Design: Black Leopard Armor - Lahn, Design: Black Leopard Armor - Maehwa, Design: Black Leopard Armor - Mystic, Design: Black Leopard Armor - Ranger, Design: Black Leopard Armor - Sorceress, Design: Black Leopard Armor - Tamer, Design: Black Leopard Armor - Valkyrie, Design: Black Leopard Armor - Witch, Design: Calpheon Choir Uniform - Shai, Design: Calpheon Noble Dress - Lahn, Design: Calpheon Noble Dress - Mystic, Design: Calpheon Noble Suit - Archer, Design: Calpheon Noble Suit - Striker, Design: Crown of Honor, Design: Delphe Knight Armor - Archer, Design: Delphe Knight Armor - Dark Knight, Design: Delphe Knight Armor - Lahn, Design: Delphe Knight Armor - Mystic, Design: Delphe Knight Armor - Striker, Design: Descendant of Sherekhan Outfit - Shai, Design: Drieghanese Winter Clothes - Shai, Design: Edan's Travel Wear - Archer, Design: Edan's Travel Wear - Striker, Design: Flondor Breeze Ceiling, Design: Florin Cook's Clothes - Shai, Design: Florin Herb Gatherer Clothes - Shai, Design: Garnier Troupe Garb - Archer, Design: Garnier Troupe Garb - Lahn, Design: Garnier Troupe Garb - Mystic, Design: Garnier Troupe Garb - Striker, Design: Jarette's Armor - Lahn, Design: Jarette's Armor - Mystic, Design: Jordine's Casual Wear - Archer, Design: Jordine's Casual Wear - Striker, Design: Kanna's Naga Disguise - Shai, Design: Karlstein, Design: Lara's Clothes - Shai, Design: Okiara Ripple Effect Floor, Design: Olvian Bed, Design: Olvian Bedside Table, Design: Olvian Bookshelf, Design: Olvian Chair, Design: Olvian Dining Table, Design: Olvian Drawers, Design: Olvian Sofa, Design: Olvian Table, Design: Olvian Wardrobe, Design: Orwen's Travel Wear - Lahn, Design: Orwen's Travel Wear - Mystic, Design: Serendian Formal Suit - Archer, Design: Serendian Formal Suit - Berserker, Design: Serendian Formal Suit - Musa, Design: Serendian Formal Suit - Ninja, Design: Serendian Formal Suit - Striker, Design: Serendian Formal Suit - Warrior, Design: Serendian Formal Suit - Wizard, Design: Serendian Smith Garb - Archer, Design: Serendian Smith Garb - Lahn, Design: Serendian Smith Garb - Mystic, Design: Serendian Smith Garb - Striker, Design: Serendian Soldier Armor - Archer, Design: Serendian Soldier Armor - Shai, Design: Serendian Soldier Armor - Striker, Design: Shroud Knight Armor - Archer, Design: Shroud Knight Armor - Berserker, Design: Shroud Knight Armor - Dark Knight, Design: Shroud Knight Armor - Kunoichi, Design: Shroud Knight Armor - Lahn, Design: Shroud Knight Armor - Maehwa, Design: Shroud Knight Armor - Musa, Design: Shroud Knight Armor - Mystic, Design: Shroud Knight Armor - Ninja, Design: Shroud Knight Armor - Ranger, Design: Shroud Knight Armor - Sorceress, Design: Shroud Knight Armor - Striker, Design: Shroud Knight Armor - Tamer, Design: Shroud Knight Armor - Valkyrie, Design: Shroud Knight Armor - Warrior, Design: Shroud Knight Armor - Witch, Design: Shroud Knight Armor - Wizard, Design: Starspun Chandelier, Design: Sunflare Chandelier, Design: Terrmian Casual Wear - Dark Knight, Design: Terrmian Casual Wear - Lahn, Design: Terrmian Casual Wear - Mystic, Design: Valencian Noble Dress - Shai, Design: Valencian Travel Wear - Archer, Design: Valencian Travel Wear - Berserker, Design: Valencian Travel Wear - Musa, Design: Valencian Travel Wear - Ninja, Design: Valencian Travel Wear - Striker, Design: Valencian Travel Wear - Warrior, Design: Valencian Travel Wear - Wizard, Diamond, Diamond Starfish, Dictyophora, Dictyophora Box, Dinosaur Blood, Diorite, Distilled Water, Dragon's Tears, Dressing, Dried Abalone, Dried Amberjack, Dried Amur Goby, Dried Amur Ide, Dried Amur Minnow, Dried Angler, Dried Arowana, Dried Atka Mackerel, Dried Barbel Steed, Dried Basking Shark, Dried Bass, Dried Beltfish, Dried Bigeye, Dried Bitterling, Dried Black Shiner, Dried Blackfin Sweeper, Dried Bleeker, Dried Blue Tang, Dried Bluefish, Dried Bluegill, Dried Bowfin, Dried Bubble Eye, Dried Burbot, Dried Butterflyfish, Dried Carp, Dried Catfish, Dried Cero, Dried Chameleon Goby, Dried Charr, Dried Checkerboard Wrasse, Dried Cherry Icefish, Dried Cherry Salmon, Dried Clownfish, Dried Common Bleak, Dried Common Minnow, Dried Crab, Dried Crawfish, Dried Croaker, Dried Crucian Carp, Dried Cuttlefish, Dried Cuvier, Dried Dace, Dried Dark Chub, Dried Dark Sleeper, Dried Diamond Minnow, Dried Diamond Starfish, Dried Dollarfish, Dried Dolphinfish, Dried Filefish, Dried Fish, Dried Flatfish, Dried Flounder, Dried Flower Icefish, Dried Flying Fish, Dried Fourfinger Threadfin, Dried Freshwater Eel, Dried Goby Minnow, Dried Golden-thread, Dried Grass Carp, Dried Grayling, Dried Green Sturgeon, Dried Greenling, Dried Grouper, Dried Grunt, Dried Gunnel, Dried Gurnard, Dried Herring, Dried Horn Fish, Dried Jellyfish, Dried John Dory, Dried Kuhlia Marginata, Dried Lamprey, Dried Leather Carp, Dried Lenok, Dried Lobster, Dried Longsnout Catfish, Dried Mackerel, Dried Mackerel Pike, Dried Mandarin Fish, Dried Maomao, Dried Miho Spine Loach, Dried Minnow, Dried Moray, Dried Mori, Dried Morning Loach, Dried Mudfish, Dried Mudskipper, Dried Mullet, Dried Nibbler, Dried Notch Jaw, Dried Octopus, Dried Oily Shiner, Dried Old Tree, Dried Pacu, Dried Pearl Oyster Flesh, Dried Perch, Dried Pike, Dried Pintado, Dried Piranha, Dried Pomfret, Dried Porcupine Fish, Dried Porgy, Dried Ray, Dried Red Snow Crab, Dried Redbreasted Wrasse, Dried Rock Hind, Dried Rockfish, Dried Rosefish, Dried Rosy Bitterling, Dried Round Herring, Dried Roundtail Paradisefish, Dried Salmon, Dried Sandeel, Dried Sandfish, Dried Sardine, Dried Saurel, Dried Scorpion Fish, Dried Sea Bass, Dried Sea Eel, Dried Seahorse, Dried Sharpbelly, Dried Shellfish, Dried Shuttles Hoppfish, Dried Siganid, Dried Silver Carp, Dried Silver Stripe Round Herring, Dried Skipjack, Dried Smelt, Dried Smokey Chromis, Dried Snakehead, Dried Soho Bitterling, Dried Spined Bittering, Dried Spined Loach, Dried Spotted Barbel, Dried Squid, Dried Starfish, Dried Stickleback, Dried Stippled Gunnel, Dried Stone Moroko, Dried Striped Catfish, Dried Striped Shiner, Dried Stumpy Bullhead, Dried Sturgeon, Dried Sunfish, Dried Surfperch, Dried Sweetfish, Dried Swellfish, Dried Swiri, Dried Swordfish, Dried Tapertail Anchovy, Dried Terrapin, Dried Thresher Shark, Dried Tiger Shark, Dried Tilefish, Dried Tongue Sole, Dried Trout, Dried Tuna, Dried Ussurian Bullhead, Dried Whiting, Dried Yalu Grayling, Dried Yellow-head Catfish, Dried Yellowfin Sculpin, Dried Yellowfin Sole, Dry Mane Grass, Dry Mane Grass Crate, Dry Mane Grass Crop, Dry Mane Grass Seed, Dry Thicket, Dusk Laden Cotton Fabric, Dwarf Mushroom, Dwarf Mushroom Crate, Dwarf Mushroom Crop, Dwarf Mushroom Hypha, EXP Elixir, Egg, Elder Tree, Elder Tree Plank, Elder Tree Plywood, Elder Tree Sap, Elder Tree Timber, Elixir of Amity, Elixir of Assassination, Elixir of Burn Removal, Elixir of Carnage, Elixir of Concentration, Elixir of Death, Elixir of Demihuman Hunt, Elixir of Detection, Elixir of Draining, Elixir of Endurance, Elixir of Energy, Elixir of Frenzy, Elixir of Fury, Elixir of Hemostasis, Elixir of Human Hunt, Elixir of Life, Elixir of Mentality, Elixir of Perforation, Elixir of Regeneration, Elixir of Resistance, Elixir of Seal, Elixir of Sky, Elixir of Spells, Elixir of Swiftness, Elixir of Thorn, Elixir of Will, Elixir of Wind, Elixir of Wings, Elkarr, Emerald, Emperor Mushroom, Emperor Mushroom Crate, Emperor Mushroom Crop, Emperor Mushroom Hypha, Energy-exuding Hide, Enhanced Flax Fabric, Enhanced Island Tree Coated Plywood, Enlightened One's Cotton Fabric, Essence of Abundance, Essence of Crimson Flame, Essence of Destruction, Essence of Enchantment, Essence of Liquor, Essence of Magic Power, Essence of Nature, Essence of Perfection, Essence of the Sun, Everlasting Herb, Everlasting Herb Crate, Everlasting Herb Crop, Everlasting Herb Seed, Eyelash Cup, Fairy Powder, Fancy Reptile Skin, Feldspar, Fertile Oil-Rich Soil, Fig, Fine Fancy Reptile Skin, Fine Hard Hide, Fine Rectangular Thuja Water Frame Base, Fine Soft Hide, Fine Thick Fur, Fine Thin Hide, Fine Tough Hide, Fir, Fir Plank, Fir Plywood, Fir Sap, Fir Timber, Fire Flake Flower, Fire Flake Flower Crate, Fire Flake Flower Crop, Fire Flake Flower Seed, First Tier of the Fountain, Fish, Fish Fillet Chips, Fish Fillet Salad, Fish Soup, Fisher's Elixir, Five-Star Starfish, Flagstone, Flamingo Blood, Flawless Spirit Stone, Flawless Spirit's Mirror, Flax, Flax Fabric, Flax Seed, Flax Thread, Fleece, Flondor Breeze Ceiling, Florchestra's Music Textbook, Flower Rice Cake, Fog Mushroom, Fog Mushroom Crate, Fog Mushroom Crop, Fog Mushroom Hypha, Forest Emerald, Fortune Teller Mushroom, Fortune Teller Mushroom Crate, Fortune Teller Mushroom Crop, Fortune Teller Mushroom Hypha, Fountain of Divine Melodies, Fox Blood, Freekeh, Freekeh Flour, Freekeh Flour Dough, Fried Bird, Fried Fish, Fried Vegetables, Frigate Contract Renewal: Professional Boatman, Frigate Contract Renewal: Skilled Boatman, Fruit Juice, Fruit Pie, Fruit Pudding, Fruit Tree, Fruit Wine, Fruit and Vegetable Salad, Fruit of Abundance, Fruit of Crimson Flame, Fruit of Destruction, Fruit of Enchantment, Fruit of Magic Power, Fruit of Nature, Fruit of Perfection, Fruit of the Sun, Fughar's Letter of Encouragement, Fully Bloomed Red Tulip, Fundamentals of Cooking, Garlic, Garlic Crate, Garlic Seed, Gem Polisher, Ghost Mushroom, Ghost Mushroom Crate, Ghost Mushroom Crop, Ghost Mushroom Hypha, Giant Pearl Clam, Giant Sea Anemone, Ginger Sack, Glossy Bone Piece, Glue, Goat Blood, Gold, Gold Ingot, Gold Ore, Gold Topaz, Golden Coral, Golden Deer Statue, Golden Hand Elixir, Golden Horse Statue, Golden Mane Glass Vase, Golden Mermaid Statue, Golden Pearl, Golden Sun Coral, Grain Soup, Granite, Grape, Grape Crate, Grape Seed, Gray Shrub, Great Ocean Dark Iron, Green Coral, Green Crystal, Green Pendulous Mushroom, Green Quartz, Grilled Sausage, Grim Reaper's Elixir, Halloween Pumpkin Seed, Ham Sandwich, Hard Hide, Hard Pillar, Haystack, Hazel Tree Fruit, Heaven's Tower, Herbal Gunpowder, Herbal Poison, Hero's Small Lamp, High Grade Crystal Fusion, High-quality Amanita Mushroom, High-quality Ancient Mushroom, High-quality Arrow Mushroom, High-quality Barley, High-quality Barley Crate, High-quality Bluffer Mushroom, High-quality Bouquet Mushroom, High-quality Carrot Crate, High-quality Carrot Juice, High-quality Carrot Seed, High-quality Chanterelle, High-quality Chanterelle Box, High-quality Citron, High-quality Citron Seed, High-quality Cloud Mushroom, High-quality Corn, High-quality Corn Crate, High-quality Dalvenia Alrea, High-quality Delotia, High-quality Delotia Seed, High-quality Dictyophora, High-quality Dictyophora Box, High-quality Dry Mane Grass, High-quality Dwarf Mushroom, High-quality Emperor Mushroom, High-quality Everlasting Herb, High-quality Fire Flake Flower, High-quality Fog Mushroom, High-quality Fortune Teller Mushroom, High-quality Garlic, High-quality Garlic Crate, High-quality Garlic Seed, High-quality Ghost Mushroom, High-quality Grape, High-quality Grape Crate, High-quality Halloween Pumpkin Seed, High-quality Haystack, High-quality Hot Pepper, High-quality Hot Pepper Crate, High-quality Hot Pepper Seed, High-quality Hump Mushroom, High-quality Leccinum, High-quality Mesima, High-quality Mesima Box, High-quality Napa Cabbage Sack, High-quality Nolina, High-quality Olive, High-quality Olive Crate, High-quality Onion, High-quality Onion Crate, High-quality Onion Seed, High-quality Paprika, High-quality Paprika Crate, High-quality Penestraria, High-quality Pepper, High-quality Pepper Crate, High-quality Pepper Seed, High-quality Perilla Sack, High-quality Pie Mushroom, High-quality Potato, High-quality Potato Crate, High-quality Pumpkin, High-quality Pumpkin Crate, High-quality Pumpkin Seed, High-quality Purple Mushroom, High-quality Radish Sack, High-quality Red-spotted Amanita, High-quality Red-spotted Amanita Box, High-quality Rice Sack, High-quality Silk Honey Grass, High-quality Silver Azalea, High-quality Sky Mushroom, High-quality Strawberry, High-quality Strawberry Crate, High-quality Strawberry Seed, High-quality Sunflower, High-quality Sunflower Crate, High-quality Sunrise Herb, High-quality Sweet Potato, High-quality Sweet Potato Crate, High-quality Tiger Mushroom, High-quality Tomato, High-quality Tomato Crate, High-quality Truffle Mushroom, High-quality Wheat, High-quality Wheat Crate, Honey Wine, Honeycomb Cookie, Hops, Hot Pepper, Hot Pepper Crate, Hot Pepper Seed, Hump Mushroom, Hump Mushroom Crate, Hump Mushroom Crop, Hump Mushroom Hypha, Indigo Lapis Lazuli, Indomitable Lion of Serendia, Inextinguishable Stone, Inorganic Fertilizer, Insectivore Plant, Insectivore Plant Flower, Insectivore Plant Leaf, Insectivore Plant Powder, Insectivore Plant Root, Insectivore Plant Sap, Insectivore Plant Stalk, Iridescent Coral, Iridescent Coral Piece, Iron, Iron Ingot, Iron Ore, Island Tree Coated Plywood, Jade, Jade Coral Ingot, Jar of Dawn's Mist, Karanda's Talon, Kelp, Keplan Horn Cocoon, Keplan Horned Cocoon Silk, Khan's Scale, Khan's Tendon, Knight Combat Rations, Knitting Yarn, Kuku Bird Blood, Kuku Bird Meat, Kzarka's Bloodstone, Lamp Post, Lamute Handmade Stand, Lapis Lazuli, Laurel Leaves, Laurus Nobilis Nest, Lead, Lead Ingot, Lead Ore, Lean Meat Salad, Leather Glaze, Leavening Agent, Leccinum, Leccinum Crate, Legendary Beast's Blood, Lemoria Plywood, Lion Blood, Lion that Serenades the Sun, Lion's Gaze, Lizard Blood, Lizard Kebab, Llama Blood, Lobster, Log, Loopy Tree Forest Pillars, Loopy Tree Plank, Loopy Tree Plywood, Loopy Tree Sap, Loopy Tree Timber, Low Grade Crystal Fusion, Luminous Cobalt Ingot, Magic Crystal of Infinity - Adamantine, Magic Crystal of Infinity - Agility, Magic Crystal of Infinity - Air Attack, Magic Crystal of Infinity - Armor, Magic Crystal of Infinity - Ascension, Magic Crystal of Infinity - Assault, Magic Crystal of Infinity - Back Attack, Magic Crystal of Infinity - Carnage, Magic Crystal of Infinity - Counter Attack, Magic Crystal of Infinity - Critical, Magic Crystal of Infinity - Descent, Magic Crystal of Infinity - Down Attack, Magic Crystal of Infinity - Durability, Magic Crystal of Infinity - Endurance, Magic Crystal of Infinity - Energy, Magic Crystal of Infinity - Ensnare, Magic Crystal of Infinity - Experience, Magic Crystal of Infinity - HP Recovery, Magic Crystal of Infinity - Healing, Magic Crystal of Infinity - Intimidation, Magic Crystal of Infinity - MP Recovery, Magic Crystal of Infinity - Magic Attack, Magic Crystal of Infinity - Magic Defense, Magic Crystal of Infinity - Max HP, Magic Crystal of Infinity - Melee Attack, Magic Crystal of Infinity - Melee Defense, Magic Crystal of Infinity - Memory, Magic Crystal of Infinity - Patience, Magic Crystal of Infinity - Power, Magic Crystal of Infinity - Precision, Magic Crystal of Infinity - Ranged Attack, Magic Crystal of Infinity - Ranged Defense, Magic Crystal of Infinity - Resonance, Magic Crystal of Infinity - Siege, Magic Crystal of Infinity - Speed Attack, Magic Crystal of Infinity - Strength, Magic Crystal of Infinity - Sturdiness, Magic Crystal of Infinity - Submergence, Magic Crystal of Infinity - Swiftness, Magic Crystal of Infinity - Valor, Magic Crystal of Infinity - Vigor, Magic Crystal of Infinity - Vision, Magical Acacia Seed, Magical Amanita Mushroom Hypha, Magical Ancient Mushroom Hypha, Magical Arrow Mushroom Hypha, Magical Barley Seed, Magical Bluffer Mushroom Hypha, Magical Bouquet Mushroom Hypha, Magical Carrot Seed, Magical Citron Seed, Magical Cloud Mushroom Hypha, Magical Corn Seed, Magical Dalvenia Alrea Seed, Magical Delotia Seed, Magical Dry Mane Grass Seed, Magical Dwarf Mushroom Hypha, Magical Emperor Mushroom Hypha, Magical Everlasting Herb Seed, Magical Fire Flake Flower Seed, Magical Fog Mushroom Hypha, Magical Fortune Teller Mushroom Hypha, Magical Garlic Seed, Magical Ghost Mushroom Hypha, Magical Grape Seed, Magical Hot Pepper Seed, Magical Hump Mushroom Hypha, Magical Leccinum Hypha, Magical Nolina Seed, Magical Olive Seed, Magical Onion Seed, Magical Paprika Seed, Magical Penestraria Seed, Magical Pepper Seed, Magical Pie Mushroom Hypha, Magical Pumpkin Seed, Magical Purple Mushroom Hypha, Magical Seed Potato, Magical Seed Sweet Potato, Magical Silk Honey Grass Seed, Magical Silver Azalea Seed, Magical Sky Mushroom Hypha, Magical Strawberry Seed, Magical Sunflower Seed, Magical Sunrise Herb Seed, Magical Tiger Mushroom Hypha, Magical Tomato Seed, Magical Truffle Mushroom Hypha, Magical Wheat Seed, Makgeolli, Mandragora Essence, Maple, Maple Plank, Maple Plywood, Maple Sap, Maple Timber, Margoria Dark Iron, Marmot Blood, Master Crow's Fireplace Mantle, Master Crow's Fireplace Overmantel, Master Crow's Fireplace Pillar, Master Crow's Fireplace Surround, Meat Croquette, Meat Pasta, Meat Pie, Meat Sandwich, Meat Soup, Meat Stew, Mediah Meal, Meju, Melted Copper Shard, Melted Gold Shard, Melted Iron Shard, Melted Lead Shard, Melted Mythril Shard, Melted Nickel Shard, Melted Noc Shard, Melted Platinum Shard, Melted Silver Shard, Melted Tin Shard, Melted Titanium Shard, Melted Vanadium Shard, Melted Zinc Shard, Mesima, Mesima Box, Metal Solvent, Mid Grade Crystal Fusion, Milk, Milk Tea, Miloberry's Apu Apu Waterstarwort, Mimosa Stalk, Mineral Water, Monk's Branch, Monkey Blood, Moon Scale Plywood, Moon Vein Flax Fabric, Moonlight Opal, Moss Tree Plank, Moss Tree Plywood, Moss Tree Sap, Moss Tree Timber, Mud Crystal, Muddy Quartz, Mudstone, Mungbean, Mysterious Citron Seed, Mysterious Delotia Seed, Mythril, Mythril Ingot, Needle Tree, Nickel Ingot, Nickel Ore, Noc Ingot, Noc Ore, Nolina, Nolina Crate, Northern Heidel Gothic Fountain, Note Full of Happiness, Nouver's Hide, Nutmeg, Oatmeal, Obsidian Ore, Ocean Hermit Crab, Ocean Horizon Key, Ocean Sapphire, Ogre Blood, Oil of Corruption, Oil of Fortitude, Oil of Regeneration, Oil of Storms, Oil of Tranquility, Oil of the Abyss, Okiara Ripple Effect Floor, Old Tree Bark, Old Tree Branch, Olive, Olive Crate, Olive Oil, Olive Seed, Olive Tree, Olucas, Omelet, Onion, Onion Crate, Onion Seed, Opal, Organic Feed, Organic Fertilizer, Ouk Pill of Time and Tide, Outdoor Stand, Ox Blood, Oyster, Palm Plank, Palm Plywood, Palm Sap, Palm Timber, Palm Tree, Paprika, Paprika Crate, Paste Bait, Pear, Pedestal of Honor, Pedestal of the People's Throne, Penestraria, Penestraria Crate, Pepper, Pepper Crate, Pepper Seed, Perilla Oil, Perilla Sack, Pickled Fish, Pickled Vegetables, Pie Mushroom, Pie Mushroom Crate, Pig Blood, Pile of Sunrise Herbs, Pine Coated Plywood, Pine Plank, Pine Plywood, Pine Sap, Pine Timber, Pine Tree, Pineapple, Pink Rosebay Sack, Pink Tentacle, Pink Trumpet Mushroom, Pinnacle of Honor, Pistachio, Platinum, Platinum Ingot, Platinum Ore, Plywood Hardener, Polished Opal, Polished Stone, Pork, Potato, Potato Crate, Potato Dough, Potato Flour, Powder of Flame, Powder of Rifts, Powder of Time, Prairie Green Coral, Precious Black Crystal, Precious Blue Crystal, Precious Green Crystal, Precious Mud Crystal, Precious Red Crystal, Precious Translucent Crystal, Precious Violet Crystal, Processed Coal, Professional's Satisfying Dinner Meal, Pumpkin, Pumpkin Crate, Pumpkin Seed, Pure Copper Crystal, Pure Gold Crystal, Pure Iron Crystal, Pure Lead Crystal, Pure Mythril Crystal, Pure Nickel Crystal, Pure Noc Crystal, Pure Pearl Crystal, Pure Platinum Crystal, Pure Powder Reagent, Pure Silver Crystal, Pure Tin Crystal, Pure Titanium Crystal, Pure Vanadium Crystal, Pure Zinc Crystal, Purified Water, Purple Mushroom, Purple Mushroom Crate, Purple Pink Flower, Quartz, Raccoon Blood, Radish Sack, Rainbow Button Mushroom, Rainbow Stone, Raisin Bread, Reagent of Harmonious Spirits, Red Bean, Red Coral, Red Crystal, Red Pepper Powder, Red Quartz, Red Sauce, Red Shellfish, Red Shrub, Red Tree Lump, Red-spotted Amanita, Red-spotted Amanita Box, Reed Sack, Refined Delotia Reagent, Remnants of Burnt Spirits, Restored Orzeca Bookshelf, Restored Orzeca Golden Crown Decoration, Resurrection Elixir, Rhino Blood, Rice Sack, Rock Elephant Blood, Rock Salt Ingot, Roe, Rose, Rough Black Crystal, Rough Blue Crystal, Rough Diamond, Rough Emerald, Rough Green Crystal, Rough Jade, Rough Lapis Lazuli, Rough Mud Crystal, Rough Obsidian Ore, Rough Opal, Rough Opulent Crystal, Rough Red Crystal, Rough Ruby, Rough Sapphire, Rough Stone, Rough Stone Plus, Rough Topaz, Rough Translucent Crystal, Rough Violet Crystal, Round Head Corals, Ruby, Ruddy Manganese Nodule, Runn Light Fragment, Rye, Saffron, Salt, Sandstone, Sapphire, Scarlet Rosebay Sack, Scorched Fragment, Scorpion Blood, Sea Anemone, Seafood Grilled with Butter, Seafood Mushroom Salad, Seafood Pasta, Seaweed, Seaweed Stalk, Second Tier of the Fountain, Serendia Meal, Sheep Blood, Sheltering Roof, Ship Upgrade Permit: Epheria Caravel, Ship Upgrade Permit: Epheria Galleass, Shrimp, Shrub, Silk, Silk Honey Grass, Silk Honey Grass Crate, Silk Honey Grass Crop, Silk Honey Grass Seed, Silk Thread, Silkworm Cocoon, Silver, Silver Azalea, Silver Azalea Crate, Silver Azalea Crop, Silver Azalea Seed, Silver Ingot, Silver Ore, Sinner's Blood, Sky Blue Flower, Sky Mushroom, Sky Mushroom Crate, Sky Mushroom Crop, Sky Mushroom Hypha, Small Tree Plywood, Smoked Fish Steak, Snowfield Cedar Plank, Snowfield Cedar Plywood, Snowfield Cedar Sap, Snowfield Cedar Timber, Soft Bread, Soft Hide, Some Miner's Sack, Soy Sauce, Soybean, Soybean Paste, Special Acacia Seed, Special Amanita Mushroom, Special Ancient Mushroom, Special Arrow Mushroom, Special Barley, Special Bluffer Mushroom, Special Bouquet Mushroom, Special Bouquet Mushroom Crate, Special Carrot Juice, Special Carrot Seed, Special Chanterelle, Special Chanterelle Box, Special Chicken Feed, Special Citron, Special Citron Seed, Special Cloud Mushroom, Special Corn, Special Dalvenia Alrea, Special Dalvenia Alrea Crate, Special Delotia, Special Delotia Seed, Special Dictyophora, Special Dictyophora Box, Special Dry Mane Grass, Special Dwarf Mushroom, Special Emperor Mushroom, Special Everlasting Herb, Special Fire Flake Flower, Special Fog Mushroom, Special Fortune Teller Mushroom, Special Garlic, Special Garlic Seed, Special Ghost Mushroom, Special Grape, Special Halloween Pumpkin Seed, Special Haystack, Special Hot Pepper, Special Hot Pepper Seed, Special Hump Mushroom, Special Leccinum, Special Leccinum Crate, Special Mesima, Special Mesima Box, Special Napa Cabbage Sack, Special Nolina, Special Nolina Crate, Special Olive, Special Onion, Special Onion Seed, Special Paprika, Special Penestraria, Special Penestraria Crate, Special Pepper, Special Pepper Seed, Special Perilla Sack, Special Pie Mushroom, Special Pie Mushroom Crate, Special Potato, Special Pumpkin, Special Pumpkin Seed, Special Purple Mushroom, Special Purple Mushroom Crate, Special Radish Sack, Special Red-spotted Amanita, Special Red-spotted Amanita Box, Special Rice Sack, Special Silk Honey Grass, Special Silver Azalea, Special Sky Mushroom, Special Strawberry, Special Strawberry Crate, Special Strawberry Seed, Special Sunflower, Special Sunrise Herb, Special Sweet Potato, Special Tiger Mushroom, Special Tomato, Special Truffle Mushroom, Special Wheat, Spirit's Echo, Spirit's Leaf, Standardized Timber Square, Star Anise, Star Anise Mushroom, Star Diamond, Steak, Steamed Bird, Steamed Fish, Steamed Seafood, Steel, Stir-Fried Meat, Stir-Fried Seafood, Stir-Fried Vegetables, Stone of Malice, Strange Rock, Strawberry, Strawberry Crate, Strawberry Seed, Sturdy Acacia Plywood, Sturdy Ash Plywood, Sturdy Birch Plywood, Sturdy Caphras Tree Plywood, Sturdy Cedar Plywood, Sturdy Elder Tree Plywood, Sturdy Fir Plywood, Sturdy Loopy Tree Plywood, Sturdy Maple Plywood, Sturdy Moss Tree Plywood, Sturdy Palm Plywood, Sturdy Pine Plywood, Sturdy Snow White Stone, Sturdy Snowfield Cedar Plywood, Sturdy Stone Floor, Sturdy Thornwood Plywood, Sturdy Thuja Plywood, Sturdy Timber Square, Sturdy White Cedar Plywood, Sugar, Sulfur, Sun-Dried Salt, Sunflower, Sunflower Crate, Sunflower Seed, Sunrise Herb, Sunrise Herb Crate, Sunrise Herb Crop, Sunrise Herb Seed, Sunset Dyed Wool, Supreme Fancy Feather, Supreme Fancy Reptile Skin, Supreme Hard Hide, Supreme Lightweight Plume, Supreme Soft Hide, Supreme Thick Fur, Supreme Thin Hide, Supreme Tough Hide, Sute Tea, Sweet Potato, Sweet Potato Crate, Sweet Potato Dough, Sweet Potato Flour, Tangleweed, Tea With Fine Scent, Tear of the Great Ocean, Tear of the Ocean, Teff, Teff Flour, Teff Flour Dough, Tenacious Origin of Life, Thank-You Letter, Thick Fur, Thicket, Thin Hide, Third Tier of the Fountain, Thornwood Plank, Thornwood Plywood, Thornwood Sap, Thornwood Timber, Thuja Plank, Thuja Plywood, Thuja Sap, Thuja Timber, Thunderstruck Wooden Music Stand, Tidal Blue Lamp Post, Tide-Dyed Standardized Timber Square, Tiger Blood, Tiger Mushroom, Tiger Mushroom Crate, Tiger Mushroom Crop, Tiger Mushroom Hypha, Tigerflower Sack, Tin, Tin Ingot, Tin Ore, Titanium Ingot, Titanium Ore, Tomato, Tomato Crate, Top-quality Thornwood Timber Frame, Topaz, Tough Flax Fabric, Tough Hide, Toxic Watermelon, Trace of Ascension, Trace of Battle, Trace of Chaos, Trace of Death, Trace of Despair, Trace of Hunting, Trace of Memory, Trace of Nature, Trace of Origin, Trace of Savagery, Trace of Violence, Trace of Wave, Trace of the Earth, Translucent Crystal, Translucent Ice, Tridana Giant Clam Shell, Tridana Giant Clam Shellfish, Troll Blood, Truffle Mushroom, Truffle Mushroom Crate, Truffle Mushroom Crop, Truffle Mushroom Hypha, Tulip, Tulip Seed, Turban Shell, Turf Tile Frame (1X1), Turf Tile Frame (2X1), Turf Tile Frame (2X2), Turf Tile Frame (2X6), Turf Tile Frame (4X4), Twig, Twilight Red Coral, Tyrant's Blood, Usable Scantling, Vanadium Ingot, Vanadium Ore, Vase of Florin's Hope, Vedelona, Vilentia's Vedelona Bouquet, Vine Noc Ingot, Vinegar, Viola Sack, Violet Crystal, Violet Flower, Volcanic Umbrella Mushroom, Waragon Blood, Water, Water Thyme, Weasel Blood, Weeds, Wheat, Wheat Crate, Wheat Dough, Wheat Flour, White Cedar, White Cedar Plank, White Cedar Plywood, White Cedar Plywood Hardener, White Cedar Sap, White Cedar Timber, White Coral, White Flower Mushroom, White Sauce, White Tin, White Umbrella Mushroom, Wild Berry Sack, Wild Ginseng Seed, Wild Grass, Wild Herb, Wing Turf Frame, Wings of Frozen Tides, Wise Man's Blood, Withered Leaf, Wolf Blood, Wool, Worker's Elixir, Worm Blood, Yak Blood, Yellow Flower, Youngji Mushroom, Youngji Mushroom Sack, Zinc, Zinc Ingot, Zinc Ore, [Guild] Abyss-drenched Ingot, [Guild] Blueprint: Improved Galley, [Guild] Deep Sea-drenched Timber Square, [Guild] Goddess's Tear, [Guild] Great Ocean-drenched Plywood
+
+Return ONLY JSON:
+{"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000}]}`
   },
   en: {
-    title: 'BDO Storage Analyzer', subtitle: 'Upload storage screenshot — analyze with real BDO Codex recipes',
-    uploadTitle: 'Upload Storage Screenshot', uploadDesc: 'Click or drag & drop · PNG, JPG supported',
-    changeBtn: '↩ Change', analyzeBtn: '⚔ Analyze', aiPanel: 'Status', detectedLabel: 'Detected Materials',
-    statusReady: 'Press the button to analyze.', statusReading: 'Reading materials...',
-    statusDone: n => `✓ ${n} materials found, listing recipes.`, statusErr: 'Error: ',
+    title: 'BDO Storage Analyzer',
+    subtitle: 'Upload storage screenshot — analyze with real BDO Codex recipes',
+    uploadTitle: 'Upload Storage Screenshot',
+    uploadDesc: 'Click or drag & drop · PNG, JPG supported',
+    changeBtn: '↩ Change', analyzeBtn: '⚔ Analyze',
+    aiPanel: 'Status', detectedLabel: 'Detected Materials',
+    statusReady: 'Press the button to analyze.',
+    statusReading: 'Reading materials...',
+    statusDone: n => `✓ ${n} materials found, listing recipes.`,
+    statusErr: 'Error: ',
     resultsHeader: '⚗ Real BDO Recipes — BDO Codex',
-    tabCulinary: '🍲 Cooking', tabAlchemy: '⚗ Alchemy', tabBest: '★ Best',
+    tabCulinary: '🍲 Cooking', tabAlchemy: '⚗ Alchemy',
     loadRead: 'Reading Storage', loadReadSub: 'AI is scanning your storage...',
     loadCodex: 'Querying BDO Codex', loadCodexSub: 'Fetching real recipes...',
     emptyCulinary: 'No matching cooking recipes found for your materials.',
     emptyAlchemy: 'No matching alchemy recipes found for your materials.',
-    emptyBest: 'No craftable recipes found.',
     craftable: n => `${n}× craftable`, craftableLabel: 'craftable',
     badgeMats: 'mats owned', missingLabel: 'Missing',
     codexLink: '→ View on Codex', need: 'needed',
     themeLight: 'Light Mode', themeDark: 'Dark Mode',
     exportCSV: '⬇ CSV', exportSheets: '📊 Google Sheets',
-    addBtn: '+ Add', resetBtn: '↺ Reset', editBtn: '✏ Edit', doneBtn: '✓ Done',
-    saveBtn: 'Save', deleteBtn: 'Delete', cancelBtn: 'Cancel',
-    editTitle: 'Edit Material', addTitle: 'Add New Material',
-    nameLbl: 'Name', qtyLbl: 'Quantity',
+    editBtn: '✏ Edit', doneBtn: '✓ Done',
+    addBtn: '+ Add', saveBtn: 'Save', deleteBtn: 'Delete', cancelBtn: 'Cancel',
+    editTitle: 'Edit Material', addTitle: 'Add Material',
+    nameLbl: 'Name', idLbl: 'Item ID (optional)', qtyLbl: 'Quantity',
     devBanner: '⚠ Under Development — Data May Not Be Accurate ⚠',
     feedbackText: 'For feedback, you can reach me in TR MENA server in-game as family name AppA',
-    pickerSearch: 'Search item...', pickerAddConfirm: 'Add',
-    statItems: 'Item Types', statRecipes: 'Craftable Recipes', statBest: 'Best Option',
-    findRecipes: '🔍 Find Recipes', silver: 'Silver', perUnit: '/unit',
-    tips: {
-      culinary: ['Popular for lifeskill XP and stamina recovery','High demand, good XP','Essential for worker stamina','Easy materials, stable profit'],
-      alchemy:  ['Good for alchemy mastery','Combat elixir, high demand','Popular for processing XP']
-    }
+    perUnit: '/unit',
+    silver: 'Silver',
+    lifeskillTip: 'Popular for Lifeskill XP and stamina recovery',
+    workerTip: 'Essential for worker stamina',
+    highDemandTip: 'High demand, good XP',
+    imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
+Examine each icon CAREFULLY — shape, color, texture — then identify the item. Read the quantity number below.
+
+RULES:
+- Grid: 8 columns, left to right, top to bottom
+- QUANTITY: B=thousands (415B=415000, 297B=297000), M=millions. Write full integer
+- Skip empty cells. Use EXACT names from COMPLETE ITEM LIST below.
+
+VISUAL IDENTIFICATION GUIDE:
+- Raw Ores = rough stone chunks: Copper Ore=reddish-brown, Iron Ore=dark grey, Silver Ore=light grey, Zinc Ore=bluish-grey, Gold Ore=yellow, Coal=black, Lead Ore=dark blue-grey, Titanium Ore=bright white, Noc Ore=green-tinted
+- CRATES = brown WOODEN BOX with rope binding — completely different shape from raw materials!
+- Timber = cut log/wood pieces. Ash=light brown, Maple=medium brown, Pine=darker with rings
+- Plywood = flat stacked planks; Plank = single flat board
+- Mushrooms: Fortune Teller=colorful spotted, Arrow=pointy cap, Emperor=large crown, Big versions = larger glowing version of same mushroom
+- Alchemy Powders: Powder of Flame=red/orange, Powder of Rifts=purple/dark, Powder of Time=blue/teal, Black Stone Powder=black
+- Special drops: Cracked Fang=broken tooth, Withered Leaf=dried brown leaf, Spirit's Leaf=glowing green leaf, Bag of Muddy Water=muddy brown bottle, Some Miner's Sack=cloth bag
+- Rough gems: Ruby=red, Emerald=green, Sapphire=blue, Diamond=clear, Topaz=yellow, Translucent Crystal=clear/white crystal
+- Dried fish: flat dried fish icon — Dried Filefish, Dried Fish etc.
+- Herbs: Sunrise Herb=orange flower, Fire Flake Flower=red, Silver Azalea=purple, Monk Branch=branch, Dragon Root=root
+- Vegetables: Potato=beige oval, Corn=yellow cob, Pumpkin=orange round, Onion=purple bulb, Garlic=white bulb
+- Blood = colored liquid vials/bottles; Cloth: Flax=brown fibres, Cotton=white fluffy, Wool=grey fluffy
+
+COMPLETE ITEM LIST (use ONLY these exact names):
+Aal's Sanctuary Candle Stand, Abalone, Abyssal Gem, Acacia Plank, Acacia Plywood, Acacia Plywood Hardener, Acacia Sap, Acacia Timber, Acacia Tree, Agar, Alchemist's Lamp, Alchemist's Small Lamp, Aloe, Aloe Cookie, Aloe Yogurt, Amanita Mushroom, Amanita Mushroom Crate, Amanita Mushroom Crop, Amanita Mushroom Hypha, An Anthology of the Ancient Kingdom, Ancient Kutum's Fragment, Ancient Mushroom, Ancient Mushroom Crate, Ancient Mushroom Crop, Ancient Mushroom Hypha, Angel's Pedestal, Antidote Elixir, Apple, Apple Tree, Arrow Mushroom, Arrow Mushroom Crate, Arrow Mushroom Crop, Arrow Mushroom Hypha, Ash Plank, Ash Plywood, Ash Sap, Ash Timber, Ash Tree, Assorted Side Dishes, Audria, Bag of Muddy Water, Balenos Meal, Banana, Barley, Barley Crate, Barley Dough, Barley Flour, Bat Blood, Bath of Origins, Bean Sprouts, Bear Blood, Beer, Beeswax, Beryl, Big Amanita Mushroom, Big Ancient Mushroom, Big Arrow Mushroom, Big Bluffer Mushroom, Big Bouquet Mushroom, Big Cloud Mushroom, Big Dwarf Mushroom, Big Emperor Mushroom, Big Fog Mushroom, Big Fortune Teller Mushroom, Big Ghost Mushroom, Big Hump Mushroom, Big Shrub, Big Sky Mushroom, Big Tiger Mushroom, Biotite, Birch, Birch Plank, Birch Plywood, Birch Sap, Birch Timber, Black Crystal, Black Gem, Black Gold Ingot, Black Quartz, Black Stone Powder, Blood Ruby, Bloodstone, Bloody Tree Knot, Blossoming Red Tulip, Blue Coral, Blue Crystal, Blue Flower, Blue Rose, Blue Umbrella Mushroom, Blueprint: Epheria Carrack, Bluffer Mushroom, Bluffer Mushroom Crate, Bluffer Mushroom Crop, Bluffer Mushroom Hypha, Boiled Bird Eggs, Bonfire of Dreams, Borscht, Bottle of Clean Water, Bottle of River Water, Bottle of Sea Water, Bottle of Turbid Water, Bouquet Mushroom, Bouquet Mushroom Crate, Bracken, Brass Ingot, Breezy White Coral, Bright Reef Piece, Broadleaf Tree, Broken Shell, Bronze Ingot, Bryophyte, Budding Red Tulip, Bunch of Dalvenia Alrea, Bunch of Dry Mane Grass, Bunch of Fire Flake Flowers, Bunch of Nolina, Bunch of Penestraria, Bunch of Silk Honey Grass, Bunch of Silver Azaleas, Bush, Butter, Byproduct Fertilizer, Cabbage, Cabbage Sack, Cactus Rind, Cactus Sap, Cactus Thorn, Calpheon Meal, Caphras Tree Plank, Caphras Tree Plywood, Caphras Tree Sap, Caphras Tree Timber, Carrot, Carrot Crate, Carrot Seed, Caterpillar, Cedar Plank, Cedar Plywood, Cedar Sap, Cedar Timber, Cedar Tree, Chanterelle, Chanterelle Box, Charred Stone, Cheese, Cheese Gratin, Cheese Pie, Cheetah Dragon Blood, Cherry, Chicken Feed, Chicken Meat, Chowder, Cinnamon, Circular Turf Frame (Large), Circular Turf Frame (Small), Citron, Citron Seed, Clear Liquid Reagent, Clear Quartz, Clip-clop Stonetail Mobile, Cloud Mushroom, Cloud Mushroom Crate, Cloud Mushroom Crop, Cloud Mushroom Hypha, Clown's Blood, Coal, Cobalt Ingot, Cobra Blood, Coconut, Colorful Envelope, Cone Snail, Cooking Honey, Cooking Oil, Cooking Wine, Copper, Copper Ingot, Copper Ore, Coral Crystal, Coral Piece, Corn, Corn Crate, Corn Dough, Corn Flour, Cotton, Cotton Fabric, Cotton Wool, Cotton Yarn, Cox Pirates' Artifact (Combat), Cox Pirates' Artifact (Parley Beginner), Cox Pirates' Artifact (Parley Expert), Cracked Fang, Cream, Crescent Turf Frame, Crimson Echo Flower, Crown of Honor, Cucumber, Dalvenia Alrea, Dalvenia Alrea Crate, Dark Pudding, Date Palm, Dawn Fallen Silk, Daybreak Blue Coral, Dead Tree Essence, Deep Sea Fruit, Deep Sea Memory Filled Glue, Deep Tide-Dyed Standardized Timber Square, Deer Blood, Defense Elixir, Delotia, Delotia Essence, Delotia Powder, Delotia Seed, Delotia-scented Candle, Desert Dumpling, Desert Herb, Design: Ahon Kirus's Armor - Dark Knight, Design: Ahon Kirus's Armor - Kunoichi, Design: Ahon Kirus's Armor - Lahn, Design: Ahon Kirus's Armor - Maehwa, Design: Ahon Kirus's Armor - Mystic, Design: Ahon Kirus's Armor - Ranger, Design: Ahon Kirus's Armor - Sorceress, Design: Ahon Kirus's Armor - Tamer, Design: Ahon Kirus's Armor - Valkyrie, Design: Ahon Kirus's Armor - Witch, Design: Black Leopard Armor - Dark Knight, Design: Black Leopard Armor - Kunoichi, Design: Black Leopard Armor - Lahn, Design: Black Leopard Armor - Maehwa, Design: Black Leopard Armor - Mystic, Design: Black Leopard Armor - Ranger, Design: Black Leopard Armor - Sorceress, Design: Black Leopard Armor - Tamer, Design: Black Leopard Armor - Valkyrie, Design: Black Leopard Armor - Witch, Design: Calpheon Choir Uniform - Shai, Design: Calpheon Noble Dress - Lahn, Design: Calpheon Noble Dress - Mystic, Design: Calpheon Noble Suit - Archer, Design: Calpheon Noble Suit - Striker, Design: Crown of Honor, Design: Delphe Knight Armor - Archer, Design: Delphe Knight Armor - Dark Knight, Design: Delphe Knight Armor - Lahn, Design: Delphe Knight Armor - Mystic, Design: Delphe Knight Armor - Striker, Design: Descendant of Sherekhan Outfit - Shai, Design: Drieghanese Winter Clothes - Shai, Design: Edan's Travel Wear - Archer, Design: Edan's Travel Wear - Striker, Design: Flondor Breeze Ceiling, Design: Florin Cook's Clothes - Shai, Design: Florin Herb Gatherer Clothes - Shai, Design: Garnier Troupe Garb - Archer, Design: Garnier Troupe Garb - Lahn, Design: Garnier Troupe Garb - Mystic, Design: Garnier Troupe Garb - Striker, Design: Jarette's Armor - Lahn, Design: Jarette's Armor - Mystic, Design: Jordine's Casual Wear - Archer, Design: Jordine's Casual Wear - Striker, Design: Kanna's Naga Disguise - Shai, Design: Karlstein, Design: Lara's Clothes - Shai, Design: Okiara Ripple Effect Floor, Design: Olvian Bed, Design: Olvian Bedside Table, Design: Olvian Bookshelf, Design: Olvian Chair, Design: Olvian Dining Table, Design: Olvian Drawers, Design: Olvian Sofa, Design: Olvian Table, Design: Olvian Wardrobe, Design: Orwen's Travel Wear - Lahn, Design: Orwen's Travel Wear - Mystic, Design: Serendian Formal Suit - Archer, Design: Serendian Formal Suit - Berserker, Design: Serendian Formal Suit - Musa, Design: Serendian Formal Suit - Ninja, Design: Serendian Formal Suit - Striker, Design: Serendian Formal Suit - Warrior, Design: Serendian Formal Suit - Wizard, Design: Serendian Smith Garb - Archer, Design: Serendian Smith Garb - Lahn, Design: Serendian Smith Garb - Mystic, Design: Serendian Smith Garb - Striker, Design: Serendian Soldier Armor - Archer, Design: Serendian Soldier Armor - Shai, Design: Serendian Soldier Armor - Striker, Design: Shroud Knight Armor - Archer, Design: Shroud Knight Armor - Berserker, Design: Shroud Knight Armor - Dark Knight, Design: Shroud Knight Armor - Kunoichi, Design: Shroud Knight Armor - Lahn, Design: Shroud Knight Armor - Maehwa, Design: Shroud Knight Armor - Musa, Design: Shroud Knight Armor - Mystic, Design: Shroud Knight Armor - Ninja, Design: Shroud Knight Armor - Ranger, Design: Shroud Knight Armor - Sorceress, Design: Shroud Knight Armor - Striker, Design: Shroud Knight Armor - Tamer, Design: Shroud Knight Armor - Valkyrie, Design: Shroud Knight Armor - Warrior, Design: Shroud Knight Armor - Witch, Design: Shroud Knight Armor - Wizard, Design: Starspun Chandelier, Design: Sunflare Chandelier, Design: Terrmian Casual Wear - Dark Knight, Design: Terrmian Casual Wear - Lahn, Design: Terrmian Casual Wear - Mystic, Design: Valencian Noble Dress - Shai, Design: Valencian Travel Wear - Archer, Design: Valencian Travel Wear - Berserker, Design: Valencian Travel Wear - Musa, Design: Valencian Travel Wear - Ninja, Design: Valencian Travel Wear - Striker, Design: Valencian Travel Wear - Warrior, Design: Valencian Travel Wear - Wizard, Diamond, Diamond Starfish, Dictyophora, Dictyophora Box, Dinosaur Blood, Diorite, Distilled Water, Dragon's Tears, Dressing, Dried Abalone, Dried Amberjack, Dried Amur Goby, Dried Amur Ide, Dried Amur Minnow, Dried Angler, Dried Arowana, Dried Atka Mackerel, Dried Barbel Steed, Dried Basking Shark, Dried Bass, Dried Beltfish, Dried Bigeye, Dried Bitterling, Dried Black Shiner, Dried Blackfin Sweeper, Dried Bleeker, Dried Blue Tang, Dried Bluefish, Dried Bluegill, Dried Bowfin, Dried Bubble Eye, Dried Burbot, Dried Butterflyfish, Dried Carp, Dried Catfish, Dried Cero, Dried Chameleon Goby, Dried Charr, Dried Checkerboard Wrasse, Dried Cherry Icefish, Dried Cherry Salmon, Dried Clownfish, Dried Common Bleak, Dried Common Minnow, Dried Crab, Dried Crawfish, Dried Croaker, Dried Crucian Carp, Dried Cuttlefish, Dried Cuvier, Dried Dace, Dried Dark Chub, Dried Dark Sleeper, Dried Diamond Minnow, Dried Diamond Starfish, Dried Dollarfish, Dried Dolphinfish, Dried Filefish, Dried Fish, Dried Flatfish, Dried Flounder, Dried Flower Icefish, Dried Flying Fish, Dried Fourfinger Threadfin, Dried Freshwater Eel, Dried Goby Minnow, Dried Golden-thread, Dried Grass Carp, Dried Grayling, Dried Green Sturgeon, Dried Greenling, Dried Grouper, Dried Grunt, Dried Gunnel, Dried Gurnard, Dried Herring, Dried Horn Fish, Dried Jellyfish, Dried John Dory, Dried Kuhlia Marginata, Dried Lamprey, Dried Leather Carp, Dried Lenok, Dried Lobster, Dried Longsnout Catfish, Dried Mackerel, Dried Mackerel Pike, Dried Mandarin Fish, Dried Maomao, Dried Miho Spine Loach, Dried Minnow, Dried Moray, Dried Mori, Dried Morning Loach, Dried Mudfish, Dried Mudskipper, Dried Mullet, Dried Nibbler, Dried Notch Jaw, Dried Octopus, Dried Oily Shiner, Dried Old Tree, Dried Pacu, Dried Pearl Oyster Flesh, Dried Perch, Dried Pike, Dried Pintado, Dried Piranha, Dried Pomfret, Dried Porcupine Fish, Dried Porgy, Dried Ray, Dried Red Snow Crab, Dried Redbreasted Wrasse, Dried Rock Hind, Dried Rockfish, Dried Rosefish, Dried Rosy Bitterling, Dried Round Herring, Dried Roundtail Paradisefish, Dried Salmon, Dried Sandeel, Dried Sandfish, Dried Sardine, Dried Saurel, Dried Scorpion Fish, Dried Sea Bass, Dried Sea Eel, Dried Seahorse, Dried Sharpbelly, Dried Shellfish, Dried Shuttles Hoppfish, Dried Siganid, Dried Silver Carp, Dried Silver Stripe Round Herring, Dried Skipjack, Dried Smelt, Dried Smokey Chromis, Dried Snakehead, Dried Soho Bitterling, Dried Spined Bittering, Dried Spined Loach, Dried Spotted Barbel, Dried Squid, Dried Starfish, Dried Stickleback, Dried Stippled Gunnel, Dried Stone Moroko, Dried Striped Catfish, Dried Striped Shiner, Dried Stumpy Bullhead, Dried Sturgeon, Dried Sunfish, Dried Surfperch, Dried Sweetfish, Dried Swellfish, Dried Swiri, Dried Swordfish, Dried Tapertail Anchovy, Dried Terrapin, Dried Thresher Shark, Dried Tiger Shark, Dried Tilefish, Dried Tongue Sole, Dried Trout, Dried Tuna, Dried Ussurian Bullhead, Dried Whiting, Dried Yalu Grayling, Dried Yellow-head Catfish, Dried Yellowfin Sculpin, Dried Yellowfin Sole, Dry Mane Grass, Dry Mane Grass Crate, Dry Mane Grass Crop, Dry Mane Grass Seed, Dry Thicket, Dusk Laden Cotton Fabric, Dwarf Mushroom, Dwarf Mushroom Crate, Dwarf Mushroom Crop, Dwarf Mushroom Hypha, EXP Elixir, Egg, Elder Tree, Elder Tree Plank, Elder Tree Plywood, Elder Tree Sap, Elder Tree Timber, Elixir of Amity, Elixir of Assassination, Elixir of Burn Removal, Elixir of Carnage, Elixir of Concentration, Elixir of Death, Elixir of Demihuman Hunt, Elixir of Detection, Elixir of Draining, Elixir of Endurance, Elixir of Energy, Elixir of Frenzy, Elixir of Fury, Elixir of Hemostasis, Elixir of Human Hunt, Elixir of Life, Elixir of Mentality, Elixir of Perforation, Elixir of Regeneration, Elixir of Resistance, Elixir of Seal, Elixir of Sky, Elixir of Spells, Elixir of Swiftness, Elixir of Thorn, Elixir of Will, Elixir of Wind, Elixir of Wings, Elkarr, Emerald, Emperor Mushroom, Emperor Mushroom Crate, Emperor Mushroom Crop, Emperor Mushroom Hypha, Energy-exuding Hide, Enhanced Flax Fabric, Enhanced Island Tree Coated Plywood, Enlightened One's Cotton Fabric, Essence of Abundance, Essence of Crimson Flame, Essence of Destruction, Essence of Enchantment, Essence of Liquor, Essence of Magic Power, Essence of Nature, Essence of Perfection, Essence of the Sun, Everlasting Herb, Everlasting Herb Crate, Everlasting Herb Crop, Everlasting Herb Seed, Eyelash Cup, Fairy Powder, Fancy Reptile Skin, Feldspar, Fertile Oil-Rich Soil, Fig, Fine Fancy Reptile Skin, Fine Hard Hide, Fine Rectangular Thuja Water Frame Base, Fine Soft Hide, Fine Thick Fur, Fine Thin Hide, Fine Tough Hide, Fir, Fir Plank, Fir Plywood, Fir Sap, Fir Timber, Fire Flake Flower, Fire Flake Flower Crate, Fire Flake Flower Crop, Fire Flake Flower Seed, First Tier of the Fountain, Fish, Fish Fillet Chips, Fish Fillet Salad, Fish Soup, Fisher's Elixir, Five-Star Starfish, Flagstone, Flamingo Blood, Flawless Spirit Stone, Flawless Spirit's Mirror, Flax, Flax Fabric, Flax Seed, Flax Thread, Fleece, Flondor Breeze Ceiling, Florchestra's Music Textbook, Flower Rice Cake, Fog Mushroom, Fog Mushroom Crate, Fog Mushroom Crop, Fog Mushroom Hypha, Forest Emerald, Fortune Teller Mushroom, Fortune Teller Mushroom Crate, Fortune Teller Mushroom Crop, Fortune Teller Mushroom Hypha, Fountain of Divine Melodies, Fox Blood, Freekeh, Freekeh Flour, Freekeh Flour Dough, Fried Bird, Fried Fish, Fried Vegetables, Frigate Contract Renewal: Professional Boatman, Frigate Contract Renewal: Skilled Boatman, Fruit Juice, Fruit Pie, Fruit Pudding, Fruit Tree, Fruit Wine, Fruit and Vegetable Salad, Fruit of Abundance, Fruit of Crimson Flame, Fruit of Destruction, Fruit of Enchantment, Fruit of Magic Power, Fruit of Nature, Fruit of Perfection, Fruit of the Sun, Fughar's Letter of Encouragement, Fully Bloomed Red Tulip, Fundamentals of Cooking, Garlic, Garlic Crate, Garlic Seed, Gem Polisher, Ghost Mushroom, Ghost Mushroom Crate, Ghost Mushroom Crop, Ghost Mushroom Hypha, Giant Pearl Clam, Giant Sea Anemone, Ginger Sack, Glossy Bone Piece, Glue, Goat Blood, Gold, Gold Ingot, Gold Ore, Gold Topaz, Golden Coral, Golden Deer Statue, Golden Hand Elixir, Golden Horse Statue, Golden Mane Glass Vase, Golden Mermaid Statue, Golden Pearl, Golden Sun Coral, Grain Soup, Granite, Grape, Grape Crate, Grape Seed, Gray Shrub, Great Ocean Dark Iron, Green Coral, Green Crystal, Green Pendulous Mushroom, Green Quartz, Grilled Sausage, Grim Reaper's Elixir, Halloween Pumpkin Seed, Ham Sandwich, Hard Hide, Hard Pillar, Haystack, Hazel Tree Fruit, Heaven's Tower, Herbal Gunpowder, Herbal Poison, Hero's Small Lamp, High Grade Crystal Fusion, High-quality Amanita Mushroom, High-quality Ancient Mushroom, High-quality Arrow Mushroom, High-quality Barley, High-quality Barley Crate, High-quality Bluffer Mushroom, High-quality Bouquet Mushroom, High-quality Carrot Crate, High-quality Carrot Juice, High-quality Carrot Seed, High-quality Chanterelle, High-quality Chanterelle Box, High-quality Citron, High-quality Citron Seed, High-quality Cloud Mushroom, High-quality Corn, High-quality Corn Crate, High-quality Dalvenia Alrea, High-quality Delotia, High-quality Delotia Seed, High-quality Dictyophora, High-quality Dictyophora Box, High-quality Dry Mane Grass, High-quality Dwarf Mushroom, High-quality Emperor Mushroom, High-quality Everlasting Herb, High-quality Fire Flake Flower, High-quality Fog Mushroom, High-quality Fortune Teller Mushroom, High-quality Garlic, High-quality Garlic Crate, High-quality Garlic Seed, High-quality Ghost Mushroom, High-quality Grape, High-quality Grape Crate, High-quality Halloween Pumpkin Seed, High-quality Haystack, High-quality Hot Pepper, High-quality Hot Pepper Crate, High-quality Hot Pepper Seed, High-quality Hump Mushroom, High-quality Leccinum, High-quality Mesima, High-quality Mesima Box, High-quality Napa Cabbage Sack, High-quality Nolina, High-quality Olive, High-quality Olive Crate, High-quality Onion, High-quality Onion Crate, High-quality Onion Seed, High-quality Paprika, High-quality Paprika Crate, High-quality Penestraria, High-quality Pepper, High-quality Pepper Crate, High-quality Pepper Seed, High-quality Perilla Sack, High-quality Pie Mushroom, High-quality Potato, High-quality Potato Crate, High-quality Pumpkin, High-quality Pumpkin Crate, High-quality Pumpkin Seed, High-quality Purple Mushroom, High-quality Radish Sack, High-quality Red-spotted Amanita, High-quality Red-spotted Amanita Box, High-quality Rice Sack, High-quality Silk Honey Grass, High-quality Silver Azalea, High-quality Sky Mushroom, High-quality Strawberry, High-quality Strawberry Crate, High-quality Strawberry Seed, High-quality Sunflower, High-quality Sunflower Crate, High-quality Sunrise Herb, High-quality Sweet Potato, High-quality Sweet Potato Crate, High-quality Tiger Mushroom, High-quality Tomato, High-quality Tomato Crate, High-quality Truffle Mushroom, High-quality Wheat, High-quality Wheat Crate, Honey Wine, Honeycomb Cookie, Hops, Hot Pepper, Hot Pepper Crate, Hot Pepper Seed, Hump Mushroom, Hump Mushroom Crate, Hump Mushroom Crop, Hump Mushroom Hypha, Indigo Lapis Lazuli, Indomitable Lion of Serendia, Inextinguishable Stone, Inorganic Fertilizer, Insectivore Plant, Insectivore Plant Flower, Insectivore Plant Leaf, Insectivore Plant Powder, Insectivore Plant Root, Insectivore Plant Sap, Insectivore Plant Stalk, Iridescent Coral, Iridescent Coral Piece, Iron, Iron Ingot, Iron Ore, Island Tree Coated Plywood, Jade, Jade Coral Ingot, Jar of Dawn's Mist, Karanda's Talon, Kelp, Keplan Horn Cocoon, Keplan Horned Cocoon Silk, Khan's Scale, Khan's Tendon, Knight Combat Rations, Knitting Yarn, Kuku Bird Blood, Kuku Bird Meat, Kzarka's Bloodstone, Lamp Post, Lamute Handmade Stand, Lapis Lazuli, Laurel Leaves, Laurus Nobilis Nest, Lead, Lead Ingot, Lead Ore, Lean Meat Salad, Leather Glaze, Leavening Agent, Leccinum, Leccinum Crate, Legendary Beast's Blood, Lemoria Plywood, Lion Blood, Lion that Serenades the Sun, Lion's Gaze, Lizard Blood, Lizard Kebab, Llama Blood, Lobster, Log, Loopy Tree Forest Pillars, Loopy Tree Plank, Loopy Tree Plywood, Loopy Tree Sap, Loopy Tree Timber, Low Grade Crystal Fusion, Luminous Cobalt Ingot, Magic Crystal of Infinity - Adamantine, Magic Crystal of Infinity - Agility, Magic Crystal of Infinity - Air Attack, Magic Crystal of Infinity - Armor, Magic Crystal of Infinity - Ascension, Magic Crystal of Infinity - Assault, Magic Crystal of Infinity - Back Attack, Magic Crystal of Infinity - Carnage, Magic Crystal of Infinity - Counter Attack, Magic Crystal of Infinity - Critical, Magic Crystal of Infinity - Descent, Magic Crystal of Infinity - Down Attack, Magic Crystal of Infinity - Durability, Magic Crystal of Infinity - Endurance, Magic Crystal of Infinity - Energy, Magic Crystal of Infinity - Ensnare, Magic Crystal of Infinity - Experience, Magic Crystal of Infinity - HP Recovery, Magic Crystal of Infinity - Healing, Magic Crystal of Infinity - Intimidation, Magic Crystal of Infinity - MP Recovery, Magic Crystal of Infinity - Magic Attack, Magic Crystal of Infinity - Magic Defense, Magic Crystal of Infinity - Max HP, Magic Crystal of Infinity - Melee Attack, Magic Crystal of Infinity - Melee Defense, Magic Crystal of Infinity - Memory, Magic Crystal of Infinity - Patience, Magic Crystal of Infinity - Power, Magic Crystal of Infinity - Precision, Magic Crystal of Infinity - Ranged Attack, Magic Crystal of Infinity - Ranged Defense, Magic Crystal of Infinity - Resonance, Magic Crystal of Infinity - Siege, Magic Crystal of Infinity - Speed Attack, Magic Crystal of Infinity - Strength, Magic Crystal of Infinity - Sturdiness, Magic Crystal of Infinity - Submergence, Magic Crystal of Infinity - Swiftness, Magic Crystal of Infinity - Valor, Magic Crystal of Infinity - Vigor, Magic Crystal of Infinity - Vision, Magical Acacia Seed, Magical Amanita Mushroom Hypha, Magical Ancient Mushroom Hypha, Magical Arrow Mushroom Hypha, Magical Barley Seed, Magical Bluffer Mushroom Hypha, Magical Bouquet Mushroom Hypha, Magical Carrot Seed, Magical Citron Seed, Magical Cloud Mushroom Hypha, Magical Corn Seed, Magical Dalvenia Alrea Seed, Magical Delotia Seed, Magical Dry Mane Grass Seed, Magical Dwarf Mushroom Hypha, Magical Emperor Mushroom Hypha, Magical Everlasting Herb Seed, Magical Fire Flake Flower Seed, Magical Fog Mushroom Hypha, Magical Fortune Teller Mushroom Hypha, Magical Garlic Seed, Magical Ghost Mushroom Hypha, Magical Grape Seed, Magical Hot Pepper Seed, Magical Hump Mushroom Hypha, Magical Leccinum Hypha, Magical Nolina Seed, Magical Olive Seed, Magical Onion Seed, Magical Paprika Seed, Magical Penestraria Seed, Magical Pepper Seed, Magical Pie Mushroom Hypha, Magical Pumpkin Seed, Magical Purple Mushroom Hypha, Magical Seed Potato, Magical Seed Sweet Potato, Magical Silk Honey Grass Seed, Magical Silver Azalea Seed, Magical Sky Mushroom Hypha, Magical Strawberry Seed, Magical Sunflower Seed, Magical Sunrise Herb Seed, Magical Tiger Mushroom Hypha, Magical Tomato Seed, Magical Truffle Mushroom Hypha, Magical Wheat Seed, Makgeolli, Mandragora Essence, Maple, Maple Plank, Maple Plywood, Maple Sap, Maple Timber, Margoria Dark Iron, Marmot Blood, Master Crow's Fireplace Mantle, Master Crow's Fireplace Overmantel, Master Crow's Fireplace Pillar, Master Crow's Fireplace Surround, Meat Croquette, Meat Pasta, Meat Pie, Meat Sandwich, Meat Soup, Meat Stew, Mediah Meal, Meju, Melted Copper Shard, Melted Gold Shard, Melted Iron Shard, Melted Lead Shard, Melted Mythril Shard, Melted Nickel Shard, Melted Noc Shard, Melted Platinum Shard, Melted Silver Shard, Melted Tin Shard, Melted Titanium Shard, Melted Vanadium Shard, Melted Zinc Shard, Mesima, Mesima Box, Metal Solvent, Mid Grade Crystal Fusion, Milk, Milk Tea, Miloberry's Apu Apu Waterstarwort, Mimosa Stalk, Mineral Water, Monk's Branch, Monkey Blood, Moon Scale Plywood, Moon Vein Flax Fabric, Moonlight Opal, Moss Tree Plank, Moss Tree Plywood, Moss Tree Sap, Moss Tree Timber, Mud Crystal, Muddy Quartz, Mudstone, Mungbean, Mysterious Citron Seed, Mysterious Delotia Seed, Mythril, Mythril Ingot, Needle Tree, Nickel Ingot, Nickel Ore, Noc Ingot, Noc Ore, Nolina, Nolina Crate, Northern Heidel Gothic Fountain, Note Full of Happiness, Nouver's Hide, Nutmeg, Oatmeal, Obsidian Ore, Ocean Hermit Crab, Ocean Horizon Key, Ocean Sapphire, Ogre Blood, Oil of Corruption, Oil of Fortitude, Oil of Regeneration, Oil of Storms, Oil of Tranquility, Oil of the Abyss, Okiara Ripple Effect Floor, Old Tree Bark, Old Tree Branch, Olive, Olive Crate, Olive Oil, Olive Seed, Olive Tree, Olucas, Omelet, Onion, Onion Crate, Onion Seed, Opal, Organic Feed, Organic Fertilizer, Ouk Pill of Time and Tide, Outdoor Stand, Ox Blood, Oyster, Palm Plank, Palm Plywood, Palm Sap, Palm Timber, Palm Tree, Paprika, Paprika Crate, Paste Bait, Pear, Pedestal of Honor, Pedestal of the People's Throne, Penestraria, Penestraria Crate, Pepper, Pepper Crate, Pepper Seed, Perilla Oil, Perilla Sack, Pickled Fish, Pickled Vegetables, Pie Mushroom, Pie Mushroom Crate, Pig Blood, Pile of Sunrise Herbs, Pine Coated Plywood, Pine Plank, Pine Plywood, Pine Sap, Pine Timber, Pine Tree, Pineapple, Pink Rosebay Sack, Pink Tentacle, Pink Trumpet Mushroom, Pinnacle of Honor, Pistachio, Platinum, Platinum Ingot, Platinum Ore, Plywood Hardener, Polished Opal, Polished Stone, Pork, Potato, Potato Crate, Potato Dough, Potato Flour, Powder of Flame, Powder of Rifts, Powder of Time, Prairie Green Coral, Precious Black Crystal, Precious Blue Crystal, Precious Green Crystal, Precious Mud Crystal, Precious Red Crystal, Precious Translucent Crystal, Precious Violet Crystal, Processed Coal, Professional's Satisfying Dinner Meal, Pumpkin, Pumpkin Crate, Pumpkin Seed, Pure Copper Crystal, Pure Gold Crystal, Pure Iron Crystal, Pure Lead Crystal, Pure Mythril Crystal, Pure Nickel Crystal, Pure Noc Crystal, Pure Pearl Crystal, Pure Platinum Crystal, Pure Powder Reagent, Pure Silver Crystal, Pure Tin Crystal, Pure Titanium Crystal, Pure Vanadium Crystal, Pure Zinc Crystal, Purified Water, Purple Mushroom, Purple Mushroom Crate, Purple Pink Flower, Quartz, Raccoon Blood, Radish Sack, Rainbow Button Mushroom, Rainbow Stone, Raisin Bread, Reagent of Harmonious Spirits, Red Bean, Red Coral, Red Crystal, Red Pepper Powder, Red Quartz, Red Sauce, Red Shellfish, Red Shrub, Red Tree Lump, Red-spotted Amanita, Red-spotted Amanita Box, Reed Sack, Refined Delotia Reagent, Remnants of Burnt Spirits, Restored Orzeca Bookshelf, Restored Orzeca Golden Crown Decoration, Resurrection Elixir, Rhino Blood, Rice Sack, Rock Elephant Blood, Rock Salt Ingot, Roe, Rose, Rough Black Crystal, Rough Blue Crystal, Rough Diamond, Rough Emerald, Rough Green Crystal, Rough Jade, Rough Lapis Lazuli, Rough Mud Crystal, Rough Obsidian Ore, Rough Opal, Rough Opulent Crystal, Rough Red Crystal, Rough Ruby, Rough Sapphire, Rough Stone, Rough Stone Plus, Rough Topaz, Rough Translucent Crystal, Rough Violet Crystal, Round Head Corals, Ruby, Ruddy Manganese Nodule, Runn Light Fragment, Rye, Saffron, Salt, Sandstone, Sapphire, Scarlet Rosebay Sack, Scorched Fragment, Scorpion Blood, Sea Anemone, Seafood Grilled with Butter, Seafood Mushroom Salad, Seafood Pasta, Seaweed, Seaweed Stalk, Second Tier of the Fountain, Serendia Meal, Sheep Blood, Sheltering Roof, Ship Upgrade Permit: Epheria Caravel, Ship Upgrade Permit: Epheria Galleass, Shrimp, Shrub, Silk, Silk Honey Grass, Silk Honey Grass Crate, Silk Honey Grass Crop, Silk Honey Grass Seed, Silk Thread, Silkworm Cocoon, Silver, Silver Azalea, Silver Azalea Crate, Silver Azalea Crop, Silver Azalea Seed, Silver Ingot, Silver Ore, Sinner's Blood, Sky Blue Flower, Sky Mushroom, Sky Mushroom Crate, Sky Mushroom Crop, Sky Mushroom Hypha, Small Tree Plywood, Smoked Fish Steak, Snowfield Cedar Plank, Snowfield Cedar Plywood, Snowfield Cedar Sap, Snowfield Cedar Timber, Soft Bread, Soft Hide, Some Miner's Sack, Soy Sauce, Soybean, Soybean Paste, Special Acacia Seed, Special Amanita Mushroom, Special Ancient Mushroom, Special Arrow Mushroom, Special Barley, Special Bluffer Mushroom, Special Bouquet Mushroom, Special Bouquet Mushroom Crate, Special Carrot Juice, Special Carrot Seed, Special Chanterelle, Special Chanterelle Box, Special Chicken Feed, Special Citron, Special Citron Seed, Special Cloud Mushroom, Special Corn, Special Dalvenia Alrea, Special Dalvenia Alrea Crate, Special Delotia, Special Delotia Seed, Special Dictyophora, Special Dictyophora Box, Special Dry Mane Grass, Special Dwarf Mushroom, Special Emperor Mushroom, Special Everlasting Herb, Special Fire Flake Flower, Special Fog Mushroom, Special Fortune Teller Mushroom, Special Garlic, Special Garlic Seed, Special Ghost Mushroom, Special Grape, Special Halloween Pumpkin Seed, Special Haystack, Special Hot Pepper, Special Hot Pepper Seed, Special Hump Mushroom, Special Leccinum, Special Leccinum Crate, Special Mesima, Special Mesima Box, Special Napa Cabbage Sack, Special Nolina, Special Nolina Crate, Special Olive, Special Onion, Special Onion Seed, Special Paprika, Special Penestraria, Special Penestraria Crate, Special Pepper, Special Pepper Seed, Special Perilla Sack, Special Pie Mushroom, Special Pie Mushroom Crate, Special Potato, Special Pumpkin, Special Pumpkin Seed, Special Purple Mushroom, Special Purple Mushroom Crate, Special Radish Sack, Special Red-spotted Amanita, Special Red-spotted Amanita Box, Special Rice Sack, Special Silk Honey Grass, Special Silver Azalea, Special Sky Mushroom, Special Strawberry, Special Strawberry Crate, Special Strawberry Seed, Special Sunflower, Special Sunrise Herb, Special Sweet Potato, Special Tiger Mushroom, Special Tomato, Special Truffle Mushroom, Special Wheat, Spirit's Echo, Spirit's Leaf, Standardized Timber Square, Star Anise, Star Anise Mushroom, Star Diamond, Steak, Steamed Bird, Steamed Fish, Steamed Seafood, Steel, Stir-Fried Meat, Stir-Fried Seafood, Stir-Fried Vegetables, Stone of Malice, Strange Rock, Strawberry, Strawberry Crate, Strawberry Seed, Sturdy Acacia Plywood, Sturdy Ash Plywood, Sturdy Birch Plywood, Sturdy Caphras Tree Plywood, Sturdy Cedar Plywood, Sturdy Elder Tree Plywood, Sturdy Fir Plywood, Sturdy Loopy Tree Plywood, Sturdy Maple Plywood, Sturdy Moss Tree Plywood, Sturdy Palm Plywood, Sturdy Pine Plywood, Sturdy Snow White Stone, Sturdy Snowfield Cedar Plywood, Sturdy Stone Floor, Sturdy Thornwood Plywood, Sturdy Thuja Plywood, Sturdy Timber Square, Sturdy White Cedar Plywood, Sugar, Sulfur, Sun-Dried Salt, Sunflower, Sunflower Crate, Sunflower Seed, Sunrise Herb, Sunrise Herb Crate, Sunrise Herb Crop, Sunrise Herb Seed, Sunset Dyed Wool, Supreme Fancy Feather, Supreme Fancy Reptile Skin, Supreme Hard Hide, Supreme Lightweight Plume, Supreme Soft Hide, Supreme Thick Fur, Supreme Thin Hide, Supreme Tough Hide, Sute Tea, Sweet Potato, Sweet Potato Crate, Sweet Potato Dough, Sweet Potato Flour, Tangleweed, Tea With Fine Scent, Tear of the Great Ocean, Tear of the Ocean, Teff, Teff Flour, Teff Flour Dough, Tenacious Origin of Life, Thank-You Letter, Thick Fur, Thicket, Thin Hide, Third Tier of the Fountain, Thornwood Plank, Thornwood Plywood, Thornwood Sap, Thornwood Timber, Thuja Plank, Thuja Plywood, Thuja Sap, Thuja Timber, Thunderstruck Wooden Music Stand, Tidal Blue Lamp Post, Tide-Dyed Standardized Timber Square, Tiger Blood, Tiger Mushroom, Tiger Mushroom Crate, Tiger Mushroom Crop, Tiger Mushroom Hypha, Tigerflower Sack, Tin, Tin Ingot, Tin Ore, Titanium Ingot, Titanium Ore, Tomato, Tomato Crate, Top-quality Thornwood Timber Frame, Topaz, Tough Flax Fabric, Tough Hide, Toxic Watermelon, Trace of Ascension, Trace of Battle, Trace of Chaos, Trace of Death, Trace of Despair, Trace of Hunting, Trace of Memory, Trace of Nature, Trace of Origin, Trace of Savagery, Trace of Violence, Trace of Wave, Trace of the Earth, Translucent Crystal, Translucent Ice, Tridana Giant Clam Shell, Tridana Giant Clam Shellfish, Troll Blood, Truffle Mushroom, Truffle Mushroom Crate, Truffle Mushroom Crop, Truffle Mushroom Hypha, Tulip, Tulip Seed, Turban Shell, Turf Tile Frame (1X1), Turf Tile Frame (2X1), Turf Tile Frame (2X2), Turf Tile Frame (2X6), Turf Tile Frame (4X4), Twig, Twilight Red Coral, Tyrant's Blood, Usable Scantling, Vanadium Ingot, Vanadium Ore, Vase of Florin's Hope, Vedelona, Vilentia's Vedelona Bouquet, Vine Noc Ingot, Vinegar, Viola Sack, Violet Crystal, Violet Flower, Volcanic Umbrella Mushroom, Waragon Blood, Water, Water Thyme, Weasel Blood, Weeds, Wheat, Wheat Crate, Wheat Dough, Wheat Flour, White Cedar, White Cedar Plank, White Cedar Plywood, White Cedar Plywood Hardener, White Cedar Sap, White Cedar Timber, White Coral, White Flower Mushroom, White Sauce, White Tin, White Umbrella Mushroom, Wild Berry Sack, Wild Ginseng Seed, Wild Grass, Wild Herb, Wing Turf Frame, Wings of Frozen Tides, Wise Man's Blood, Withered Leaf, Wolf Blood, Wool, Worker's Elixir, Worm Blood, Yak Blood, Yellow Flower, Youngji Mushroom, Youngji Mushroom Sack, Zinc, Zinc Ingot, Zinc Ore, [Guild] Abyss-drenched Ingot, [Guild] Blueprint: Improved Galley, [Guild] Deep Sea-drenched Timber Square, [Guild] Goddess's Tear, [Guild] Great Ocean-drenched Plywood
+
+Return ONLY JSON:
+{"cells":[{"row":0,"col":0,"name":"Copper Ore","qty":415000},{"row":0,"col":1,"name":"Potato","qty":298000}]}`
   }
 };
 
@@ -394,100 +452,119 @@ const S = {
 let lang = localStorage.getItem('bdo_lang') || 'tr';
 let isDark = localStorage.getItem('bdo_theme') !== 'light';
 let inventory = [];
-let originalInventory = [];
+let originalInventory = []; // AI'ın ilk okuduğu sonuç
 let currentBase64 = null;
 let mediaType = 'image/jpeg';
 let cachedCulinary = [];
 let cachedAlchemy = [];
 let editMode = false;
-let dragSrcIdx = null;
 
 // ── ITEM DATABASE ─────────────────────────────────────────────────────────
 let BDO_ITEMS = null;
+
 async function loadItemDB() {
   if (BDO_ITEMS) return;
   try {
     const resp = await fetch('bdo_items.json');
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const raw = await resp.json();
+    // New minimal format: {items: {id: {n, i}}}
     if (raw.items) {
       BDO_ITEMS = { id_to_info: {} };
       for (const [id, v] of Object.entries(raw.items)) {
         BDO_ITEMS.id_to_info[id] = { name_en: v.n, icon: v.i };
       }
-    } else if (raw.id_to_info) { BDO_ITEMS = raw; }
-    else throw new Error('Unknown format');
-  } catch(e) { BDO_ITEMS = { id_to_info: {} }; }
+    } else if (raw.id_to_info) {
+      BDO_ITEMS = raw;
+    } else {
+      throw new Error('Unknown format');
+    }
+    console.log('BDO Items loaded:', Object.keys(BDO_ITEMS.id_to_info).length);
+  } catch(e) {
+    console.warn('Could not load bdo_items.json:', e.message);
+    BDO_ITEMS = { id_to_info: {} };
+  }
 }
-function getItemNameEN(id) {
-  const info = BDO_ITEMS?.id_to_info?.[String(id)];
+
+// Always return English name from Codex
+function getItemNameEN(itemId) {
+  if (!BDO_ITEMS) return null;
+  const info = BDO_ITEMS.id_to_info[String(itemId)];
   return info ? info.name_en : null;
 }
+
+// Find item_id by English name (fuzzy match)
 function findItemIdByName(name) {
   if (!BDO_ITEMS || !name) return null;
   const lower = name.toLowerCase().trim();
   for (const [id, info] of Object.entries(BDO_ITEMS.id_to_info)) {
     if (info.name_en && info.name_en.toLowerCase() === lower) return parseInt(id);
   }
+  // Fuzzy: partial match
   for (const [id, info] of Object.entries(BDO_ITEMS.id_to_info)) {
     if (info.name_en && info.name_en.toLowerCase().includes(lower)) return parseInt(id);
   }
   return null;
 }
-function getItemIcon(item) {
-  if (!BDO_ITEMS || !item.item_id) return '';
-  const info = BDO_ITEMS.id_to_info[String(item.item_id)];
-  if (!info?.icon) return '';
-  return `<img src="${'https://bdocodex.com'}${info.icon}" style="width:20px;height:20px;border-radius:2px;vertical-align:middle;margin-right:3px;border:1px solid var(--border);" onerror="this.style.display='none'">`;
-}
 
-// ── THEME / LANG ──────────────────────────────────────────────────────────
+// ── THEME ─────────────────────────────────────────────────────────────────
 function applyTheme() {
   document.body.classList.toggle('light', !isDark);
   document.getElementById('theme-btn').textContent = isDark ? S[lang].themeLight : S[lang].themeDark;
 }
-function toggleTheme() { isDark = !isDark; localStorage.setItem('bdo_theme', isDark?'dark':'light'); applyTheme(); }
-function setLang(l) {
-  lang = l; localStorage.setItem('bdo_lang', l);
-  document.getElementById('lang-tr').classList.toggle('active', l==='tr');
-  document.getElementById('lang-en').classList.toggle('active', l==='en');
-  applyStrings();
-  if (document.getElementById('results-section').classList.contains('visible') && inventory.length) rerenderResults();
+function toggleTheme() {
+  isDark = !isDark;
+  localStorage.setItem('bdo_theme', isDark ? 'dark' : 'light');
+  applyTheme();
 }
+
+// ── LANGUAGE ──────────────────────────────────────────────────────────────
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('bdo_lang', l);
+  document.getElementById('lang-tr').classList.toggle('active', l === 'tr');
+  document.getElementById('lang-en').classList.toggle('active', l === 'en');
+  applyStrings();
+  if (document.getElementById('results-section').classList.contains('visible') && inventory.length) {
+    rerenderResults();
+  }
+}
+
 function applyStrings() {
   const s = S[lang];
-  document.getElementById('main-title').textContent        = s.title;
-  document.getElementById('main-subtitle').textContent     = s.subtitle;
-  document.getElementById('upload-title').textContent      = s.uploadTitle;
-  document.getElementById('upload-desc').textContent       = s.uploadDesc;
-  document.getElementById('change-btn').textContent        = s.changeBtn;
-  document.getElementById('analyze-btn').textContent       = s.analyzeBtn;
+  document.getElementById('main-title').textContent = s.title;
+  document.getElementById('main-subtitle').textContent = s.subtitle;
+  document.getElementById('upload-title').textContent = s.uploadTitle;
+  document.getElementById('upload-desc').textContent = s.uploadDesc;
+  document.getElementById('change-btn').textContent = s.changeBtn;
+  document.getElementById('analyze-btn').textContent = s.analyzeBtn;
   document.getElementById('ai-panel-title-text').textContent = s.aiPanel;
-  document.getElementById('detected-label').textContent    = s.detectedLabel;
-  document.getElementById('results-header').textContent    = s.resultsHeader;
-  document.getElementById('tab-culinary-btn').textContent  = s.tabCulinary;
-  document.getElementById('tab-alchemy-btn').textContent   = s.tabAlchemy;
-  document.getElementById('tab-best-btn').textContent      = s.tabBest;
-  document.getElementById('theme-btn').textContent         = isDark ? s.themeLight : s.themeDark;
-  document.getElementById('export-csv-btn').textContent    = s.exportCSV;
+  document.getElementById('detected-label').textContent = s.detectedLabel;
+  document.getElementById('results-header').textContent = s.resultsHeader;
+  document.getElementById('tab-culinary-btn').textContent = s.tabCulinary;
+  document.getElementById('tab-alchemy-btn').textContent = s.tabAlchemy;
+  document.getElementById('theme-btn').textContent = isDark ? s.themeLight : s.themeDark;
+  document.getElementById('export-csv-btn').textContent = s.exportCSV;
   document.getElementById('export-sheets-btn').textContent = s.exportSheets;
-  document.getElementById('find-recipes-btn').textContent  = s.findRecipes;
-  document.getElementById('add-label').textContent         = lang === 'tr' ? 'Ekle' : 'Add';
-  document.getElementById('edit-toggle-btn').textContent   = editMode ? s.doneBtn : s.editBtn;
-  document.getElementById('dev-banner-text').textContent   = s.devBanner;
-  document.getElementById('feedback-text').textContent     = s.feedbackText;
+  document.getElementById('find-recipes-btn').textContent = lang === 'tr' ? '🔍 Tarifleri Bul' : '🔍 Find Recipes';
   document.title = s.title;
+  const banner = document.getElementById('dev-banner-text');
+  if (banner) banner.textContent = s.devBanner;
+  const feedback = document.getElementById('feedback-text');
+  if (feedback) feedback.textContent = s.feedbackText;
+  const addLabel = document.getElementById('add-item-label');
+  if (addLabel) addLabel.textContent = lang === 'tr' ? 'Ekle' : 'Add';
   if (!currentBase64) setStatus('', s.statusReady);
 }
 
 // ── UI HELPERS ────────────────────────────────────────────────────────────
 function setStatus(state, text) {
-  document.getElementById('status-dot').className    = 'status-dot ' + state;
+  document.getElementById('status-dot').className = 'status-dot ' + state;
   document.getElementById('status-text').textContent = text;
 }
 function showLoading(t, s) {
   document.getElementById('loading-text').textContent = t;
-  document.getElementById('loading-sub').textContent  = s;
+  document.getElementById('loading-sub').textContent = s;
   document.getElementById('loading-overlay').classList.add('visible');
 }
 function hideLoading() { document.getElementById('loading-overlay').classList.remove('visible'); }
@@ -510,10 +587,13 @@ fInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.tar
 document.getElementById('change-btn').addEventListener('click', () => {
   document.getElementById('preview-section').classList.remove('visible', 'saved-mode');
   document.getElementById('results-section').classList.remove('visible');
-  document.getElementById('preview-card').style.display = '';
   inventory = []; currentBase64 = null; fInput.value = '';
-  cachedCulinary = []; cachedAlchemy = []; editMode = false;
+  cachedCulinary = []; cachedAlchemy = [];
+  editMode = false;
   try { localStorage.removeItem('bdo_inventory'); } catch(e) {}
+  // Restore preview card visibility
+  const pc = document.querySelector('.preview-card');
+  if (pc) pc.style.display = '';
   setStatus('', S[lang].statusReady);
 });
 
@@ -522,23 +602,31 @@ function handleFile(file) {
   reader.onload = e => {
     const img = new Image();
     img.onload = () => {
-      // Preview
+      // Preview image (original size, max 1200px)
       const maxW = 1200;
       let pw = img.width, ph = img.height;
       if (pw > maxW) { ph = Math.round(ph * maxW / pw); pw = maxW; }
-      const pc = document.createElement('canvas'); pc.width = pw; pc.height = ph;
-      pc.getContext('2d').drawImage(img, 0, 0, pw, ph);
-      document.getElementById('preview-img').src = pc.toDataURL('image/jpeg', 0.85);
-      // AI image: PNG 2x
-      let aw = img.width * 2, ah = img.height * 2;
-      if (aw > 2400) { const r = 2400/aw; aw = 2400; ah = Math.round(ah*r); }
-      const ac = document.createElement('canvas'); ac.width = aw; ac.height = ah;
-      const ax = ac.getContext('2d'); ax.imageSmoothingEnabled = true; ax.imageSmoothingQuality = 'high';
-      ax.drawImage(img, 0, 0, aw, ah);
-      currentBase64 = ac.toDataURL('image/png').split(',')[1];
+      const previewCanvas = document.createElement('canvas');
+      previewCanvas.width = pw; previewCanvas.height = ph;
+      previewCanvas.getContext('2d').drawImage(img, 0, 0, pw, ph);
+      document.getElementById('preview-img').src = previewCanvas.toDataURL('image/jpeg', 0.85);
+
+      // AI image: PNG for lossless quality (better icon recognition)
+      const scale = 2.0;
+      let aw = Math.round(img.width * scale);
+      let ah = Math.round(img.height * scale);
+      if (aw > 2400) { const r = 2400 / aw; aw = 2400; ah = Math.round(ah * r); }
+      const aiCanvas = document.createElement('canvas');
+      aiCanvas.width = aw; aiCanvas.height = ah;
+      const aiCtx = aiCanvas.getContext('2d');
+      aiCtx.imageSmoothingEnabled = true;
+      aiCtx.imageSmoothingQuality = 'high';
+      aiCtx.drawImage(img, 0, 0, aw, ah);
+      const aiResized = aiCanvas.toDataURL('image/png'); // PNG — lossless!
+      currentBase64 = aiResized.split(',')[1];
       mediaType = 'image/png';
+
       document.getElementById('preview-section').classList.add('visible');
-      document.getElementById('preview-card').style.display = '';
       document.getElementById('items-container').style.display = 'none';
       document.getElementById('results-section').classList.remove('visible');
       setStatus('', S[lang].statusReady);
@@ -549,22 +637,30 @@ function handleFile(file) {
 }
 
 // ── READ INVENTORY ────────────────────────────────────────────────────────
+// Full BDO Codex materials list for AI reference
+const MATERIALS_LIST = "Abalone, Acacia Plank, Acacia Plywood, Acacia Timber, Aloe, Amanita Mushroom, Amanita Mushroom Crate, Ancient Kutum's Fragment, Ancient Mushroom, Ancient Mushroom Crate, Apple, Arrow Mushroom, Arrow Mushroom Crate, Ash Plank, Ash Plywood, Ash Timber, Bag of Muddy Water, Banana, Barley, Barley Crate, Barley Dough, Barley Flour, Bat Blood, Bean Sprouts, Bear Blood, Big Amanita Mushroom, Big Ancient Mushroom, Big Arrow Mushroom, Big Bluffer Mushroom, Big Cloud Mushroom, Big Dwarf Mushroom, Big Emperor Mushroom, Big Fog Mushroom, Big Fortune Teller Mushroom, Big Ghost Mushroom, Big Hump Mushroom, Big Sky Mushroom, Big Tiger Mushroom, Birch Plank, Birch Plywood, Birch Timber, Black Crystal, Black Gold Ingot, Blood Ruby, Blue Coral, Blue Crystal, Bluffer Mushroom, Bluffer Mushroom Crate, Bottle of Clean Water, Bottle of River Water, Bottle of Sea Water, Bottle of Turbid Water, Bouquet Mushroom, Bouquet Mushroom Crate, Brass Ingot, Breezy White Coral, Brilliant Armor Reform Stone, Brilliant Opal, Brilliant Weapon Reform Stone, Broken Shell, Bronze Ingot, Bunch of Dry Mane Grass, Bunch of Fire Flake Flowers, Bunch of Silk Honey Grass, Bunch of Silver Azaleas, Butter, Cabbage, Cactus Rind, Cactus Thorn, Caphras Tree Plank, Caphras Tree Plywood, Caphras Tree Timber, Carrot Crate, Cedar Plank, Cedar Plywood, Cedar Timber, Chanterelle Box, Cheese, Cheetah Dragon Blood, Cherry, Chicken Feed, Chicken Meat, Chowder, Cinnamon, Citron, Clear Liquid Reagent, Cloud Mushroom, Cloud Mushroom Crate, Clown's Blood, Coal, Cobra Blood, Coconut, Cone Snail, Cooking Honey, Cooking Oil, Cooking Wine, Copper Ingot, Copper Ore, Coral Crystal, Coral Piece, Corn, Corn Crate, Corn Dough, Corn Flour, Cotton, Cream, Cucumber, Dalvenia Alrea, Dalvenia Alrea Crate, Date Palm, Daybreak Blue Coral, Deer Blood, Desert Herb, Diamond, Diamond Starfish, Dictyophora Box, Dinosaur Blood, Distilled Water, Dressing, Dried Abalone, Dried Diamond Starfish, Dried Fish, Dried Lobster, Dried Pearl Oyster Flesh, Dry Mane Grass, Dry Mane Grass Crate, Dwarf Mushroom, Dwarf Mushroom Crate, Egg, Elder Tree Plank, Elder Tree Plywood, Elder Tree Timber, Elixir of Regeneration, Elkarr, Emerald, Emperor Mushroom, Emperor Mushroom Crate, Essence of Liquor, Everlasting Herb, Everlasting Herb Crate, Eyelash Cup, Fertile Oil-Rich Soil, Fig, Fir Plank, Fir Plywood, Fir Timber, Fire Flake Flower, Fire Flake Flower Crate, Fish, Five-Star Starfish, Flamingo Blood, Flawless Spirit Stone, Fog Mushroom, Fog Mushroom Crate, Forest Emerald, Fortune Teller Mushroom, Fortune Teller Mushroom Crate, Fox Blood, Freekeh, Freekeh Flour, Freekeh Flour Dough, Garlic, Garlic Crate, Gem Polisher, Ghost Mushroom, Ghost Mushroom Crate, Giant Pearl Clam, Giant Sea Anemone, Gift Box Full of Memories, Glossy Bone Piece, Glue, Goat Blood, Gold Ingot, Gold Ore, Gold Topaz, Golden Coral, Golden Pearl, Golden Sun Coral, Good Chicken Feed, Grape, Grape Crate, Green Coral, Green Crystal, Hard Pillar, Haystack, Haystack for Elephant, High-quality Amanita Mushroom, High-quality Ancient Mushroom, High-quality Arrow Mushroom, High-quality Barley, High-quality Barley Crate, High-quality Bluffer Mushroom, High-quality Bouquet Mushroom, High-quality Carrot Crate, High-quality Citron, High-quality Cloud Mushroom, High-quality Corn, High-quality Corn Crate, High-quality Dalvenia Alrea, High-quality Dry Mane Grass, High-quality Dwarf Mushroom, High-quality Emperor Mushroom, High-quality Everlasting Herb, High-quality Fire Flake Flower, High-quality Fog Mushroom, High-quality Fortune Teller Mushroom, High-quality Garlic, High-quality Garlic Crate, High-quality Ghost Mushroom, High-quality Grape, High-quality Grape Crate, High-quality Haystack, High-quality Hot Pepper, High-quality Hot Pepper Crate, High-quality Hump Mushroom, High-quality Leccinum, High-quality Nolina, High-quality Olive, High-quality Olive Crate, High-quality Onion, High-quality Onion Crate, High-quality Paprika, High-quality Paprika Crate, High-quality Penestraria, High-quality Pepper, High-quality Pepper Crate, High-quality Potato, High-quality Potato Crate, High-quality Pumpkin, High-quality Pumpkin Crate, High-quality Silk Honey Grass, High-quality Silver Azalea, High-quality Sky Mushroom, High-quality Strawberry, High-quality Strawberry Crate, High-quality Sunflower, High-quality Sunflower Crate, High-quality Sunrise Herb, High-quality Sweet Potato, High-quality Sweet Potato Crate, High-quality Tiger Mushroom, High-quality Tomato, High-quality Tomato Crate, High-quality Truffle Mushroom, High-quality Wheat, High-quality Wheat Crate, Hops, Hot Pepper, Hot Pepper Crate, Hump Mushroom, Hump Mushroom Crate, Indigo Lapis Lazuli, Insectivore Plant Flower, Insectivore Plant Leaf, Insectivore Plant Root, Insectivore Plant Stalk, Iron Ingot, Iron Ore, Jade, Jade Coral Ingot, Kelp, Keplan Horn Cocoon, Kuku Bird Blood, Kuku Bird Meat, Lapis Lazuli, Lead Ingot, Lead Ore, Leavening Agent, Leccinum, Leccinum Crate, Legendary Beast's Blood, Lemoria Plywood, Lion Blood, Lizard Blood, Llama Blood, Lobster, Log, Loopy Tree Plank, Loopy Tree Plywood, Loopy Tree Timber, Magical Chicken Feed, Magical Haystack, Mandragora Essence, Maple Plank, Maple Plywood, Maple Timber, Margoria Dark Iron, Marmot Blood, Meju, Melted Copper Shard, Melted Gold Shard, Melted Iron Shard, Melted Lead Shard, Melted Mythril Shard, Melted Nickel Shard, Melted Noc Shard, Melted Platinum Shard, Melted Silver Shard, Melted Tin Shard, Melted Titanium Shard, Melted Vanadium Shard, Melted Zinc Shard, Mesima Box, Metal Solvent, Milk, Mineral Water, Monkey Blood, Moonlight Opal, Moss Tree Plank, Moss Tree Plywood, Moss Tree Timber, Mud Crystal, Mungbean, Mythril, Mythril Ingot, Nickel Ingot, Nickel Ore, Noc Ingot, Noc Ore, Nolina, Nolina Crate, Nouver's Hide, Nutmeg, Obsidian Ore, Ocean Hermit Crab, Ocean Horizon Key, Ocean Sapphire, Ogre Blood, Oil of Corruption, Oil of Fortitude, Oil of Regeneration, Oil of Storms, Oil of Tranquility, Oil of the Abyss, Old Tree Branch, Olive, Olive Crate, Olive Oil, Olucas, Onion, Onion Crate, Ouk Pill of Time and Tide, Ox Blood, Oyster, Palm Plank, Palm Plywood, Palm Timber, Paprika, Paprika Crate, Pear, Penestraria, Penestraria Crate, Pepper, Pepper Crate, Perilla Oil, Pie Mushroom, Pie Mushroom Crate, Pig Blood, Pile of Sunrise Herbs, Pine Coated Plywood, Pine Plank, Pine Plywood, Pine Timber, Pineapple, Pink Tentacle, Pistachio, Platinum Ingot, Platinum Ore, Plywood Hardener, Polished Opal, Polished Stone, Pork, Potato, Potato Crate, Potato Dough, Potato Flour, Prairie Green Coral, Precious Black Crystal, Precious Blue Crystal, Precious Green Crystal, Precious Mud Crystal, Precious Red Crystal, Precious Translucent Crystal, Precious Violet Crystal, Processed Coal, Pumpkin, Pumpkin Crate, Pure Copper Crystal, Pure Gold Crystal, Pure Iron Crystal, Pure Lead Crystal, Pure Mythril Crystal, Pure Nickel Crystal, Pure Noc Crystal, Pure Platinum Crystal, Pure Powder Reagent, Pure Silver Crystal, Pure Tin Crystal, Pure Titanium Crystal, Pure Vanadium Crystal, Pure Zinc Crystal, Purple Mushroom, Purple Mushroom Crate, Quartz, Raccoon Blood, Raisin Bread, Reagent of Harmonious Spirits, Red Bean, Red Coral, Red Crystal, Red Pepper Powder, Red Sauce, Red Shellfish, Red-spotted Amanita Box, Remnants of Burnt Spirits, Resplendent Armor Reform Stone I, Resplendent Armor Reform Stone II, Resplendent Armor Reform Stone III, Resplendent Armor Reform Stone IV, Resplendent Armor Reform Stone V, Resplendent Diamond, Resplendent Emerald, Resplendent Jade, Resplendent Lapis Lazuli, Resplendent Obsidian, Resplendent Ruby, Resplendent Sapphire, Resplendent Topaz, Resplendent Weapon Reform Stone I, Resplendent Weapon Reform Stone II, Resplendent Weapon Reform Stone III, Resplendent Weapon Reform Stone IV, Resplendent Weapon Reform Stone V, Rhino Blood, Rock Elephant Blood, Roe, Rose, Rough Black Crystal, Rough Blue Crystal, Rough Diamond, Rough Emerald, Rough Green Crystal, Rough Jade, Rough Lapis Lazuli, Rough Mud Crystal, Rough Obsidian Ore, Rough Opal, Rough Opulent Crystal, Rough Red Crystal, Rough Ruby, Rough Sapphire, Rough Stone, Rough Stone Plus, Rough Topaz, Rough Translucent Crystal, Rough Violet Crystal, Round Head Corals, Ruby, Rye, Salt, Sapphire, Scorpion Blood, Sea Anemone, Seaweed, Sheep Blood, Shrimp, Silk Honey Grass, Silk Honey Grass Crate, Silver Azalea, Silver Azalea Crate, Silver Ingot, Silver Ore, Sinner's Blood, Sky Mushroom, Sky Mushroom Crate, Small Tree Plywood, Snowfield Cedar Plank, Snowfield Cedar Plywood, Snowfield Cedar Timber, Soy Sauce, Soybean, Soybean Paste, Special Acacia Seed, Special Amanita Mushroom, Special Ancient Mushroom, Special Arrow Mushroom, Special Barley, Special Bluffer Mushroom, Special Chicken Feed, Special Citron, Special Cloud Mushroom, Special Corn, Special Dry Mane Grass, Special Dwarf Mushroom, Special Emperor Mushroom, Special Everlasting Herb, Special Fire Flake Flower, Special Fog Mushroom, Special Fortune Teller Mushroom, Special Garlic, Special Ghost Mushroom, Special Grape, Special Haystack, Special Hot Pepper, Special Hump Mushroom, Special Olive, Special Onion, Special Paprika, Special Pepper, Special Potato, Special Pumpkin, Special Silk Honey Grass, Special Silver Azalea, Special Sky Mushroom, Special Strawberry, Special Strawberry Crate, Special Sunflower, Special Sunrise Herb, Special Sweet Potato, Special Tiger Mushroom, Special Tomato, Special Truffle Mushroom, Special Wheat, Standardized Timber Square, Star Anise, Star Anise Mushroom, Star Diamond, Steel, Stone of Malice, Strawberry, Strawberry Crate, Sturdy Acacia Plywood, Sturdy Ash Plywood, Sturdy Birch Plywood, Sturdy Caphras Tree Plywood, Sturdy Cedar Plywood, Sturdy Elder Tree Plywood, Sturdy Fir Plywood, Sturdy Loopy Tree Plywood, Sturdy Maple Plywood, Sturdy Moss Tree Plywood, Sturdy Palm Plywood, Sturdy Pine Plywood, Sturdy Snowfield Cedar Plywood, Sturdy Thornwood Plywood, Sturdy Thuja Plywood, Sturdy Timber Square, Sturdy White Cedar Plywood, Sugar, Sulfur, Sunflower, Sunflower Crate, Sunrise Herb, Sunrise Herb Crate, Sweet Potato, Sweet Potato Crate, Sweet Potato Dough, Sweet Potato Flour, Tangleweed, Teff, Teff Flour, Teff Flour Dough, Tenacious Origin of Life, Thornwood Plank, Thornwood Plywood, Thornwood Timber, Thuja Plank, Thuja Plywood, Thuja Timber, Tiger Blood, Tiger Mushroom, Tiger Mushroom Crate, Tin Ingot, Tin Ore, Titanium Ingot, Titanium Ore, Tomato, Tomato Crate, Topaz, Toxic Watermelon, Trace of Death, Trace of Memory, Trace of Nature, Trace of Violence, Translucent Crystal, Translucent Ice, Tridana Giant Clam Shell, Tridana Giant Clam Shellfish, Troll Blood, Truffle Mushroom, Truffle Mushroom Crate, Tulip, Tulip Seed, Turban Shell, Twilight Red Coral, Tyrant's Blood, Usable Scantling, Vanadium Ingot, Vanadium Ore, Vine Noc Ingot, Vinegar, Violet Crystal, Waragon Blood, Water, Water Thyme, Weasel Blood, Wheat, Wheat Crate, Wheat Dough, Wheat Flour, White Cedar Plank, White Cedar Plywood, White Cedar Timber, White Coral, White Sauce, Wild Grass, Wise Man's Blood, Wolf Blood, Worm Blood, Yak Blood, Zinc Ingot, Zinc Ore, [Event] Blue Snowflake Seed, [Event] Cacao, [Event] Cacao Powder, [Event] Fragrant Tulip Seed, [Event] Nutritious Chicken Feed, [Event] Nutritious Haystack, [Event] Rice Seed of Abundance, [Event] Springtime Seeds";
+
 async function readInventory() {
   const resp = await fetch(PROXY_URL, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514', max_tokens: 4000,
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
       messages: [{ role: 'user', content: [
         { type: 'image', source: { type: 'base64', media_type: mediaType, data: currentBase64 } },
         { type: 'text', text: `You are an expert Black Desert Online player analyzing a storage screenshot.
-Grid: 8 columns, left to right, top to bottom. Each cell: icon (top) + quantity (bottom).
-TASK: Identify each item by carefully examining its icon, then read its quantity.
-- Pick name ONLY from the OFFICIAL LIST below
-- Examine colors, shape, texture in detail
-- Quantity: B=thousands (415B=415000), M=millions. Full integer.
-- Skip empty cells
 
-OFFICIAL BDO CODEX MATERIALS LIST:
+The grid has 8 columns. Each cell has an item icon (top) and quantity number (bottom).
+
+TASK: Identify each item by carefully examining its icon, then read its quantity.
+- Read LEFT TO RIGHT, TOP TO BOTTOM
+- You MUST pick the name from the OFFICIAL LIST below — no other names allowed
+- Examine colors, shape, texture of each icon in detail to find the exact match
+- Quantity: B=thousands (415B=415000), M=millions. Write full integer.
+- Skip empty cells only
+
+OFFICIAL BDO CODEX MATERIALS LIST (pick ONLY from this list):
 ${MATERIALS_LIST}
 
 Return ONLY JSON:
@@ -580,6 +676,7 @@ Return ONLY JSON:
   return JSON.parse(match[0]);
 }
 
+
 // ── CODEX RECIPES ─────────────────────────────────────────────────────────
 async function fetchCodexRecipes(type) {
   for (const s of [500, 300, 100]) {
@@ -593,7 +690,7 @@ async function fetchCodexRecipes(type) {
       if (rows.length > 0) return rows;
     } catch(e) { continue; }
   }
-  throw new Error(lang === 'tr' ? "BDO Codex'e ulaşılamadı" : 'Could not reach BDO Codex');
+  throw new Error(lang === 'tr' ? 'BDO Codex\'e ulaşılamadı' : 'Could not reach BDO Codex');
 }
 
 function parseCodexRow(row) {
@@ -608,6 +705,7 @@ function parseCodexRow(row) {
   const skillLevel = typeof skillObj === 'object' ? (skillObj.display || '') : String(skillObj);
   let ingredientIds = [];
   try { ingredientIds = JSON.parse(idStr); } catch(e) {}
+  // If row[9] didn't give IDs, extract from ingredient HTML
   if (!ingredientIds.length && ingHtml) {
     const htmlIds = [...ingHtml.matchAll(/data-id="item--(\d+)"/g)].map(m => parseInt(m[1]));
     if (htmlIds.length) ingredientIds = htmlIds;
@@ -622,56 +720,291 @@ function parseCodexRow(row) {
 
 // ── MATCH RECIPES ─────────────────────────────────────────────────────────
 async function matchRecipesAsync(recipes, inv) {
-  const idMap = {}, nameMap = {};
+  // Build lookup by item_id AND by English name
+  const idMap = {};
+  const nameMap = {};
   inv.forEach(i => {
     nameMap[i.name.toLowerCase().trim()] = i.qty;
     if (i.item_id) idMap[i.item_id] = i.qty;
   });
+
   const out = [];
   for (const row of recipes) {
     const r = parseCodexRow(row);
     if (!r || !r.ingredientIds.length) continue;
-    let canCraft = Infinity, hasAny = false;
+
+    let canCraft = Infinity;
+    let hasAny = false;
     const parsed = [];
+
     r.ingredientIds.forEach((itemId, idx) => {
       const reqQty = r.quantities[idx] || 1;
+      // Always use English name from Codex DB
       const info = BDO_ITEMS?.id_to_info?.[String(itemId)];
       const enName = info ? info.name_en : `#${itemId}`;
+
+      // Match by ID first, then by English name
       let have = idMap[itemId] || 0;
       if (!have && enName) have = nameMap[enName.toLowerCase()] || 0;
       if (!have && enName) {
-        const key = Object.keys(nameMap).find(k => k.includes(enName.toLowerCase()) || enName.toLowerCase().includes(k));
+        const key = Object.keys(nameMap).find(k =>
+          k.includes(enName.toLowerCase()) || enName.toLowerCase().includes(k)
+        );
         if (key) have = nameMap[key];
       }
+
       if (have > 0) hasAny = true;
       const possible = have >= reqQty ? Math.floor(have / reqQty) : 0;
       if (possible < canCraft) canCraft = possible;
       parsed.push({ name: enName, required: reqQty, have, itemId });
     });
+
     if (!hasAny || !parsed.length) continue;
+
     const haveCount = parsed.filter(i => i.have > 0).length;
+    const totalCount = parsed.length;
+
     out.push({
       id: r.id, name: r.name, icon: r.icon, skillLevel: r.skillLevel,
-      outputItemId: r.outputItemId, ingredients: parsed,
+      outputItemId: r.outputItemId,
+      ingredients: parsed,
       craftable: canCraft === Infinity ? 0 : canCraft,
-      hasAll: canCraft > 0, haveCount, totalCount: parsed.length
+      hasAll: canCraft > 0, haveCount, totalCount
     });
   }
+
   return out.sort((a, b) => {
     if (a.hasAll !== b.hasAll) return a.hasAll ? -1 : 1;
-    const ap = a.haveCount / a.totalCount, bp = b.haveCount / b.totalCount;
-    if (bp !== ap) return bp - ap;
+    const aPct = a.haveCount / a.totalCount;
+    const bPct = b.haveCount / b.totalCount;
+    if (bPct !== aPct) return bPct - aPct;
     return b.craftable - a.craftable;
   });
 }
 
-// ── DRAG & DROP ───────────────────────────────────────────────────────────
+function resetInventory() {
+  if (!originalInventory.length) return;
+  inventory = JSON.parse(JSON.stringify(originalInventory));
+  renderItems(inventory);
+  if (document.getElementById('results-section').classList.contains('visible')) {
+    findRecipes();
+  }
+}
+
+function toggleEditMode() {
+  // No longer needed - kept for compatibility
+}
+
+function addNewItem() {
+  document.getElementById('quick-picker-overlay')?.remove();
+  document.getElementById('quick-picker')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'quick-picker-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;';
+  overlay.onclick = () => { overlay.remove(); picker.remove(); };
+
+  const picker = document.createElement('div');
+  picker.id = 'quick-picker';
+  picker.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-panel);border:1px solid var(--gold);border-radius:4px;z-index:201;width:380px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.7);';
+  picker.innerHTML = `
+    <div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.85rem;" id="picker-title">${lang==='tr'?'Yeni Malzeme Ekle':'Add New Material'}</div>
+      <button onclick="document.getElementById('quick-picker-overlay').click()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.1rem;">✕</button>
+    </div>
+    <div style="padding:0.5rem;">
+      <input id="picker-search" type="text" placeholder="${lang==='tr'?'Item ara...':'Search item...'}"
+        style="width:100%;background:var(--bg-deep);border:1px solid var(--border-gold);border-radius:2px;padding:0.5rem 0.8rem;color:var(--text-bright);font-size:0.85rem;outline:none;"
+        oninput="filterPickerList(this.value)" autofocus>
+    </div>
+    <div id="picker-list" style="overflow-y:auto;max-height:40vh;"></div>
+    <div id="picker-qty-row" style="display:none;padding:0.7rem 1rem;border-top:1px solid var(--border);gap:0.5rem;align-items:center;">
+      <div id="picker-selected-name" style="flex:1;font-size:0.85rem;color:var(--text-bright);"></div>
+      <input id="qty-input" type="number" value="1" min="1" 
+        style="width:80px;background:var(--bg-deep);border:1px solid var(--gold);border-radius:2px;padding:0.3rem 0.5rem;color:var(--text-bright);font-size:0.85rem;outline:none;"
+        onkeydown="if(event.key==='Enter') confirmAddItem()">
+      <button onclick="confirmAddItem()" 
+        style="background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:#fff;border:none;border-radius:2px;padding:0.35rem 0.8rem;cursor:pointer;font-family:'Cinzel',serif;font-size:0.75rem;">
+        ${lang==='tr'?'Ekle':'Add'}
+      </button>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(picker);
+  filterPickerList('');
+
+  let selectedId = null, selectedName = null;
+
+  picker.addEventListener('click', e => {
+    const row = e.target.closest('[data-picker-id]');
+    if (!row) return;
+    selectedId = parseInt(row.dataset.pickerId);
+    selectedName = row.dataset.pickerName;
+    // Show qty row
+    document.getElementById('picker-qty-row').style.display = 'flex';
+    document.getElementById('picker-selected-name').textContent = selectedName;
+    document.getElementById('qty-input').value = 1;
+    document.getElementById('qty-input').focus();
+    document.getElementById('qty-input').select();
+    // Highlight selected
+    picker.querySelectorAll('[data-picker-id]').forEach(r => r.style.background = '');
+    row.style.background = 'var(--bg-hover)';
+  });
+
+  window.confirmAddItem = () => {
+    if (!selectedId || !selectedName) return;
+    const qty = parseInt(document.getElementById('qty-input').value) || 1;
+    inventory.push({ name: selectedName, item_id: selectedId, qty });
+    overlay.click();
+    renderItems(inventory);
+    if (document.getElementById('results-section').classList.contains('visible')) {
+      findRecipes();
+    }
+  };
+}
+
+
+function openEditPopup(item, idx) {
+  document.getElementById('edit-overlay')?.remove();
+  document.getElementById('edit-popup')?.remove();
+  const isNew = idx === -1;
+  const s = S[lang];
+  const overlay = document.createElement('div');
+  overlay.id = 'edit-overlay'; overlay.className = 'edit-overlay';
+  overlay.onclick = closeEditPopup;
+  const popup = document.createElement('div');
+  popup.id = 'edit-popup'; popup.className = 'edit-popup';
+  popup.innerHTML = `
+    <h3>${isNew ? s.addTitle : s.editTitle}</h3>
+    <label>${s.nameLbl}</label>
+    <div style="position:relative;">
+      <input id="popup-name" type="text" value="${item ? item.name : ''}" placeholder="Ara... (Copper Ore, Ash Timber...)" autocomplete="off" oninput="searchItems(this.value)">
+      <div id="search-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg-panel);border:1px solid var(--gold);border-top:none;border-radius:0 0 3px 3px;max-height:200px;overflow-y:auto;z-index:300;"></div>
+    </div>
+    <label style="margin-top:0.5rem;">${s.qtyLbl}</label>
+    <input id="popup-qty" type="number" value="${item ? item.qty : ''}" placeholder="415000">
+    <input id="popup-id" type="hidden" value="${item?.item_id || ''}">
+    <div class="edit-popup-btns">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveEditPopup(${idx})">${s.saveBtn}</button>
+      ${!isNew ? `<button class="btn btn-secondary" onclick="deleteItem(${idx})">${s.deleteBtn}</button>` : ''}
+      <button class="btn btn-secondary" onclick="closeEditPopup()">${s.cancelBtn}</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.body.appendChild(popup);
+  document.getElementById('popup-name').focus();
+}
+
+function searchItems(query) {
+  const results = document.getElementById('search-results');
+  if (!results) return;
+  if (!query || query.length < 2) { results.style.display = 'none'; return; }
+
+  // Search only in materials (bdo_items.json id_to_info — first 1147 items from materials page)
+  // Filter by icon path containing 'productmaterial' to get only material items
+  const q = query.toLowerCase();
+  const matches = [];
+  if (BDO_ITEMS) {
+    for (const [id, info] of Object.entries(BDO_ITEMS.id_to_info)) {
+      if (!info.name_en) continue;
+        if (info.name_en.toLowerCase().includes(q)) {
+        matches.push({ id, name: info.name_en, icon: info.icon });
+        if (matches.length >= 12) break;
+      }
+    }
+  }
+
+  if (!matches.length) { results.style.display = 'none'; return; }
+
+  results.innerHTML = matches.map(m => `
+    <div onclick="selectSearchResult('${m.id}','${m.name.replace(/'/g,"\\'")}',${JSON.stringify(m.icon)})"
+      style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.8rem;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--border);"
+      onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+      <img src="https://bdocodex.com${m.icon}" style="width:22px;height:22px;border-radius:2px;" onerror="this.style.display='none'">
+      <span>${m.name}</span>
+      <span style="color:var(--text-dim);font-size:0.75rem;margin-left:auto">#${m.id}</span>
+    </div>`).join('');
+  results.style.display = 'block';
+}
+
+function selectSearchResult(id, name, icon) {
+  const nameInput = document.getElementById('popup-name');
+  const idInput   = document.getElementById('popup-id');
+  const results   = document.getElementById('search-results');
+  if (nameInput) nameInput.value = name;
+  if (idInput)   idInput.value   = id;
+  if (results)   results.style.display = 'none';
+}
+
+
+function closeEditPopup() {
+  document.getElementById('edit-overlay')?.remove();
+  document.getElementById('edit-popup')?.remove();
+}
+
+function saveEditPopup(idx) {
+  const name = document.getElementById('popup-name').value.trim();
+  const qty = parseInt(document.getElementById('popup-qty').value) || 0;
+  let itemId = parseInt(document.getElementById('popup-id').value) || null;
+  if (!name || !qty) return;
+  if (!itemId) itemId = findItemIdByName(name);
+  if (idx === -1) inventory.push({ name, qty, item_id: itemId });
+  else inventory[idx] = { ...inventory[idx], name, qty, item_id: itemId };
+  closeEditPopup();
+  renderItems(inventory);
+  // Auto-refresh recipes if results are visible
+  if (document.getElementById('results-section').classList.contains('visible')) {
+    findRecipes();
+  }
+}
+
+function deleteItem(idx) {
+  inventory.splice(idx, 1);
+  closeEditPopup();
+  renderItems(inventory);
+}
+
+function getItemIcon(item) {
+  if (!BDO_ITEMS || !item.item_id) return '';
+  const info = BDO_ITEMS.id_to_info[String(item.item_id)];
+  if (!info?.icon) return '';
+  return `<img src="https://bdocodex.com${info.icon}" style="width:20px;height:20px;border-radius:2px;vertical-align:middle;margin-right:3px;border:1px solid var(--border);" onerror="this.style.display='none'">`;
+}
+
+function renderItems(items) {
+  const grid = document.getElementById('items-grid');
+  grid.innerHTML = items.map((i, idx) =>
+    `<div class="item-tag editable" draggable="true" 
+      data-idx="${idx}"
+      ondragstart="dragStart(event,${idx})" 
+      ondragover="dragOver(event)" 
+      ondrop="dragDrop(event,${idx})"
+      ondragend="dragEnd(event)"
+      onclick="openQuickPicker(${idx})">
+      ${getItemIcon(i)}${i.name} <span class="qty">×${i.qty.toLocaleString()}</span>
+      <span class="delete-btn" onclick="event.stopPropagation();deleteItem(${idx})">✕</span>
+    </div>`
+  ).join('');
+  document.getElementById('items-container').style.display = 'block';
+  const findRow = document.getElementById('find-recipes-row');
+  if (findRow) findRow.style.display = items.length ? 'block' : 'none';
+  try { localStorage.setItem('bdo_inventory', JSON.stringify(inventory)); } catch(e) {}
+}
+
+// ── DRAG & DROP SORTING ───────────────────────────────────────────────────
+let dragSrcIdx = null;
+
 function dragStart(e, idx) {
   dragSrcIdx = idx;
   e.currentTarget.style.opacity = '0.4';
   e.dataTransfer.effectAllowed = 'move';
 }
-function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.style.borderColor = 'var(--gold)'; }
+
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.style.borderColor = 'var(--gold)';
+}
+
 function dragDrop(e, toIdx) {
   e.preventDefault();
   if (dragSrcIdx === null || dragSrcIdx === toIdx) return;
@@ -679,113 +1012,69 @@ function dragDrop(e, toIdx) {
   inventory.splice(toIdx, 0, moved);
   renderItems(inventory);
 }
+
 function dragEnd(e) {
   dragSrcIdx = null;
-  document.querySelectorAll('.item-tag').forEach(t => { t.style.opacity = ''; t.style.borderColor = ''; });
-}
-
-// ── RENDER ITEMS ──────────────────────────────────────────────────────────
-function renderItems(items) {
-  const grid = document.getElementById('items-grid');
-  grid.innerHTML = items.map((i, idx) =>
-    `<div class="item-tag" draggable="true"
-      data-idx="${idx}"
-      ondragstart="dragStart(event,${idx})"
-      ondragover="dragOver(event)"
-      ondrop="dragDrop(event,${idx})"
-      ondragend="dragEnd(event)"
-      onclick="openPicker(${idx})">
-      ${getItemIcon(i)}${i.name} <span class="qty">×${i.qty.toLocaleString()}</span>
-      <span class="delete-btn" onclick="event.stopPropagation();deleteItem(${idx})">✕</span>
-    </div>`
-  ).join('');
-  document.getElementById('items-container').style.display = 'block';
-  const findRow = document.getElementById('find-recipes-row');
-  if (findRow) findRow.style.display = (!editMode && items.length) ? 'block' : 'none';
-  try { localStorage.setItem('bdo_inventory', JSON.stringify(inventory)); } catch(e) {}
-}
-
-// ── EDIT MODE ─────────────────────────────────────────────────────────────
-function toggleEditMode() {
-  editMode = !editMode;
-  const btn = document.getElementById('edit-toggle-btn');
-  btn.textContent = editMode ? S[lang].doneBtn : S[lang].editBtn;
-  btn.style.borderColor = editMode ? 'var(--green)' : '';
-  btn.style.color = editMode ? 'var(--green)' : '';
-  const findRow = document.getElementById('find-recipes-row');
-  if (findRow) findRow.style.display = editMode ? 'none' : (inventory.length ? 'block' : 'none');
-  renderItems(inventory);
-}
-function resetInventory() {
-  if (!originalInventory.length) return;
-  inventory = JSON.parse(JSON.stringify(originalInventory));
-  renderItems(inventory);
-  if (document.getElementById('results-section').classList.contains('visible')) findRecipes();
-}
-function deleteItem(idx) {
-  inventory.splice(idx, 1);
-  renderItems(inventory);
-}
-
-// ── QUICK PICKER ──────────────────────────────────────────────────────────
-function openPicker(editIdx) {
-  document.getElementById('picker-overlay')?.remove();
-  document.getElementById('picker-popup')?.remove();
-
-  const isNew = editIdx === -1;
-  const item = isNew ? null : inventory[editIdx];
-  const s = S[lang];
-
-  const overlay = document.createElement('div');
-  overlay.id = 'picker-overlay'; overlay.className = 'picker-overlay';
-  overlay.onclick = () => { overlay.remove(); popup.remove(); };
-
-  const popup = document.createElement('div');
-  popup.id = 'picker-popup'; popup.className = 'picker-popup';
-  popup.innerHTML = `
-    <div class="picker-header">
-      <div class="picker-title">${isNew ? s.addTitle : item.name}</div>
-      <button onclick="document.getElementById('picker-overlay').click()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.1rem;">✕</button>
-    </div>
-    <div class="picker-search-wrap">
-      <input id="picker-search" class="picker-search" type="text" placeholder="${s.pickerSearch}" oninput="filterPicker(this.value)" autofocus>
-    </div>
-    <div id="picker-list" class="picker-list"></div>
-    <div id="picker-qty-row" class="picker-qty-row" style="${isNew ? 'display:none;' : ''}">
-      <div id="picker-selected-name" style="flex:1;font-size:0.85rem;color:var(--text-bright);">${isNew ? '' : item.name}</div>
-      <input id="picker-qty" class="picker-qty-input" type="number" value="${isNew ? 1 : item.qty}" min="1"
-        onkeydown="if(event.key==='Enter')confirmPicker()">
-      <button class="picker-confirm" onclick="confirmPicker()">${s.pickerAddConfirm}</button>
-    </div>`;
-
-  document.body.appendChild(overlay);
-  document.body.appendChild(popup);
-  popup.addEventListener('click', e => e.stopPropagation());  // prevent overlay close on popup click
-
-  let selectedId = isNew ? null : item.item_id;
-  let selectedName = isNew ? null : item.name;
-
-  window._pickerEditIdx = editIdx;
-  window._pickerSelectedId = selectedId;
-  window._pickerSelectedName = selectedName;
-
-  filterPicker('');
-
-  popup.addEventListener('click', e => {
-    const row = e.target.closest('[data-pid]');
-    if (!row) return;
-    window._pickerSelectedId = parseInt(row.dataset.pid);
-    window._pickerSelectedName = row.dataset.pname;
-    popup.querySelectorAll('[data-pid]').forEach(r => r.classList.remove('selected'));
-    row.classList.add('selected');
-    document.getElementById('picker-qty-row').style.display = 'flex';
-    document.getElementById('picker-selected-name').textContent = window._pickerSelectedName;
-    document.getElementById('picker-qty').focus();
-    document.getElementById('picker-qty').select();
+  document.querySelectorAll('.item-tag').forEach(t => {
+    t.style.opacity = '';
+    t.style.borderColor = '';
   });
 }
 
-function filterPicker(query) {
+// ── QUICK ITEM PICKER ─────────────────────────────────────────────────────
+function openQuickPicker(idx) {
+  document.getElementById('quick-picker-overlay')?.remove();
+  document.getElementById('quick-picker')?.remove();
+
+  const item = inventory[idx];
+  const s = S[lang];
+
+  const overlay = document.createElement('div');
+  overlay.id = 'quick-picker-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;';
+  overlay.onclick = () => { overlay.remove(); picker.remove(); };
+
+  const picker = document.createElement('div');
+  picker.id = 'quick-picker';
+  picker.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-panel);border:1px solid var(--gold);border-radius:4px;z-index:201;width:380px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.7);';
+  picker.innerHTML = `
+    <div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.85rem;">${item.name}</div>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input id="qty-input" type="number" value="${item.qty}" style="width:90px;background:var(--bg-deep);border:1px solid var(--border-gold);border-radius:2px;padding:0.3rem 0.5rem;color:var(--text-bright);font-size:0.85rem;outline:none;">
+        <button onclick="document.getElementById('quick-picker-overlay').click()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.1rem;">✕</button>
+      </div>
+    </div>
+    <div style="padding:0.5rem;">
+      <input id="picker-search" type="text" placeholder="${lang==='tr'?'Item ara...':'Search item...'}" 
+        style="width:100%;background:var(--bg-deep);border:1px solid var(--border-gold);border-radius:2px;padding:0.5rem 0.8rem;color:var(--text-bright);font-size:0.85rem;outline:none;"
+        oninput="filterPickerList(this.value)" autofocus>
+    </div>
+    <div id="picker-list" style="overflow-y:auto;max-height:50vh;"></div>`;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(picker);
+
+  // Populate list
+  filterPickerList('');
+
+  // Click on item in list
+  picker.addEventListener('click', e => {
+    const row = e.target.closest('[data-picker-id]');
+    if (!row) return;
+    const newId = parseInt(row.dataset.pickerId);
+    const newName = row.dataset.pickerName;
+    const qty = parseInt(document.getElementById('qty-input').value) || item.qty;
+    inventory[idx] = { ...inventory[idx], name: newName, item_id: newId, qty };
+    overlay.click(); // close
+    renderItems(inventory);
+    if (document.getElementById('results-section').classList.contains('visible')) {
+      findRecipes();
+    }
+  });
+}
+
+function filterPickerList(query) {
   const list = document.getElementById('picker-list');
   if (!list || !BDO_ITEMS) return;
   const q = query.toLowerCase().trim();
@@ -793,30 +1082,20 @@ function filterPicker(query) {
   for (const [id, info] of Object.entries(BDO_ITEMS.id_to_info)) {
     if (!info.name_en) continue;
     if (!q || info.name_en.toLowerCase().includes(q)) {
-      matches.push({ id, name: info.name_en, icon: info.icon || '' });
+      matches.push({ id, name: info.name_en, icon: info.icon });
       if (matches.length >= 80) break;
     }
   }
   list.innerHTML = matches.map(m => `
-    <div class="picker-row" data-pid="${m.id}" data-pname="${m.name.replace(/"/g,'&quot;')}">
-      ${m.icon ? `<img src="${'https://bdocodex.com'}${m.icon}" style="width:24px;height:24px;border-radius:2px;flex-shrink:0;" onerror="this.style.display='none'">` : '<div style="width:24px;height:24px;flex-shrink:0;"></div>'}
-      <span style="color:var(--text-bright)">${m.name}</span>
-      <span style="color:var(--text-dim);font-size:0.72rem;margin-left:auto">#${m.id}</span>
+    <div data-picker-id="${m.id}" data-picker-name="${m.name}"
+      style="display:flex;align-items:center;gap:0.6rem;padding:0.35rem 0.8rem;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--border);"
+      onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+      ${m.icon ? `<img src="https://bdocodex.com${m.icon}" style="width:24px;height:24px;border-radius:2px;flex-shrink:0;" onerror="this.style.display='none'">` : '<div style="width:24px;height:24px;flex-shrink:0;"></div>'}
+      <span style="color:var(--text-bright);">${m.name}</span>
+      <span style="color:var(--text-dim);font-size:0.72rem;margin-left:auto;">#${m.id}</span>
     </div>`).join('');
 }
 
-function confirmPicker() {
-  const id = window._pickerSelectedId;
-  const name = window._pickerSelectedName;
-  const qty = parseInt(document.getElementById('picker-qty')?.value) || 1;
-  const editIdx = window._pickerEditIdx;
-  if (!name) return;
-  if (editIdx === -1) inventory.push({ name, item_id: id ? parseInt(id) : findItemIdByName(name), qty });
-  else inventory[editIdx] = { ...inventory[editIdx], name, item_id: id ? parseInt(id) : inventory[editIdx].item_id, qty };
-  document.getElementById('picker-overlay')?.click();
-  renderItems(inventory);
-  if (document.getElementById('results-section').classList.contains('visible')) findRecipes();
-}
 
 // ── FIND RECIPES ──────────────────────────────────────────────────────────
 async function findRecipes() {
@@ -825,32 +1104,46 @@ async function findRecipes() {
     showLoading(s.loadCodex, s.loadCodexSub);
     await loadItemDB();
     const [culRaw, alcRaw] = await Promise.all([
-      fetchCodexRecipes('culinary'), fetchCodexRecipes('alchemy')
+      fetchCodexRecipes('culinary'),
+      fetchCodexRecipes('alchemy')
     ]);
     cachedCulinary = await matchRecipesAsync(culRaw, inventory);
-    cachedAlchemy  = await matchRecipesAsync(alcRaw, inventory);
+    cachedAlchemy = await matchRecipesAsync(alcRaw, inventory);
     cachedCulinary.forEach(r => r.type = 'culinary');
-    cachedAlchemy.forEach(r  => r.type = 'alchemy');
-    const all = [...cachedCulinary, ...cachedAlchemy];
-    const bestRecipes = all.filter(r => r.hasAll).sort((a,b) => b.craftable - a.craftable).slice(0, 12);
-    const bestRecipe = all.find(r => r.hasAll);
-    document.getElementById('stat-items').textContent   = inventory.length;
-    document.getElementById('stat-recipes').textContent = all.filter(r => r.hasAll).length;
-    document.getElementById('stat-best').textContent    = bestRecipe ? bestRecipe.name : '-';
-    document.getElementById('stat-items-label').textContent   = s.statItems;
-    document.getElementById('stat-recipes-label').textContent = s.statRecipes;
-    document.getElementById('stat-best-label').textContent    = s.statBest;
-    document.getElementById('tab-culinary-btn').textContent   = s.tabCulinary;
-    document.getElementById('tab-alchemy-btn').textContent    = s.tabAlchemy;
-    document.getElementById('tab-best-btn').textContent       = s.tabBest;
+    cachedAlchemy.forEach(r => r.type = 'alchemy');
+
+    // Update summary panel
+    const totalCraftable = [...cachedCulinary, ...cachedAlchemy].filter(r => r.hasAll).length;
+    const bestRecipe = [...cachedCulinary, ...cachedAlchemy].find(r => r.hasAll);
+    document.getElementById('stat-items').textContent = inventory.length;
+    document.getElementById('stat-recipes').textContent = totalCraftable;
+    document.getElementById('stat-best').textContent = bestRecipe ? bestRecipe.name : '-';
+    document.getElementById('stat-items-label').textContent = lang === 'tr' ? 'Malzeme Türü' : 'Item Types';
+    document.getElementById('stat-recipes-label').textContent = lang === 'tr' ? 'Yapılabilir Tarif' : 'Craftable Recipes';
+    document.getElementById('stat-best-label').textContent = lang === 'tr' ? 'En İyi Seçenek' : 'Best Option';
+
+    // Best tab: top craftable recipes combined
+    const bestRecipes = [...cachedCulinary, ...cachedAlchemy]
+      .filter(r => r.hasAll)
+      .sort((a, b) => b.craftable - a.craftable)
+      .slice(0, 12);
+
+    // Update tab labels
+    document.getElementById('tab-culinary-btn').textContent = s.tabCulinary;
+    document.getElementById('tab-alchemy-btn').textContent = s.tabAlchemy;
+    document.getElementById('tab-best-btn').textContent = lang === 'tr' ? '★ En Karlı' : '★ Best';
+
     hideLoading();
     setStatus('done', s.statusDone(inventory.length));
     renderGrid('culinary-grid', cachedCulinary, s.emptyCulinary);
-    renderGrid('alchemy-grid',  cachedAlchemy,  s.emptyAlchemy);
-    renderGrid('best-grid',     bestRecipes,    s.emptyBest);
+    renderGrid('alchemy-grid', cachedAlchemy, s.emptyAlchemy);
+    renderGrid('best-grid', bestRecipes, lang === 'tr' ? 'Yapılabilir tarif bulunamadı.' : 'No craftable recipes found.');
     document.getElementById('results-section').classList.add('visible');
     document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
-  } catch(err) { hideLoading(); setStatus('error', s.statusErr + err.message); }
+  } catch(err) {
+    hideLoading();
+    setStatus('error', s.statusErr + err.message);
+  }
 }
 
 // ── RENDER CARDS ──────────────────────────────────────────────────────────
@@ -862,61 +1155,107 @@ function renderCard(r) {
   const badge = r.hasAll
     ? `<span class="craft-badge craft-yes">★ ${s.craftable(r.craftable)}</span>`
     : `<span class="craft-badge craft-partial">${r.haveCount}/${r.totalCount} ${s.badgeMats}</span>`;
+
   const rows = r.ingredients.map(i => {
     let cls, qtyText;
-    if (i.have === 0) { cls = 'ing-missing'; qtyText = `<span class="ing-missing-label">${s.missingLabel}</span> <span class="ing-req">(${i.required} ${s.need})</span>`; }
-    else if (i.have >= i.required) { cls = 'ing-have'; qtyText = `${i.have.toLocaleString()} / ${i.required} ${s.need}`; }
-    else { cls = 'ing-low'; qtyText = `${i.have.toLocaleString()} / ${i.required} ${s.need}`; }
-    return `<div class="ingredient-row"><span class="ing-name ${i.have===0?'ing-name-missing':''}">${i.name}</span><span class="ing-qty ${cls}">${qtyText}</span></div>`;
+    if (i.have === 0) {
+      cls = 'ing-missing';
+      qtyText = `<span class="ing-missing-label">${s.missingLabel}</span> <span class="ing-req">(${i.required} ${s.need})</span>`;
+    } else if (i.have >= i.required) {
+      cls = 'ing-have';
+      qtyText = `${i.have.toLocaleString()} / ${i.required} ${s.need}`;
+    } else {
+      cls = 'ing-low';
+      qtyText = `${i.have.toLocaleString()} / ${i.required} ${s.need}`;
+    }
+    return `<div class="ingredient-row">
+      <span class="ing-name ${i.have === 0 ? 'ing-name-missing' : ''}">${i.name}</span>
+      <span class="ing-qty ${cls}">${qtyText}</span>
+    </div>`;
   }).join('');
-  const craftStation = r.type === 'culinary' ? (lang==='tr' ? 'Aşçılık Tezgahı' : 'Cooking Utensil') : (lang==='tr' ? 'Kimya Tezgahı' : 'Alchemy Tool');
-  const tipList = s.tips[r.type] || s.tips.culinary;
-  const tip = tipList[r.id % tipList.length];
+
+  const craftStation = r.type === 'culinary'
+    ? (lang === 'tr' ? 'Aşçılık Tezgahı' : 'Cooking Utensil')
+    : (lang === 'tr' ? 'Kimya Tezgahı' : 'Alchemy Tool');
+
+  // Price from cache (loaded async after render)
   const cachedPrice = r.outputItemId ? priceCache[r.outputItemId] : null;
-  const priceStr = cachedPrice ? `~${formatSilver(cachedPrice)} ${s.silver}${s.perUnit}` : '';
+  const priceStr = cachedPrice
+    ? `~${formatSilver(cachedPrice)} ${lang === 'tr' ? 'Gümüş/adet' : 'Silver/unit'}`
+    : '';
+
+  // Tip based on recipe type
+  const tips = {
+    culinary: lang === 'tr'
+      ? ['Lifeskill XP ve stamina recovery için popüler', 'Yüksek talep, iyi XP', 'Worker stamina için çok gerekli', 'Kolay malzeme, stabil kazanç']
+      : ['Popular for lifeskill XP and stamina recovery', 'High demand, good XP', 'Essential for worker stamina', 'Easy materials, stable profit'],
+    alchemy: lang === 'tr'
+      ? ['Alchemy mastery için iyi', 'Combat iksiri, yüksek talep', 'Processing XP için popüler']
+      : ['Good for alchemy mastery', 'Combat elixir, high demand', 'Popular for processing XP']
+  };
+  const tipList = r.type === 'culinary' ? tips.culinary : tips.alchemy;
+  const tip = tipList[r.id % tipList.length];
+
   const craftableFooter = r.hasAll
-    ? `<div class="craftable-big"><span class="craftable-num">${r.craftable.toLocaleString()}×</span><span class="craftable-label">${s.craftableLabel}</span>${priceStr ? `<span style="font-size:0.78rem;color:var(--text-dim);margin-left:0.5rem;">${priceStr}</span>` : ''}</div>`
-    : `<div class="craftable-big"><span class="craftable-num-red">${r.haveCount}/${r.totalCount}</span><span class="craftable-label">${s.badgeMats}</span></div>`;
-  return `<div class="recipe-card ${r.hasAll?'card-craftable':''}" data-item-id="${r.outputItemId||''}">
+    ? `<div class="craftable-big">
+        <span class="craftable-num">${r.craftable.toLocaleString()}×</span>
+        <span class="craftable-label">${s.craftableLabel}</span>
+        ${priceStr ? `<span style="font-size:0.78rem;color:var(--text-dim);margin-left:0.5rem;">${priceStr}</span>` : ''}
+      </div>`
+    : `<div class="craftable-big">
+        <span class="craftable-num-red">${r.haveCount}/${r.totalCount}</span>
+        <span class="craftable-label">${s.badgeMats}</span>
+      </div>`;
+
+  return `<div class="recipe-card ${r.hasAll ? 'card-craftable' : ''}" data-item-id="${r.outputItemId || ''}">
     <div class="recipe-card-header">${iconHtml}<div class="recipe-name">${r.name}</div>${badge}</div>
     <div class="recipe-card-body">
-      <div class="recipe-station">🏠 ${r.skillLevel||''} · ${craftStation}</div>
+      <div class="recipe-station">🏠 ${r.skillLevel || ''} · ${craftStation}</div>
       <div>${rows}</div>
       ${tip ? `<div style="font-size:0.8rem;color:var(--text-dim);font-style:italic;border-left:2px solid var(--border-gold);padding-left:0.6rem;margin-top:0.6rem;">| ${tip}</div>` : ''}
     </div>
-    <div class="card-footer-row">${craftableFooter}<a class="codex-link" href="${href}" target="_blank">${s.codexLink}</a></div>
+    <div class="card-footer-row">
+      ${craftableFooter}
+      <a class="codex-link" href="${href}" target="_blank">${s.codexLink}</a>
+    </div>
   </div>`;
 }
 
 function renderGrid(id, recipes, emptyMsg) {
-  document.getElementById(id).innerHTML = recipes.length ? recipes.map(renderCard).join('') : `<div class="empty-state">${emptyMsg}</div>`;
+  document.getElementById(id).innerHTML = recipes.length
+    ? recipes.map(renderCard).join('')
+    : `<div class="empty-state">${emptyMsg}</div>`;
+  // Fetch prices async and update cards
   if (recipes.length) fetchAndUpdatePrices(recipes);
 }
+
 async function fetchAndUpdatePrices(recipes) {
   for (const r of recipes) {
     if (!r.outputItemId || !r.hasAll) continue;
     const price = await fetchItemPrice(r.outputItemId);
     if (!price) continue;
+    // Update all cards with this item id
     document.querySelectorAll(`[data-item-id="${r.outputItemId}"]`).forEach(card => {
       const footer = card.querySelector('.craftable-big');
-      if (!footer || footer.querySelector('.price-tag')) return;
+      if (!footer) return;
+      const existing = footer.querySelector('.price-tag');
+      if (existing) return;
+      const label = lang === 'tr' ? 'Gümüş/adet' : 'Silver/unit';
       const tag = document.createElement('span');
       tag.className = 'price-tag';
       tag.style.cssText = 'font-size:0.78rem;color:var(--text-dim);margin-left:0.5rem;';
-      tag.textContent = `~${formatSilver(price)} ${S[lang].silver}${S[lang].perUnit}`;
+      tag.textContent = `~${formatSilver(price)} ${label}`;
       footer.appendChild(tag);
     });
   }
 }
+
 function rerenderResults() {
   renderGrid('culinary-grid', cachedCulinary, S[lang].emptyCulinary);
-  renderGrid('alchemy-grid',  cachedAlchemy,  S[lang].emptyAlchemy);
-  const best = [...cachedCulinary,...cachedAlchemy].filter(r=>r.hasAll).sort((a,b)=>b.craftable-a.craftable).slice(0,12);
-  renderGrid('best-grid', best, S[lang].emptyBest);
+  renderGrid('alchemy-grid', cachedAlchemy, S[lang].emptyAlchemy);
   document.getElementById('results-header').textContent = S[lang].resultsHeader;
   document.getElementById('tab-culinary-btn').textContent = S[lang].tabCulinary;
-  document.getElementById('tab-alchemy-btn').textContent  = S[lang].tabAlchemy;
-  document.getElementById('tab-best-btn').textContent     = S[lang].tabBest;
+  document.getElementById('tab-alchemy-btn').textContent = S[lang].tabAlchemy;
 }
 
 // ── MAIN ANALYZE ──────────────────────────────────────────────────────────
@@ -927,48 +1266,88 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     showLoading(s.loadRead, s.loadReadSub);
     setStatus('reading', s.statusReading);
     await loadItemDB();
+
+    document.getElementById('loading-sub').textContent = lang === 'tr' ? 'Malzemeler okunuyor...' : 'Reading materials...';
+
     const aiResult = await readInventory();
-    const cells = (aiResult.cells || aiResult.items || []).sort((a,b) => (a.row-b.row)||(a.col-b.col));
+    const cells = (aiResult.cells || aiResult.items || [])
+      .sort((a, b) => (a.row - b.row) || (a.col - b.col)); // grid sırasına göre sırala
+
+    // Build inventory from AI result
     const items = [];
     for (const cell of cells) {
       const qty = cell.qty || cell.quantity || 1;
       if (!qty || qty < 1) continue;
       const aiName = cell.name || '';
-      let itemId = cell.item_id || findItemIdByName(aiName);
+      let itemId = cell.item_id || null;
+
+      if (!itemId && aiName) itemId = findItemIdByName(aiName);
+
       let name = aiName;
-      if (itemId) { const dbName = getItemNameEN(itemId); if (dbName) name = dbName; }
-      if (name) items.push({ name, item_id: itemId, qty, _row: cell.row, _col: cell.col });
+      if (itemId) {
+        const dbName = getItemNameEN(itemId);
+        if (dbName) name = dbName;
+      }
+
+      if (name && name !== 'Unknown') {
+        items.push({ name, item_id: itemId, qty, _row: cell.row, _col: cell.col });
+      }
     }
-    inventory = items;
+
+    inventory = items.length > 0 ? items : [];
     originalInventory = JSON.parse(JSON.stringify(inventory));
     renderItems(inventory);
-    document.getElementById('reset-btn').style.display = 'inline';
+    // Show reset button
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) resetBtn.style.display = 'inline';
     hideLoading();
     await findRecipes();
-  } catch(err) { hideLoading(); setStatus('error', S[lang].statusErr + err.message); console.error(err); }
+
+  } catch(err) {
+    hideLoading();
+    setStatus('error', s.statusErr + err.message);
+    console.error(err);
+  }
 });
 
 // ── EXPORT ────────────────────────────────────────────────────────────────
 function exportCSV() {
   if (!inventory.length) return;
-  const header = lang==='tr' ? 'Malzeme,Item ID,Miktar\n' : 'Material,Item ID,Quantity\n';
-  const rows = inventory.map(i => `"${i.name}",${i.item_id||''},${i.qty}`).join('\n');
+  const header = lang === 'tr' ? 'Malzeme,Item ID,Miktar\n' : 'Material,Item ID,Quantity\n';
+  const rows = inventory.map(i => `"${i.name}",${i.item_id || ''},${i.qty}`).join('\n');
   const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bdo-storage.csv'; a.click();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'bdo-storage.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
+
 function exportSheets() {
   if (!inventory.length) return;
-  const header = lang==='tr' ? 'Malzeme\tItem ID\tMiktar' : 'Material\tItem ID\tQuantity';
-  const rows = inventory.map(i => `${i.name}\t${i.item_id||''}\t${i.qty}`).join('\n');
+  const header = lang === 'tr' ? 'Malzeme\tItem ID\tMiktar' : 'Material\tItem ID\tQuantity';
+  const rows = inventory.map(i => `${i.name}\t${i.item_id || ''}\t${i.qty}`).join('\n');
   navigator.clipboard.writeText(header + '\n' + rows).then(() => {
-    showToast(lang==='tr' ? "✓ Kopyalandı! Google Sheets'i aç, A1'e tıkla ve Ctrl+V." : '✓ Copied! Open Google Sheets, click A1 and Ctrl+V.');
+    showToast(lang === 'tr'
+      ? '✓ Kopyalandı! Google Sheets\'i aç, A1 hücresine tıkla ve Ctrl+V yap.'
+      : '✓ Copied! Open Google Sheets, click A1 and press Ctrl+V.');
+  }).catch(() => {
+    const w = window.open('', '_blank');
+    w.document.write(`<pre>${header + '\n' + rows}</pre>`);
   });
 }
+
 function showToast(msg) {
-  let t = document.getElementById('toast');
-  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--bg-panel);border:1px solid var(--gold);color:var(--text-bright);padding:0.8rem 1.5rem;border-radius:3px;font-size:0.95rem;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,0.4);max-width:500px;text-align:center;transition:opacity 0.3s;'; document.body.appendChild(t); }
-  t.textContent = msg; t.style.opacity = '1';
-  clearTimeout(t._timer); t._timer = setTimeout(() => { t.style.opacity = '0'; }, 4000);
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--bg-panel);border:1px solid var(--gold);color:var(--text-bright);padding:0.8rem 1.5rem;border-radius:3px;font-family:"Crimson Pro",serif;font-size:0.95rem;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,0.4);max-width:500px;text-align:center;transition:opacity 0.3s;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 4000);
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────
@@ -977,7 +1356,7 @@ applyStrings();
 document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
 document.getElementById('lang-en').classList.toggle('active', lang === 'en');
 
-// Restore saved inventory — show only items panel, not preview/upload
+// Restore saved inventory from localStorage — only show items panel, not upload/preview area
 (async () => {
   try {
     const saved = localStorage.getItem('bdo_inventory');
