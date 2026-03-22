@@ -162,7 +162,7 @@
     border-radius: 4px;
     padding: 0.5rem 1rem;
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
     font-family: 'Cinzel', serif;
     font-size: 0.8rem;
     letter-spacing: 0.08em;
@@ -171,6 +171,17 @@
     animation: devpulse 2s ease-in-out infinite;
   ">
     ⚠ <span id="dev-banner-text">Geliştirme Aşamasında — Veriler Doğru Çıkmayabilir</span> ⚠
+  </div>
+  <div id="feedback-banner" style="
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.78rem;
+    color: #00cc50;
+    letter-spacing: 0.04em;
+    opacity: 0.8;
+  ">
+    <span id="feedback-text">Geri bildirim için TR MENA'da Oyundan AppA aile adıyla ulaşabilirsiniz</span>
   </div>
   <style>
     @keyframes devpulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
@@ -290,6 +301,7 @@ const S = {
     editTitle: 'Malzeme Düzenle', addTitle: 'Malzeme Ekle',
     nameLbl: 'İsim', idLbl: 'Item ID (opsiyonel)', qtyLbl: 'Miktar',
     devBanner: '⚠ Geliştirme Aşamasında — Veriler Doğru Çıkmayabilir ⚠',
+    feedbackText: 'Geri bildirim için TR MENA\'da Oyundan AppA aile adıyla ulaşabilirsiniz',
     // Image prompt — always asks for English item names (original Codex names)
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
 Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
@@ -344,6 +356,7 @@ Return ONLY JSON with ONLY the items you can clearly see:
     editTitle: 'Edit Material', addTitle: 'Add Material',
     nameLbl: 'Name', idLbl: 'Item ID (optional)', qtyLbl: 'Quantity',
     devBanner: '⚠ Under Development — Data May Not Be Accurate ⚠',
+    feedbackText: 'For feedback, you can reach me in TR MENA server in-game as family name AppA',
     imagePrompt: `This is a Black Desert Online storage screenshot. Each cell has an icon and a number below it.
 Read the number AND identify the item name in ENGLISH (use original BDO/Codex English names).
 
@@ -474,6 +487,8 @@ function applyStrings() {
   document.title = s.title;
   const banner = document.getElementById('dev-banner-text');
   if (banner) banner.textContent = s.devBanner;
+  const feedback = document.getElementById('feedback-text');
+  if (feedback) feedback.textContent = s.feedbackText;
   if (!currentBase64) setStatus('', s.statusReady);
 }
 
