@@ -151,7 +151,8 @@
   .loading-text { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1rem; letter-spacing: 0.1em; text-align: center; }
   .loading-sub { color: var(--text-dim); font-size: 0.9rem; font-style: italic; }
   ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-deep); } ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
-  @media (max-width: 700px) { .preview-section.visible { grid-template-columns: 1fr; } .recipe-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
+  .preview-section.saved-mode { grid-template-columns: 1fr; }
+  .preview-section.saved-mode .preview-card { display: none; } .preview-section.visible { grid-template-columns: 1fr; } .recipe-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
 </style>
 </head>
 <body>
@@ -584,7 +585,7 @@ zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('
 fInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
 
 document.getElementById('change-btn').addEventListener('click', () => {
-  document.getElementById('preview-section').classList.remove('visible');
+  document.getElementById('preview-section').classList.remove('visible', 'saved-mode');
   document.getElementById('results-section').classList.remove('visible');
   inventory = []; currentBase64 = null; fInput.value = '';
   cachedCulinary = []; cachedAlchemy = [];
@@ -1355,7 +1356,7 @@ applyStrings();
 document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
 document.getElementById('lang-en').classList.toggle('active', lang === 'en');
 
-// Restore saved inventory from localStorage — show items panel only, not preview section
+// Restore saved inventory from localStorage — only show items panel, not upload/preview area
 (async () => {
   try {
     const saved = localStorage.getItem('bdo_inventory');
@@ -1365,10 +1366,8 @@ document.getElementById('lang-en').classList.toggle('active', lang === 'en');
         await loadItemDB();
         inventory = parsed;
         originalInventory = JSON.parse(JSON.stringify(inventory));
-        // Show items-container inside ai-panel WITHOUT showing preview-section
-        // We need preview-section visible to show ai-panel, but hide the preview card
-        document.getElementById('preview-section').classList.add('visible');
-        document.querySelector('.preview-card').style.display = 'none';
+        const ps = document.getElementById('preview-section');
+        ps.classList.add('visible', 'saved-mode');
         renderItems(inventory);
         setStatus('done', S[lang].statusDone(inventory.length));
         document.getElementById('reset-btn').style.display = 'inline';
