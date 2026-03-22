@@ -601,7 +601,7 @@ function handleFile(file) {
       previewCanvas.getContext('2d').drawImage(img, 0, 0, pw, ph);
       document.getElementById('preview-img').src = previewCanvas.toDataURL('image/jpeg', 0.85);
 
-      // AI image: scale UP 2x for better icon recognition (max 2400px)
+      // AI image: PNG for lossless quality (better icon recognition)
       const scale = 2.0;
       let aw = Math.round(img.width * scale);
       let ah = Math.round(img.height * scale);
@@ -612,9 +612,9 @@ function handleFile(file) {
       aiCtx.imageSmoothingEnabled = true;
       aiCtx.imageSmoothingQuality = 'high';
       aiCtx.drawImage(img, 0, 0, aw, ah);
-      const aiResized = aiCanvas.toDataURL('image/jpeg', 0.92);
+      const aiResized = aiCanvas.toDataURL('image/png'); // PNG — lossless!
       currentBase64 = aiResized.split(',')[1];
-      mediaType = 'image/jpeg';
+      mediaType = 'image/png';
 
       document.getElementById('preview-section').classList.add('visible');
       document.getElementById('items-container').style.display = 'none';
